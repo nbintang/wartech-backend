@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Article {
+  id          String        @id @default(uuid())
+  title       String        @db.VarChar(100)
+  slug        String        @unique(map: "Article_slug_key")
+  content     String        @db.Text
+  image       String
+  authorId    String
+  categoryId  String
+  status      ArticleStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @default(now())
+  author      User          @relation(fields: [authorId], references: [id], map: "Article_authorId_fkey", onDelete: Cascade)
+  category    Category      @relation(fields: [categoryId], references: [id], map: "Article_categoryId_fkey")
+  articleTag  ArticleTag[]
+  comment     Comment[]
+  like        Like[]
+
+  @@index([authorId], map: "Article_authorId_fkey")
+  @@index([categoryId], map: "Article_categoryId_fkey")
+}
+
+model ArticleTag {
+  id        String  @id @default(uuid())
+  articleId String
+  tagId     String
+  article   Article @relation(fields: [articleId], references: [id], map: "ArticleTag_articleId_fkey", onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], map: "ArticleTag_tagId_fkey", onDelete: Cascade)
+
+  @@index([articleId], map: "ArticleTag_articleId_fkey")
+  @@index([tagId], map: "ArticleTag_tagId_fkey")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique(map: "Category_name_key") @db.VarChar(50)
+  description String    @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+  article     Article[]
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  content   String    @db.VarChar(1200)
+  userId    String
+  articleId String
+  parentId  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+  article   Article   @relation(fields: [articleId], references: [id], map: "Comment_articleId_fkey", onDelete: Cascade)
+  parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id], map: "Comment_parentId_fkey", onDelete: Cascade)
+  children  Comment[] @relation("CommentToComment")
+  user      User      @relation(fields: [userId], references: [id], map: "Comment_userId_fkey", onDelete: Cascade)
+
+  @@index([articleId], map: "Comment_articleId_fkey")
+  @@index([parentId], map: "Comment_parentId_fkey")
+  @@index([userId], map: "Comment_userId_fkey")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  articleId String
+  createdAt DateTime @default(now())
+  article   Article  @relation(fields: [articleId], references: [id], map: "Like_articleId_fkey", onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], map: "Like_userId_fkey", onDelete: Cascade)
+
+  @@unique([userId, articleId], map: "Like_userId_articleId_key")
+  @@index([articleId], map: "Like_articleId_fkey")
+}
+
+model Tag {
+  id         String       @id @default(uuid())
+  name       String       @unique(map: "Tag_name_key") @db.VarChar(50)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @default(now())
+  articleTag ArticleTag[]
+}
+
+model User {
+  id                String              @id @default(uuid())
+  name              String              @db.VarChar(100)
+  password          String              @db.VarChar(60)
+  email             String              @unique(map: "User_email_key")
+  verified          Boolean             @default(false)
+  emailVerifiedAt   DateTime?
+  acceptedTOS       Boolean             @default(false)
+  image             String?
+  role              UserRole            @default(READER)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @default(now())
+  article           Article[]
+  comment           Comment[]
+  like              Like[]
+  verificationToken VerificationToken[]
+}
+
+model VerificationToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique(map: "VerificationToken_token_key")
+  expiresAt   DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], map: "VerificationToken_userId_fkey", onDelete: Cascade)
+
+  @@unique([userId, token], map: "VerificationToken_userId_token_key")
+}
+
+enum UserRole {
+  READER
+  REPORTER
+  ADMIN
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}

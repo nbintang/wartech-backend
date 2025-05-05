@@ -1,0 +1,22 @@
+import { MailerService } from '@nestjs-modules/mailer';
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class MailService {
+  constructor(private mailerService: MailerService) {}
+
+  async sendUserConfirmation(email: string, otp: string): Promise<boolean> {
+    // const url = `http://localhost:3000/auth/confirmation?token=${otp}`;
+    const res = await this.mailerService.sendMail({
+      to: email,
+      subject: 'Welcome! Confirm your email',
+      template: 'confirmation',
+      context: {
+        name: email,
+        otp,
+      },
+    });
+    if (!res) return false;
+    return true;
+  }
+}
