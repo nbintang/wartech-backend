@@ -144,6 +144,7 @@ export class AuthService {
       user.role,
     );
     return {
+      user,
       accessToken,
       refreshToken,
     };

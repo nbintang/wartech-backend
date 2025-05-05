@@ -6,9 +6,9 @@ import { MailModule } from 'src/mail/mail.module';
 import { VerificationTokenModule } from 'src/verification-token/verification-token.module';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
 @Module({
   imports: [
+    // PassportModule,
     JwtModule.register({}),
     ConfigModule,
     UsersModule,

@@ -1,4 +1,11 @@
-import { Body, Controller, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { AuthDto, VerifyEmailDto } from './dto/auth.dto';
@@ -35,10 +42,11 @@ export class AuthController {
       });
     return {
       message: 'Email verified successfully',
-      access_token: accessToken,
+      data: {
+        access_token: accessToken,
+      },
     };
   }
-
   @Post('signin')
   async signIn(
     @Body() body: AuthDto,
@@ -47,8 +55,11 @@ export class AuthController {
   ) {
     const existedTokenCookie = (request as any).cookies['refresh_token'];
     if (existedTokenCookie)
-      throw new Error('You are already logged in! Please logout first.');
-    const { accessToken, refreshToken } = await this.authService.signIn(body);
+      throw new UnauthorizedException(
+        'You are already logged in! Please logout first.',
+      );
+    const { accessToken, refreshToken, user } =
+      await this.authService.signIn(body);
     if (accessToken && refreshToken)
       response.cookie('refresh_token', refreshToken, {
         sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
@@ -56,7 +67,10 @@ export class AuthController {
         httpOnly: true,
       });
     return {
-      access_token: accessToken,
+      ...user,
+      data: {
+        access_token: accessToken,
+      },
     };
   }
 }
