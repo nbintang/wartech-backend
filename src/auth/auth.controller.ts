@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { Response } from 'express';
 import { LocalAuthGuard } from './guards/local.guard';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -31,10 +32,8 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const { email, token } = body;
-    const { accessToken, refreshToken } = await this.authService.verifyEmail(
-      email,
-      token,
-    );
+    const { accessToken, refreshToken, user } =
+      await this.authService.verifyEmail(email, token);
     if (accessToken && refreshToken)
       response.cookie('refresh_token', refreshToken, {
         sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
@@ -42,6 +41,7 @@ export class AuthController {
         httpOnly: true,
       });
     return {
+      ...user,
       message: 'Email verified successfully',
       access_token: accessToken,
     };
@@ -82,5 +82,15 @@ export class AuthController {
       );
     response.clearCookie('refresh_token');
     return await this.authService.signout();
+  }
+
+  @UseGuards(RefreshTokenGuard)
+  @Post('refresh-token')
+  async refreshTokens(@Req() request: Request) {
+    console.log((request as any).user);
+
+    const userId = (request as any).user.sub;
+    const tokens = await this.authService.refreshToken(userId);
+    return { access_token: tokens.accessToken };
   }
 }

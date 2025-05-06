@@ -5,7 +5,7 @@ const QueryResponseSchema = z.object({
   status_code: z.number(),
   success: z.boolean(),
   message: z.string(),
-  messages: z
+  error_messages: z
     .array(z.object({ field: z.string(), message: z.string() }))
     .optional(),
   data: z.any().optional(),

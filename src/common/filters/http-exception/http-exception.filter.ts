@@ -25,7 +25,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       return response.status(400).json({
         status_code: 400,
         success: false,
-        messages: zodError.errors.map(({ message, path }) => ({
+        error_messages: zodError.errors.map(({ message, path }) => ({
           field: path.join('.'),
           message,
         })),

@@ -7,7 +7,9 @@ import { VerificationTokenModule } from 'src/verification-token/verification-tok
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './local/local.strategy';
+import { LocalStrategy } from './strategies/local.strategy';
+import { AccessTokenStrategy } from './strategies/access-token.strategy';
+import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 @Module({
   imports: [
     PassportModule,
@@ -17,7 +19,14 @@ import { LocalStrategy } from './local/local.strategy';
     MailModule,
     VerificationTokenModule,
   ],
-  providers: [JwtService, ConfigService, AuthService, LocalStrategy],
+  providers: [
+    JwtService,
+    ConfigService,
+    AuthService,
+    LocalStrategy,
+    AccessTokenStrategy,
+    RefreshTokenStrategy,
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}
