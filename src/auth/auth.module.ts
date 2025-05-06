@@ -6,16 +6,18 @@ import { MailModule } from 'src/mail/mail.module';
 import { VerificationTokenModule } from 'src/verification-token/verification-token.module';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
+import { LocalStrategy } from './local/local.strategy';
 @Module({
   imports: [
-    // PassportModule,
+    PassportModule,
     JwtModule.register({}),
     ConfigModule,
     UsersModule,
     MailModule,
     VerificationTokenModule,
   ],
-  providers: [JwtService, ConfigService, AuthService],
+  providers: [JwtService, ConfigService, AuthService, LocalStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

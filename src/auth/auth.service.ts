@@ -13,7 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { VerificationTokenService } from 'src/verification-token/verification-token.service';
-import { AuthDto } from './dto/auth.dto';
+import { LocalSigninDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -125,13 +125,10 @@ export class AuthService {
       user.email,
       user.role,
     );
-    return {
-      accessToken,
-      refreshToken,
-    };
+    return { accessToken, refreshToken };
   }
 
-  async signIn({ email, password }: AuthDto): Promise<any> {
+  async signIn({ email, password }: LocalSigninDto): Promise<any> {
     const user = await this.usersService.getUserByEmail(email);
     if (!user) throw new UnauthorizedException('User does not exist');
     if (!user.verified) throw new UnauthorizedException('User is not verified');
@@ -147,6 +144,13 @@ export class AuthService {
       user,
       accessToken,
       refreshToken,
+    };
+  }
+
+  async signout() {
+    return {
+      data: null,
+      message: 'Successfully signed out',
     };
   }
 }

@@ -9,6 +9,7 @@ import { VerificationTokenModule } from './verification-token/verification-token
 import { LoggerModule } from './common/interceptors/logger/logger.module';
 import { ResponseModule } from './common/interceptors/response/response.module';
 import { HttpExceptionModule } from './common/filters/http-exception/http-exception.module';
+import { ValidatorModule } from './common/filters/validator/zod-validator.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { HttpExceptionModule } from './common/filters/http-exception/http-except
     LoggerModule,
     ResponseModule,
     HttpExceptionModule,
+    ValidatorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

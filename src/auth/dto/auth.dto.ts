@@ -1,17 +1,10 @@
-import { IsEmail, IsString } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
-export class AuthDto {
-  @IsEmail()
-  email: string;
-
-  @IsString()
-  password: string;
-}
-
-export class VerifyEmailDto {
-  @IsEmail()
-  email: string;
-
-  @IsString()
-  token: string;
-}
+export const LocalSigninSchema = z.object({
+  email: z.string().email({ message: 'Invalid email' }),
+  password: z
+    .string()
+    .min(8, { message: 'Password must be at least 8 characters' }),
+});
+export class LocalSigninDto extends createZodDto(LocalSigninSchema) {}
