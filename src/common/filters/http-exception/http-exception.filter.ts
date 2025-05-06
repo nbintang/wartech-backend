@@ -6,22 +6,26 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { QueryResponseDto } from '../../dtos/query-response.dto';
-import { ZodValidationException } from 'nestjs-zod';
+import { ZodSerializationException, ZodValidationException } from 'nestjs-zod';
+import { QueryResponseDto } from 'src/common/dtos/query-response.dto';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(
+    exception:
+      | HttpException
+      | ZodValidationException
+      | ZodSerializationException,
+    host: ArgumentsHost,
+  ) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
+    const response = ctx.getResponse<Response<QueryResponseDto>>();
     if (exception instanceof ZodValidationException) {
-      const zodError = exception.getZodError(); // Native ZodError
+      const zodError = exception.getZodError();
       return response.status(400).json({
         status_code: 400,
         success: false,
-        message: 'Validation failed',
-        data: null,
-        errors: zodError.errors.map(({ message, path }) => ({
+        messages: zodError.errors.map(({ message, path }) => ({
           field: path.join('.'),
           message,
         })),
@@ -46,7 +50,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
       status_code: status,
       success: false,
       message,
-      data: null,
-    } as QueryResponseDto);
+    });
   }
 }

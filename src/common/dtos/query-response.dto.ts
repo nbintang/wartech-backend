@@ -1,15 +1,14 @@
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
-export class QueryResponseDto {
-  @IsNumber()
-  status_code: number;
+const QueryResponseSchema = z.object({
+  status_code: z.number(),
+  success: z.boolean(),
+  message: z.string(),
+  messages: z
+    .array(z.object({ field: z.string(), message: z.string() }))
+    .optional(),
+  data: z.any().optional(),
+});
 
-  @IsBoolean()
-  success: boolean;
-
-  @IsString()
-  message: string;
-
-  @IsOptional()
-  data: any | any[] | null | undefined;
-}
+export class QueryResponseDto extends createZodDto(QueryResponseSchema) {}

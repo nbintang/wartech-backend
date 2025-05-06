@@ -9,6 +9,7 @@ export class UsersService {
   async createUser(data: Prisma.UserCreateInput) {
     const newUser = await this.prisma.user.create({
       data,
+      select: { id: true, email: true },
     });
     return newUser;
   }
@@ -37,6 +38,10 @@ export class UsersService {
     const user = await this.prisma.user.update({
       where: { id, email },
       data,
+      select: {
+        id: true,
+        email: true,
+      },
     });
     return user;
   }

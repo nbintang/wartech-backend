@@ -69,12 +69,12 @@ export class AuthService {
         400,
       );
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const { accepted_terms, ...rest } = createUserDto;
     const newUser = await this.usersService.createUser({
-      ...rest,
+      name: createUserDto.name,
+      email: createUserDto.email, // add this line
       image: createUserDto.image || null,
       role: createUserDto.role || 'READER',
-      acceptedTOS: accepted_terms,
+      acceptedTOS: createUserDto.accepted_terms,
       password: hashedPassword,
     });
     const rawOtp = await this.generateOtp();

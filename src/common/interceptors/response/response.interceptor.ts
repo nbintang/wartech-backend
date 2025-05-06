@@ -13,7 +13,7 @@ export class ResponseInterceptor implements NestInterceptor {
     const ctx = context.switchToHttp();
     const response = ctx.getResponse();
     return next.handle().pipe(
-      map((result) => {
+      map((result): QueryResponseDto => {
         const { data, message } = result?.message
           ? result
           : { data: result, message: 'Success' };
@@ -22,7 +22,7 @@ export class ResponseInterceptor implements NestInterceptor {
           success: true,
           message,
           data,
-        } as QueryResponseDto;
+        };
       }),
     );
   }
