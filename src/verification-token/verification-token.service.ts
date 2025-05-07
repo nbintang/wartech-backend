@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, VerificationType } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -19,7 +19,38 @@ export class VerificationTokenService {
         type: 'EMAIL_VERIFICATION',
       },
     });
-    console.log(verificationToken);
     return verificationToken;
+  }
+  async getVerificationTokenByUserIdAndType(
+    userId: string,
+    type: VerificationType,
+  ) {
+    const verificationtoken = await this.prisma.verificationToken.findFirst({
+      where: {
+        userId,
+        type,
+        expiresAt: { gt: new Date() }, // to check if token is expired
+      },
+      select: {
+        id: true,
+        userId: true,
+        token: true,
+        expiresAt: true,
+      },
+    });
+    return verificationtoken;
+  }
+
+
+  async deleteTokensByUserAndType(
+    userId: string,
+    type: VerificationType,
+  ): Promise<void> {
+    await this.prisma.verificationToken.deleteMany({
+      where: {
+        userId,
+        type,
+      },
+    });
   }
 }

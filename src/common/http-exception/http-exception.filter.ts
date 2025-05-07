@@ -28,14 +28,6 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response<DefaultSystemQueryResponseDto>>();
     const request = ctx.getRequest();
-    if (exception instanceof UnauthorizedException) {
-      return response.status(401).json({
-        status_code: 401,
-        success: false,
-        message: exception.message || 'Unauthorized',
-      });
-    }
-
     if (exception instanceof ZodValidationException) {
       const zodError = exception.getZodError();
       this.logger.error(
@@ -53,6 +45,14 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
         })),
       });
     }
+    if (exception instanceof UnauthorizedException) {
+      return response.status(401).json({
+        status_code: 401,
+        success: false,
+        message: exception.message || 'Unauthorized',
+      });
+    }
+
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
@@ -73,7 +73,5 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
       success: false,
       message,
     });
-
-    super.catch(exception, host);
   }
 }

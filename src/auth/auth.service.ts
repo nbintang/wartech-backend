@@ -14,8 +14,9 @@ import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { VerificationTokenService } from 'src/verification-token/verification-token.service';
-import { LocalSigninDto } from './dto/auth.dto';
-import { VerifyEmailDto } from './dto/verify-email.dto';
+import { LocalSigninDto } from './dtos/auth.dto';
+import { VerifyEmailDto } from './dtos/verify-email.dto';
+import { ResetPasswordDto } from './dtos/reset.password.dto';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,10 @@ export class AuthService {
     private mailService: MailService,
     private verificationTokenService: VerificationTokenService,
   ) {}
+
+  hashData(data: string) {
+    return bcrypt.hash(data, 10);
+  }
 
   compareHash(plainText: string, hash: string) {
     return bcrypt.compare(plainText, hash.toString());
@@ -67,7 +72,7 @@ export class AuthService {
         'Your already registered, please sign in or register with another account',
         400,
       );
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const hashedPassword = await this.hashData(createUserDto.password);
     const newUser = await this.usersService.createUser({
       name: createUserDto.name,
       email: createUserDto.email, // add this line
@@ -87,7 +92,7 @@ export class AuthService {
       });
     if (!newVerificationToken)
       throw new InternalServerErrorException('Something went wrong');
-    const sendedMail = await this.mailService.sendUserConfirmation(
+    const sendedMail = await this.mailService.sendUserOtpVerification(
       newUser.email,
       rawOtp,
     );
@@ -144,7 +149,56 @@ export class AuthService {
     };
   }
 
-  async forgotPassword({}) {}
+  async forgotPassword(email: string) {
+    const user = await this.usersService.getUserByEmail(email);
+    if (!user || user.verified) throw new NotFoundException('User not found');
+    const rawToken = await this.generateOtp();
+    const hashedToken = await bcrypt.hash(rawToken, 10);
+    await this.verificationTokenService.deleteTokensByUserAndType(
+      user.id,
+      'PASSWORD_RESET',
+    );
+
+    await this.verificationTokenService.createVerificationToken({
+      user: { connect: { id: user.id } },
+      type: 'PASSWORD_RESET',
+      token: hashedToken,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    });
+
+    await this.mailService.sendResetPassword(user.email, rawToken);
+
+    return { message: 'Password reset email sent' };
+  }
+
+  async resetPassword({ email, token, newPassword }: ResetPasswordDto) {
+    const user = await this.usersService.getUserByEmail(email);
+    if (!user) throw new NotFoundException('User not found');
+
+    const verificationToken =
+      await this.verificationTokenService.getVerificationTokenByUserIdAndType(
+        user.id,
+        'PASSWORD_RESET',
+      );
+
+    if (!verificationToken || verificationToken.expiresAt < new Date())
+      throw new BadRequestException('Token expired');
+
+    const isTokenValid = await this.compareHash(token, verificationToken.token);
+    if (!isTokenValid) throw new BadRequestException('Invalid token');
+
+    const hashedPassword = await this.hashData(newPassword);
+    await this.usersService.updateVerifiedUser(
+      { id: user.id, email },
+      { password: hashedPassword },
+    );
+
+    await this.verificationTokenService.deleteTokensByUserAndType(
+      user.id,
+      'PASSWORD_RESET',
+    );
+    return { message: 'Password reset successfully' };
+  }
 
   async refreshToken(userId: string) {
     const user = await this.usersService.getUserById(userId);

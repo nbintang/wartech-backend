@@ -12,9 +12,9 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { VerifyEmailDto } from './dto/verify-email.dto';
+import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { DefaultQueryResponseDto } from 'src/common/dtos/default-query-response.dto';
-import { LocalSigninDto as SigninDto } from './dto/auth.dto';
+import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -62,7 +62,7 @@ export class AuthController {
     const existedTokenCookie = request.cookies['refresh_token'];
     if (existedTokenCookie)
       throw new UnauthorizedException(
-        'You are already logged in! Please logout first.',
+        `You are already logged in! Please logout first.`,
       );
     const { accessToken, refreshToken } = await this.authService.signIn(body);
     if (accessToken && refreshToken)
@@ -94,8 +94,6 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @Post('refresh-token')
   async refreshTokens(@Req() request: Request) {
-    console.log((request as any).user);
-
     const userId = (request as any).user.sub;
     const tokens = await this.authService.refreshToken(userId);
     return { access_token: tokens.accessToken };
