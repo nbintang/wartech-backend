@@ -5,7 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import { QueryResponseDto } from '../../dtos/query-response.dto';
+import { QueryResponseDto } from '../dtos/query-response.dto';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
