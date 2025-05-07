@@ -90,7 +90,7 @@ model Tag {
 model User {
   id                String              @id @default(uuid())
   name              String              @db.VarChar(100)
-  password          String            
+  password          String
   email             String              @unique(map: "User_email_key")
   verified          Boolean             @default(false)
   emailVerifiedAt   DateTime?
@@ -106,14 +106,20 @@ model User {
 }
 
 model VerificationToken {
-  id        String   @id @default(uuid())
+  id        String           @id @default(uuid())
   userId    String
-  token     String   @unique(map: "VerificationToken_token_key")
-  expiresAt   DateTime
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], map: "VerificationToken_userId_fkey", onDelete: Cascade)
+  token     String           @unique(map: "VerificationToken_token_key")
+  type      VerificationType
+  expiresAt DateTime
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], map: "VerificationToken_userId_fkey", onDelete: Cascade)
 
-  @@unique([userId, token], map: "VerificationToken_userId_token_key")
+  @@unique([userId, token, type], map: "VerificationToken_userId_token_type_key")
+}
+
+enum VerificationType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
 }
 
 enum UserRole {

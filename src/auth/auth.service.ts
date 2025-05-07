@@ -15,6 +15,7 @@ import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { VerificationTokenService } from 'src/verification-token/verification-token.service';
 import { LocalSigninDto } from './dto/auth.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +28,7 @@ export class AuthService {
   ) {}
 
   compareHash(plainText: string, hash: string) {
-    return bcrypt.compare(plainText.toString(), hash.toString());
+    return bcrypt.compare(plainText, hash.toString());
   }
   async generateOtp(): Promise<string> {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -80,6 +81,7 @@ export class AuthService {
     const newVerificationToken =
       await this.verificationTokenService.createVerificationToken({
         user: { connect: { id: newUser.id } },
+        type: 'EMAIL_VERIFICATION',
         token: hashedOtp,
         expiresAt: new Date(Date.now() + 60 * 60 * 1000),
       });
@@ -94,17 +96,17 @@ export class AuthService {
     return true;
   }
 
-  async verifyEmail(email: string, token: string) {
+  async verifyEmail({ email, token }: VerifyEmailDto) {
     const user = await this.usersService.getUserByEmail(email);
     if (!user) throw new NotFoundException('User not found');
     const verificationToken =
       await this.verificationTokenService.getVerificationTokenByUserId(user.id);
-    if (!verificationToken || !token)
-      throw new NotFoundException('Invalid token');
-    const isTokenValid = await this.compareHash(token, verificationToken.token);
-    if (!isTokenValid) throw new BadRequestException('Invalid token');
+    if (!verificationToken)
+      throw new NotFoundException('Verification token not found');
     if (verificationToken.expiresAt < new Date())
       throw new BadRequestException('Token expired');
+    const isTokenValid = await this.compareHash(token, verificationToken.token);
+    if (!isTokenValid) throw new BadRequestException('Invalid token');
     if (user.emailVerifiedAt)
       throw new BadRequestException('User already verified');
     await this.usersService.updateVerifiedUser(
@@ -127,7 +129,6 @@ export class AuthService {
     const user = await this.usersService.getUserByEmail(email);
     if (!user) throw new UnauthorizedException('User does not exist');
     if (!user.verified) throw new UnauthorizedException('User is not verified');
-    console.log(user);
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid)
       throw new UnauthorizedException('Password is incorrect');
@@ -142,6 +143,9 @@ export class AuthService {
       refreshToken,
     };
   }
+
+  async forgotPassword({}) {}
+
   async refreshToken(userId: string) {
     const user = await this.usersService.getUserById(userId);
     if (!user) throw new ForbiddenException('Access Denied');

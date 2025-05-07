@@ -7,7 +7,6 @@ import { VerificationTokenModule } from 'src/verification-token/verification-tok
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './strategies/local.strategy';
 import { AccessTokenStrategy } from './strategies/access-token.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 @Module({
@@ -23,7 +22,6 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
     JwtService,
     ConfigService,
     AuthService,
-    LocalStrategy,
     AccessTokenStrategy,
     RefreshTokenStrategy,
   ],

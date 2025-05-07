@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
 @UseGuards(AccessTokenGuard)
-@Controller('users')
+@Controller('/protected/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

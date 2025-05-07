@@ -16,8 +16,10 @@ export class VerificationTokenService {
     const verificationToken = await this.prisma.verificationToken.findFirst({
       where: {
         userId,
+        type: 'EMAIL_VERIFICATION',
       },
     });
+    console.log(verificationToken);
     return verificationToken;
   }
 }

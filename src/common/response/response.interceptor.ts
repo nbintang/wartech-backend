@@ -5,7 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import { QueryResponseDto } from '../dtos/query-response.dto';
+import { DefaultSystemQueryResponseDto } from '../dtos/default-system-query-response.dto';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
@@ -13,7 +13,7 @@ export class ResponseInterceptor implements NestInterceptor {
     const ctx = context.switchToHttp();
     const response = ctx.getResponse();
     return next.handle().pipe(
-      map((result): QueryResponseDto => {
+      map((result): DefaultSystemQueryResponseDto => {
         const { data, message } = result?.message
           ? result
           : { data: result, message: 'Success' };

@@ -10,30 +10,37 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
-import { Response } from 'express';
-import { LocalAuthGuard } from './guards/local.guard';
+import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { DefaultQueryResponseDto } from 'src/common/dtos/default-query-response.dto';
+import { LocalSigninDto as SigninDto } from './dto/auth.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Post('signup')
-  async signup(@Body() body: CreateUserDto) {
+  async signup(@Body() body: CreateUserDto, @Req() request: Request) {
     const user = body;
     await this.authService.signUp(user);
+    const doesHaveCookieRefreshToken = request.cookies['refresh_token'];
+    if (!doesHaveCookieRefreshToken) {
+      throw new UnauthorizedException('Please Logout First');
+    }
     return {
-      data: null,
       message: 'Success!, Please check your email for the OTP',
     };
   }
 
   @Post('verify')
   async verifyEmail(
-    @Body() body: { email: string; token: string },
+    @Body() body: VerifyEmailDto,
     @Res({ passthrough: true }) response: Response,
-  ) {
+  ): Promise<DefaultQueryResponseDto> {
     const { email, token } = body;
-    const { accessToken, refreshToken, user } =
-      await this.authService.verifyEmail(email, token);
+    const { accessToken, refreshToken } = await this.authService.verifyEmail({
+      email,
+      token,
+    });
     if (accessToken && refreshToken)
       response.cookie('refresh_token', refreshToken, {
         sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
@@ -41,24 +48,23 @@ export class AuthController {
         httpOnly: true,
       });
     return {
-      ...user,
       message: 'Email verified successfully',
-      access_token: accessToken,
+      data: { access_token: accessToken },
     };
   }
 
-  @UseGuards(LocalAuthGuard)
   @Post('signin')
   async signIn(
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
-  ) {
-    const existedTokenCookie = (request as any).cookies['refresh_token'];
+    @Body() body: SigninDto,
+  ): Promise<DefaultQueryResponseDto> {
+    const existedTokenCookie = request.cookies['refresh_token'];
     if (existedTokenCookie)
       throw new UnauthorizedException(
         'You are already logged in! Please logout first.',
       );
-    const { accessToken, refreshToken } = await (request as any).user;
+    const { accessToken, refreshToken } = await this.authService.signIn(body);
     if (accessToken && refreshToken)
       response.cookie('refresh_token', refreshToken, {
         sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
@@ -66,7 +72,8 @@ export class AuthController {
         httpOnly: true,
       });
     return {
-      access_token: accessToken,
+      message: 'Successfully signed in',
+      data: { access_token: accessToken },
     };
   }
 
