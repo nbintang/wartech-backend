@@ -4,15 +4,23 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { QueryResponseDto } from 'src/common/dtos/query-response.dto';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(exception: HttpException | UnauthorizedException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response<QueryResponseDto>>();
+    if (exception instanceof UnauthorizedException) {
+      return response.status(401).json({
+        status_code: 401,
+        success: false,
+        message: exception.message || 'Unauthorized',
+      });
+    }
     const status =
       exception instanceof HttpException
         ? exception.getStatus()

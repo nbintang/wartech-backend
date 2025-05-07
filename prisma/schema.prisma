@@ -90,7 +90,7 @@ model Tag {
 model User {
   id                String              @id @default(uuid())
   name              String              @db.VarChar(100)
-  password          String              @db.VarChar(60)
+  password          String            
   email             String              @unique(map: "User_email_key")
   verified          Boolean             @default(false)
   emailVerifiedAt   DateTime?

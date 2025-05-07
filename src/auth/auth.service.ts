@@ -26,8 +26,8 @@ export class AuthService {
     private verificationTokenService: VerificationTokenService,
   ) {}
 
-  async compareHash(plainText: string, hash: string) {
-    return await bcrypt.compare(plainText, hash);
+  compareHash(plainText: string, hash: string) {
+    return bcrypt.compare(plainText.toString(), hash.toString());
   }
   async generateOtp(): Promise<string> {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -127,7 +127,8 @@ export class AuthService {
     const user = await this.usersService.getUserByEmail(email);
     if (!user) throw new UnauthorizedException('User does not exist');
     if (!user.verified) throw new UnauthorizedException('User is not verified');
-    const isPasswordValid = await this.compareHash(password, user.password);
+    console.log(user);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid)
       throw new UnauthorizedException('Password is incorrect');
     const { accessToken, refreshToken } = await this.generateTokens(

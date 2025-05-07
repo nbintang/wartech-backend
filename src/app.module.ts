@@ -8,7 +8,6 @@ import { MailModule } from './mail/mail.module';
 import { VerificationTokenModule } from './verification-token/verification-token.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { ResponseModule } from './common/response/response.module';
-import { HttpExceptionModule } from './common/http-exception/http-exception.module';
 import { ValidatorModule } from './common/validator/zod-validator.module';
 
 @Module({
@@ -20,7 +19,6 @@ import { ValidatorModule } from './common/validator/zod-validator.module';
     VerificationTokenModule,
     LoggerModule,
     ResponseModule,
-    HttpExceptionModule,
     ValidatorModule,
   ],
   controllers: [AppController],
