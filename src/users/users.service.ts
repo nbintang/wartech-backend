@@ -9,7 +9,7 @@ export class UsersService {
   async createUser(data: Prisma.UserCreateInput) {
     const newUser = await this.prisma.user.create({
       data,
-      select: { id: true, email: true },
+      select: { id: true, email: true, name: true },
     });
     return newUser;
   }
@@ -24,6 +24,7 @@ export class UsersService {
         id: true,
         email: true,
         password: true,
+        name: true,
         role: true,
         verified: true,
         emailVerifiedAt: true,
@@ -32,11 +33,11 @@ export class UsersService {
   }
 
   async updateVerifiedUser(
-    { id, email }: { id: string; email: string },
+    { id }: { id: string },
     data: Prisma.UserUpdateInput,
   ) {
     const user = await this.prisma.user.update({
-      where: { id, email },
+      where: { id },
       data,
       select: {
         id: true,
@@ -49,6 +50,12 @@ export class UsersService {
   async getUserById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
+      select: {
+        id: true,
+        email: true,
+        emailVerifiedAt: true,
+        role: true,
+      },
     });
   }
 }

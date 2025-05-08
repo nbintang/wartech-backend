@@ -1,35 +1,63 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+type EmailContext = {
+  userName: string;
+  userId: string;
+  userEmail: string;
+  token: string;
+};
 
 @Injectable()
 export class MailService {
-  constructor(private mailerService: MailerService) {}
+  private baseUrl: string;
+  constructor(
+    private mailerService: MailerService,
+    private configService: ConfigService,
+  ) {
+    // const PROD_URL = this.configService.get<string>('PROD_URL');
+    this.baseUrl = 'http://localhost:3000/api';
+  }
 
-  async sendUserOtpVerification(email: string, otp: string): Promise<boolean> {
-    // const url = `http://localhost:3000/auth/confirmation?token=${otp}`;
+  async sendUserOtpVerification({
+    userName,
+    userEmail,
+    userId,
+    token,
+  }: EmailContext): Promise<boolean> {
+    const url = `${this.baseUrl}/auth/verify?token=${token}&userId=${userId}`;
+    console.log(url);
     const res = await this.mailerService.sendMail({
-      to: email,
+      to: userEmail,
       subject: 'Welcome! Confirm your email',
       template: 'confirmation',
       context: {
-        name: email,
-        otp,
+        name: userName,
+        url,
+        token,
       },
     });
     if (!res) return false;
     return true;
   }
 
-  async sendResetPassword(email: string, otp: string): Promise<boolean> {
-    const url = `http://localhost:3000/reset-password?token=${otp}`;
+  async sendResetPassword({
+    userName,
+    userEmail,
+    userId,
+    token,
+  }: EmailContext): Promise<boolean> {
+    const url = `${this.baseUrl}/auth/reset-password?token=${token}&userId=${userId}`;
+    console.log(url);
     const res = await this.mailerService.sendMail({
-      to: email,
+      to: userEmail,
       subject: 'Reset Password',
       template: 'confirmation',
       context: {
-        name: email,
+        name: userName,
         url,
-        otp,
+        token,
       },
     });
     if (!res) return false;

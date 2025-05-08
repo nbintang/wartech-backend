@@ -17,7 +17,9 @@ import { VerificationTokenService } from 'src/verification-token/verification-to
 import { LocalSigninDto } from './dtos/auth.dto';
 import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { ResetPasswordDto } from './dtos/reset.password.dto';
-
+import { VerificationType } from 'src/verification-token/enums/verification.enum';
+import { UserRole } from 'src/users/enums/role.enums';
+import * as crypto from 'crypto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -35,9 +37,9 @@ export class AuthService {
   compareHash(plainText: string, hash: string) {
     return bcrypt.compare(plainText, hash.toString());
   }
-  async generateOtp(): Promise<string> {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    return otp;
+  async generateToken(): Promise<string> {
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    return rawToken;
   }
 
   async generateTokens(userId: string, email: string, role: string) {
@@ -77,45 +79,54 @@ export class AuthService {
       name: createUserDto.name,
       email: createUserDto.email, // add this line
       image: createUserDto.image || null,
-      role: createUserDto.role || 'READER',
+      role: createUserDto.role || UserRole.READER,
       acceptedTOS: createUserDto.accepted_terms,
       password: hashedPassword,
     });
-    const rawOtp = await this.generateOtp();
-    const hashedOtp = await bcrypt.hash(rawOtp, 10);
+    const rawToken = await this.generateToken();
+    const hashedToken = await bcrypt.hash(rawToken, 10);
     const newVerificationToken =
       await this.verificationTokenService.createVerificationToken({
         user: { connect: { id: newUser.id } },
-        type: 'EMAIL_VERIFICATION',
-        token: hashedOtp,
+        type: VerificationType.EMAIL_VERIFICATION,
+        token: hashedToken,
         expiresAt: new Date(Date.now() + 60 * 60 * 1000),
       });
     if (!newVerificationToken)
       throw new InternalServerErrorException('Something went wrong');
-    const sendedMail = await this.mailService.sendUserOtpVerification(
-      newUser.email,
-      rawOtp,
-    );
+    const sendedMail = await this.mailService.sendUserOtpVerification({
+      userName: newUser.name,
+      userEmail: newUser.email,
+      userId: newUser.id,
+      token: rawToken,
+    });
     if (!sendedMail)
       throw new InternalServerErrorException('Something went wrong');
     return true;
   }
 
-  async verifyEmail({ email, token }: VerifyEmailDto) {
-    const user = await this.usersService.getUserByEmail(email);
+  async verifyEmail({ userId, token }: VerifyEmailDto) {
+    const user = await this.usersService.getUserById(userId);
     if (!user) throw new NotFoundException('User not found');
     const verificationToken =
-      await this.verificationTokenService.getVerificationTokenByUserId(user.id);
+      await this.verificationTokenService.getVerificationTokenByUserIdAndType({
+        userId: user.id,
+        type: VerificationType.EMAIL_VERIFICATION,
+      });
     if (!verificationToken)
       throw new NotFoundException('Verification token not found');
-    if (verificationToken.expiresAt < new Date())
-      throw new BadRequestException('Token expired');
+    if (verificationToken.expiresAt < new Date()) {
+      this.verificationTokenService.deleteTokensByUserId(user.id);
+      throw new BadRequestException(
+        'Token expired, please resend email for verification',
+      );
+    }
     const isTokenValid = await this.compareHash(token, verificationToken.token);
     if (!isTokenValid) throw new BadRequestException('Invalid token');
     if (user.emailVerifiedAt)
       throw new BadRequestException('User already verified');
     await this.usersService.updateVerifiedUser(
-      { id: user.id, email },
+      { id: user.id },
       {
         emailVerifiedAt: new Date(),
         verified: true,
@@ -151,53 +162,57 @@ export class AuthService {
 
   async forgotPassword(email: string) {
     const user = await this.usersService.getUserByEmail(email);
-    if (!user || user.verified) throw new NotFoundException('User not found');
-    const rawToken = await this.generateOtp();
-    const hashedToken = await bcrypt.hash(rawToken, 10);
-    await this.verificationTokenService.deleteTokensByUserAndType(
-      user.id,
-      'PASSWORD_RESET',
-    );
-
+    if (!user) throw new NotFoundException('User not found');
+    if (!user.verified) throw new BadRequestException('User is not verified');
+    const rawToken = await this.generateToken();
+    const hashedToken = await this.hashData(rawToken);
+    await this.verificationTokenService.deleteTokensByUserAndType({
+      userId: user.id,
+      type: VerificationType.PASSWORD_RESET,
+    });
     await this.verificationTokenService.createVerificationToken({
       user: { connect: { id: user.id } },
-      type: 'PASSWORD_RESET',
+      type: VerificationType.PASSWORD_RESET,
       token: hashedToken,
       expiresAt: new Date(Date.now() + 60 * 60 * 1000),
     });
-
-    await this.mailService.sendResetPassword(user.email, rawToken);
-
-    return { message: 'Password reset email sent' };
+    await this.mailService.sendResetPassword({
+      userName: user.name,
+      userEmail: user.email,
+      userId: user.id,
+      token: rawToken,
+    });
   }
 
-  async resetPassword({ email, token, newPassword }: ResetPasswordDto) {
-    const user = await this.usersService.getUserByEmail(email);
+  async resetPassword({ userId, token, newPassword }: ResetPasswordDto) {
+    const user = await this.usersService.getUserById(userId);
     if (!user) throw new NotFoundException('User not found');
-
     const verificationToken =
-      await this.verificationTokenService.getVerificationTokenByUserIdAndType(
-        user.id,
-        'PASSWORD_RESET',
+      await this.verificationTokenService.getVerificationTokenByUserIdAndType({
+        userId: user.id,
+        type: VerificationType.PASSWORD_RESET,
+      });
+    if (!verificationToken || verificationToken.expiresAt < new Date()) {
+      this.verificationTokenService.deleteTokensByUserId(user.id);
+      throw new BadRequestException(
+        'Token expired, please resend email for verification',
       );
-
-    if (!verificationToken || verificationToken.expiresAt < new Date())
-      throw new BadRequestException('Token expired');
-
+    }
     const isTokenValid = await this.compareHash(token, verificationToken.token);
     if (!isTokenValid) throw new BadRequestException('Invalid token');
-
     const hashedPassword = await this.hashData(newPassword);
     await this.usersService.updateVerifiedUser(
-      { id: user.id, email },
+      { id: user.id },
       { password: hashedPassword },
     );
-
-    await this.verificationTokenService.deleteTokensByUserAndType(
-      user.id,
-      'PASSWORD_RESET',
-    );
-    return { message: 'Password reset successfully' };
+    const deletedToken =
+      await this.verificationTokenService.deleteTokensByUserAndType({
+        userId: user.id,
+        type: VerificationType.PASSWORD_RESET,
+      });
+    if (!deletedToken)
+      throw new InternalServerErrorException('Something went wrong');
+    return true;
   }
 
   async refreshToken(userId: string) {

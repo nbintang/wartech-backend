@@ -2,7 +2,9 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Post,
+  Query,
   Req,
   Res,
   UnauthorizedException,
@@ -12,33 +14,33 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { DefaultQueryResponseDto } from 'src/common/dtos/default-query-response.dto';
 import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
+import { ResetPasswordDto } from './dtos/reset.password.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Post('signup')
-  async signup(@Body() body: CreateUserDto, @Req() request: Request) {
-    const user = body;
-    await this.authService.signUp(user);
+  async signup(@Body() user: CreateUserDto, @Req() request: Request) {
     const doesHaveCookieRefreshToken = request.cookies['refresh_token'];
-    if (!doesHaveCookieRefreshToken) {
+    if (doesHaveCookieRefreshToken) {
       throw new UnauthorizedException('Please Logout First');
     }
+    await this.authService.signUp(user);
     return {
-      message: 'Success!, Please check your email for the OTP',
+      message: 'Success!, Please check your email for the verification link',
     };
   }
 
-  @Post('verify')
-  async verifyEmail(
-    @Body() body: VerifyEmailDto,
+  @Get('verify')
+  async verifyEmailTokenThroughLink(
+    @Query('userId') userId: string,
+    @Query('token') token: string,
     @Res({ passthrough: true }) response: Response,
   ): Promise<DefaultQueryResponseDto> {
-    const { email, token } = body;
+    if (!token) throw new UnauthorizedException('Please provide token');
     const { accessToken, refreshToken } = await this.authService.verifyEmail({
-      email,
+      userId,
       token,
     });
     if (accessToken && refreshToken)
@@ -51,6 +53,25 @@ export class AuthController {
       message: 'Email verified successfully',
       data: { access_token: accessToken },
     };
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(
+    @Body() { email }: { email: string },
+  ): Promise<DefaultQueryResponseDto> {
+    await this.authService.forgotPassword(email);
+    return {
+      message: 'Please check your email for the verification link',
+    };
+  }
+
+  @Post('reset-password')
+  async resetPassword(
+    @Query('userId') userId: string,
+    @Query('token') token: string,
+    @Body() { newPassword }: ResetPasswordDto,
+  ) {
+    return await this.authService.resetPassword({ userId, token, newPassword });
   }
 
   @Post('signin')

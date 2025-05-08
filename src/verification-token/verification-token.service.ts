@@ -12,19 +12,13 @@ export class VerificationTokenService {
     return verificationToken;
   }
 
-  async getVerificationTokenByUserId(userId: string) {
-    const verificationToken = await this.prisma.verificationToken.findFirst({
-      where: {
-        userId,
-        type: 'EMAIL_VERIFICATION',
-      },
-    });
-    return verificationToken;
-  }
-  async getVerificationTokenByUserIdAndType(
-    userId: string,
-    type: VerificationType,
-  ) {
+  async getVerificationTokenByUserIdAndType({
+    userId,
+    type,
+  }: {
+    userId: string;
+    type: VerificationType;
+  }) {
     const verificationtoken = await this.prisma.verificationToken.findFirst({
       where: {
         userId,
@@ -41,16 +35,22 @@ export class VerificationTokenService {
     return verificationtoken;
   }
 
-
-  async deleteTokensByUserAndType(
-    userId: string,
-    type: VerificationType,
-  ): Promise<void> {
-    await this.prisma.verificationToken.deleteMany({
+  async deleteTokensByUserAndType({
+    userId,
+    type,
+  }: {
+    userId: string;
+    type: VerificationType;
+  }): Promise<Prisma.BatchPayload> {
+    return await this.prisma.verificationToken.deleteMany({
       where: {
         userId,
         type,
       },
     });
+  }
+
+  async deleteTokensByUserId(userId: string): Promise<void> {
+    await this.prisma.verificationToken.deleteMany({ where: { userId } });
   }
 }
