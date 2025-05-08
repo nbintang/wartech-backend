@@ -113,9 +113,7 @@ export class AuthService {
         userId: user.id,
         type: VerificationType.EMAIL_VERIFICATION,
       });
-    if (!verificationToken)
-      throw new NotFoundException('Verification token not found');
-    if (verificationToken.expiresAt < new Date()) {
+    if (!verificationToken || verificationToken.expiresAt < new Date()) {
       this.verificationTokenService.deleteTokensByUserId(user.id);
       throw new BadRequestException(
         'Token expired, please resend email for verification',
@@ -184,7 +182,7 @@ export class AuthService {
     });
   }
 
-  async resetPassword({ userId, token, newPassword }: ResetPasswordDto) {
+  async verifyResetToken({ userId, token }: VerifyEmailDto) {
     const user = await this.usersService.getUserById(userId);
     if (!user) throw new NotFoundException('User not found');
     const verificationToken =
@@ -200,14 +198,19 @@ export class AuthService {
     }
     const isTokenValid = await this.compareHash(token, verificationToken.token);
     if (!isTokenValid) throw new BadRequestException('Invalid token');
+    return true;
+  }
+
+  async resetPassword({ userId, token, newPassword }: ResetPasswordDto) {
+    this.verifyResetToken({ userId, token });
     const hashedPassword = await this.hashData(newPassword);
     await this.usersService.updateVerifiedUser(
-      { id: user.id },
+      { id: userId },
       { password: hashedPassword },
     );
     const deletedToken =
       await this.verificationTokenService.deleteTokensByUserAndType({
-        userId: user.id,
+        userId,
         type: VerificationType.PASSWORD_RESET,
       });
     if (!deletedToken)
