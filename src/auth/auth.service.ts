@@ -182,7 +182,7 @@ export class AuthService {
     });
   }
 
-  async verifyResetToken({ userId, token }: VerifyEmailDto) {
+  async verifyResetPasswordToken({ userId, token }: VerifyEmailDto) {
     const user = await this.usersService.getUserById(userId);
     if (!user) throw new NotFoundException('User not found');
     const verificationToken =
@@ -201,8 +201,8 @@ export class AuthService {
     return true;
   }
 
-  async resetPassword({ userId, token, newPassword }: ResetPasswordDto) {
-    this.verifyResetToken({ userId, token });
+  async changePassword({ userId, token, newPassword }: ResetPasswordDto) {
+    this.verifyResetPasswordToken({ userId, token });
     const hashedPassword = await this.hashData(newPassword);
     await this.usersService.updateVerifiedUser(
       { id: userId },

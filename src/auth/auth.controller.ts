@@ -65,13 +65,26 @@ export class AuthController {
     };
   }
 
-  @Post('reset-password')
+  @Get('verify-reset-password')
   async resetPassword(
     @Query('userId') userId: string,
     @Query('token') token: string,
-    @Body() { newPassword }: ResetPasswordDto,
-  ) {
-    return await this.authService.resetPassword({ userId, token, newPassword });
+  ): Promise<DefaultQueryResponseDto> {
+    const isTokenValid = await this.authService.verifyResetPasswordToken({
+      userId,
+      token,
+    });
+    return {
+      message: `Token is ${isTokenValid ? 'valid' : 'invalid'}`,
+    };
+  }
+
+  @Post('change-password')
+  async changePassword(@Body() body: ResetPasswordDto) {
+    await this.authService.changePassword(body);
+    return {
+      message: 'Password Changed Successfully',
+    };
   }
 
   @Post('signin')

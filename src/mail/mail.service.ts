@@ -48,7 +48,7 @@ export class MailService {
     userId,
     token,
   }: EmailContext): Promise<boolean> {
-    const url = `${this.baseUrl}/auth/reset-password?token=${token}&userId=${userId}`;
+    const url = `${this.baseUrl}/auth/verify-reset-password?token=${token}&userId=${userId}`;
     console.log(url);
     const res = await this.mailerService.sendMail({
       to: userEmail,
