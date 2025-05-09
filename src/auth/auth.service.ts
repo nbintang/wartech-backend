@@ -18,7 +18,7 @@ import { LocalSigninDto } from './dtos/auth.dto';
 import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { ResetPasswordDto } from './dtos/reset.password.dto';
 import { VerificationType } from 'src/verification-token/enums/verification.enum';
-import { Role } from 'src/auth/enums/role.enums';
+import { Role } from 'src/users/enums/role.enums';
 import * as crypto from 'crypto';
 @Injectable()
 export class AuthService {

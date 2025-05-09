@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { AccessControlService } from '../shared/access-control.service';
-import { Role } from '../enums/role.enums';
+import { Role } from '../../users/enums/role.enums';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
 @Injectable()

@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { Role } from '../../auth/enums/role.enums';
+import { Role } from '../enums/role.enums';
 
 const CreateUserSchema = z.object({
   name: z.string().min(6).max(100).trim(),

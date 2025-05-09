@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { Role } from 'src/auth/enums/role.enums';
+import { Role } from 'src/users/enums/role.enums';
 import { z } from 'zod';
 
 const UpdateUserSchema = z.object({
