@@ -9,13 +9,13 @@ const PaginatedMetaSchema = z.object({
   current_page: z.number(),
 });
 
-const DefaultPaginatedQueryResponseSchema = z.object({
+const PaginatedPayloadResponseSchema = z.object({
   data: z.object({
     items: z.array(z.any()),
     meta: PaginatedMetaSchema,
   }),
 });
 
-export class DefaultPaginatedQueryResponseDto extends createZodDto(
-  DefaultPaginatedQueryResponseSchema,
+export class PaginatedPayloadResponseDto extends createZodDto(
+  PaginatedPayloadResponseSchema,
 ) {}

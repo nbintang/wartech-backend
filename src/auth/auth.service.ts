@@ -18,7 +18,7 @@ import { LocalSigninDto } from './dtos/auth.dto';
 import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { ResetPasswordDto } from './dtos/reset.password.dto';
 import { VerificationType } from 'src/verification-token/enums/verification.enum';
-import { UserRole } from 'src/users/enums/role.enums';
+import { Roles } from 'src/auth/enums/role.enums';
 import * as crypto from 'crypto';
 @Injectable()
 export class AuthService {
@@ -79,7 +79,7 @@ export class AuthService {
       name: createUserDto.name,
       email: createUserDto.email, // add this line
       image: createUserDto.image || null,
-      role: createUserDto.role || UserRole.READER,
+      role: createUserDto.role || Roles.READER,
       acceptedTOS: createUserDto.accepted_terms,
       password: hashedPassword,
     });

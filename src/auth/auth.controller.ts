@@ -14,7 +14,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { DefaultQueryResponseDto } from 'src/common/dtos/default-query-response.dto';
+import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
 import { ResetPasswordDto } from './dtos/reset.password.dto';
 @Controller('auth')
@@ -37,7 +37,7 @@ export class AuthController {
     @Query('userId') userId: string,
     @Query('token') token: string,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<DefaultQueryResponseDto> {
+  ): Promise<PayloadResponseDto> {
     if (!token) throw new UnauthorizedException('Please provide token');
     const { accessToken, refreshToken } = await this.authService.verifyEmail({
       userId,
@@ -58,7 +58,7 @@ export class AuthController {
   @Post('forgot-password')
   async forgotPassword(
     @Body() { email }: { email: string },
-  ): Promise<DefaultQueryResponseDto> {
+  ): Promise<PayloadResponseDto> {
     await this.authService.forgotPassword(email);
     return {
       message: 'Please check your email for the verification link',
@@ -69,7 +69,7 @@ export class AuthController {
   async resetPassword(
     @Query('userId') userId: string,
     @Query('token') token: string,
-  ): Promise<DefaultQueryResponseDto> {
+  ): Promise<PayloadResponseDto> {
     const isTokenValid = await this.authService.verifyResetPasswordToken({
       userId,
       token,
@@ -92,7 +92,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
     @Body() body: SigninDto,
-  ): Promise<DefaultQueryResponseDto> {
+  ): Promise<PayloadResponseDto> {
     const existedTokenCookie = request.cookies['refresh_token'];
     if (existedTokenCookie)
       throw new UnauthorizedException(

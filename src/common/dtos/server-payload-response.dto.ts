@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
-const DefaultSystemQueryResponseSchema = z.object({
+const ServerPayloadResponseSchema = z.object({
   status_code: z.number(),
   success: z.boolean(),
   message: z.string(),
@@ -11,6 +11,6 @@ const DefaultSystemQueryResponseSchema = z.object({
   data: z.any().optional(),
 });
 
-export class DefaultSystemQueryResponseDto extends createZodDto(
-  DefaultSystemQueryResponseSchema,
+export class ServerPayloadResponseDto extends createZodDto(
+  ServerPayloadResponseSchema,
 ) {}
