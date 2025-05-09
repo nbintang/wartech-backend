@@ -9,6 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { AccessTokenStrategy } from './strategies/access-token.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
+import { AccessControlService } from './shared/access-control.service';
 @Module({
   imports: [
     PassportModule,
@@ -24,6 +25,7 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
     AuthService,
     AccessTokenStrategy,
     RefreshTokenStrategy,
+    AccessControlService,
   ],
   controllers: [AuthController],
 })

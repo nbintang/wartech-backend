@@ -1,10 +1,10 @@
 import { createZodDto } from 'nestjs-zod';
-import { Roles } from 'src/auth/enums/role.enums';
+import { Role } from 'src/auth/enums/role.enums';
 import { z } from 'zod';
 
 const UpdateUserSchema = z.object({
   name: z.string().min(3).max(100).trim(), //varchar 100
-  role: z.nativeEnum(Roles).optional(),
+  role: z.nativeEnum(Role).optional(),
   accepted_terms: z.boolean({
     message: 'You must accept the terms and conditions',
   }),
