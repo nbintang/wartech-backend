@@ -27,6 +27,7 @@ model Article {
 
   @@index([authorId], map: "Article_authorId_fkey")
   @@index([categoryId], map: "Article_categoryId_fkey")
+  @@map("articles")
 }
 
 model ArticleTag {
@@ -38,6 +39,7 @@ model ArticleTag {
 
   @@index([articleId], map: "ArticleTag_articleId_fkey")
   @@index([tagId], map: "ArticleTag_tagId_fkey")
+  @@map("article_tags")
 }
 
 model Category {
@@ -47,6 +49,8 @@ model Category {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now())
   article     Article[]
+
+@@map("categories")
 }
 
 model Comment {
@@ -65,6 +69,7 @@ model Comment {
   @@index([articleId], map: "Comment_articleId_fkey")
   @@index([parentId], map: "Comment_parentId_fkey")
   @@index([userId], map: "Comment_userId_fkey")
+  @@map("comments")
 }
 
 model Like {
@@ -77,6 +82,7 @@ model Like {
 
   @@unique([userId, articleId], map: "Like_userId_articleId_key")
   @@index([articleId], map: "Like_articleId_fkey")
+  @@map("likes")
 }
 
 model Tag {
@@ -85,6 +91,7 @@ model Tag {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @default(now())
   articleTag ArticleTag[]
+  @@map("tags")
 }
 
 model User {
@@ -103,6 +110,7 @@ model User {
   comment           Comment[]
   like              Like[]
   verificationToken VerificationToken[]
+  @@map("users")
 }
 
 model VerificationToken {
@@ -115,6 +123,7 @@ model VerificationToken {
   user      User             @relation(fields: [userId], references: [id], map: "VerificationToken_userId_fkey", onDelete: Cascade)
 
   @@unique([userId, token, type], map: "VerificationToken_userId_token_type_key")
+  @@map("verification_tokens_user")
 }
 
 enum VerificationType {

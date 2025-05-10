@@ -42,6 +42,7 @@ async function main() {
         emailVerifiedAt: new Date(),
         role: 'READER',
         acceptedTOS: true,
+        verified: true,
         image:
           'https://www.gravatar.cbom/avatar/00000000000000000000000000000000?d=mp&f=y',
       },

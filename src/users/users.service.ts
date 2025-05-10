@@ -23,15 +23,15 @@ export class UsersService {
       ...(query.name && {
         name: {
           contains: query.name,
-          mode: 'insensitive',
-        } as Prisma.StringFilter,
+          
+        },
       }),
       ...(query.role && {
         role: query.role,
       }),
     };
 
-    const users = this.prisma.user.findMany({
+    const users = await this.prisma.user.findMany({
       where: dynamicSearch,
       select: {
         id: true,
@@ -45,7 +45,7 @@ export class UsersService {
       take,
     });
 
-    const totalUsers = this.prisma.user.count({
+    const totalUsers = await this.prisma.user.count({
       where: dynamicSearch,
     });
     return {
