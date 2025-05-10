@@ -14,7 +14,6 @@ export class AccessControlService {
   constructor() {
     this.buildRoles([Role.READER, Role.REPORTER, Role.ADMIN]);
   }
-
   private buildRoles(roles: Role[]) {
     const hierarchy: Map<string, number> = new Map();
     roles.forEach((role) => {
@@ -23,7 +22,6 @@ export class AccessControlService {
     });
     this.hierarchies.push(hierarchy);
   }
-
   public isAuthorized({ currentRole, requiredRole }: IsAuthorizedParams) {
     for (const hierarchy of this.hierarchies) {
       const priority = hierarchy.get(currentRole);

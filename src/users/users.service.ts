@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { QueryUserDto } from './dtos/query-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -13,8 +14,44 @@ export class UsersService {
     });
     return newUser;
   }
-  async getAllusers() {
-    return this.prisma.user.findMany();
+  async getAllusers(query: QueryUserDto) {
+    const page = +(query.page ?? 1);
+    const limit = +(query.limit ?? 10);
+    const skip = (page - 1) * limit;
+    const take = limit;
+    const dynamicSearch: Prisma.UserWhereInput = {
+      ...(query.name && {
+        name: {
+          contains: query.name,
+          mode: 'insensitive',
+        } as Prisma.StringFilter,
+      }),
+      ...(query.role && {
+        role: query.role,
+      }),
+    };
+
+    const users = this.prisma.user.findMany({
+      where: dynamicSearch,
+      select: {
+        id: true,
+        email: true,
+        image: true,
+        name: true,
+        verified: true,
+        emailVerifiedAt: true,
+      },
+      skip,
+      take,
+    });
+
+    const totalUsers = this.prisma.user.count({
+      where: dynamicSearch,
+    });
+    return {
+      users,
+      totalUsers,
+    };
   }
 
   async getUserByEmail(email: string) {
