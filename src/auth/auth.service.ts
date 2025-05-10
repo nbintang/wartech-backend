@@ -172,7 +172,7 @@ export class AuthService {
       user: { connect: { id: user.id } },
       type: VerificationType.PASSWORD_RESET,
       token: hashedToken,
-      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 3 * 60 * 1000), // 3 min
     });
     await this.mailService.sendResetPassword({
       userName: user.name,
