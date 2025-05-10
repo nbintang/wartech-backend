@@ -1,16 +1,22 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
-const ServerPayloadResponseSchema = z.object({
+const errorMessageSchema = z.array(
+  z.object({ field: z.string(), message: z.string() }),
+);
+
+const baseServerPayloadResponseSchema = z.object({
   status_code: z.number(),
   success: z.boolean(),
   message: z.string(),
-  error_messages: z
-    .array(z.object({ field: z.string(), message: z.string() }))
-    .optional(),
-  data: z.any().optional(),
+  error_messages: errorMessageSchema,
+  data: z.any(),
 });
 
+const serverPayloadResponseSchema = baseServerPayloadResponseSchema.partial({
+  error_messages: true,
+  data: true,
+});
 export class ServerPayloadResponseDto extends createZodDto(
-  ServerPayloadResponseSchema,
+  serverPayloadResponseSchema,
 ) {}

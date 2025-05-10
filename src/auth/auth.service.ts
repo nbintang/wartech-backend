@@ -11,12 +11,11 @@ import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { CreateUserDto } from 'src/users/dtos/create-user.dto';
+import { CreateUserDto } from 'src/users/dtos/mutate.dto';
 import { MailService } from 'src/mail/mail.service';
 import { VerificationTokenService } from 'src/verification-token/verification-token.service';
 import { LocalSigninDto } from './dtos/auth.dto';
-import { VerifyEmailDto } from './dtos/verify-email.dto';
-import { ResetPasswordDto } from './dtos/reset.password.dto';
+import { ResetPasswordDto, VerifyEmailFromUrlDto } from './dtos/verify.dto';
 import { VerificationType } from 'src/verification-token/enums/verification.enum';
 import { Role } from 'src/users/enums/role.enums';
 import * as crypto from 'crypto';
@@ -105,7 +104,7 @@ export class AuthService {
     return true;
   }
 
-  async verifyEmail({ userId, token }: VerifyEmailDto) {
+  async verifyEmail({ userId, token }: VerifyEmailFromUrlDto) {
     const user = await this.usersService.getUserById(userId);
     if (!user) throw new NotFoundException('User not found');
     const verificationToken =
@@ -182,7 +181,7 @@ export class AuthService {
     });
   }
 
-  async verifyResetPasswordToken({ userId, token }: VerifyEmailDto) {
+  async verifyResetPasswordToken({ userId, token }: VerifyEmailFromUrlDto) {
     const user = await this.usersService.getUserById(userId);
     if (!user) throw new NotFoundException('User not found');
     const verificationToken =

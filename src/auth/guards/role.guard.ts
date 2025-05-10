@@ -29,6 +29,6 @@ export class RoleGuard implements CanActivate {
         return true;
       }
     }
-    return true;
+    return false;
   }
 }

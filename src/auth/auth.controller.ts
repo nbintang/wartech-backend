@@ -11,12 +11,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from 'src/users/dtos/create-user.dto';
+import { CreateUserDto } from 'src/users/dtos/mutate.dto';
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
-import { ResetPasswordDto } from './dtos/reset.password.dto';
+import { ResetPasswordDto } from './dtos/verify.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

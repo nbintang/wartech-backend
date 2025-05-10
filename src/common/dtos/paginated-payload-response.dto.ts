@@ -1,5 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
+import { basePayloadResponseSchema } from './payload-response.dto';
 
 const PaginatedMetaSchema = z.object({
   total_items: z.number(),
@@ -9,7 +10,7 @@ const PaginatedMetaSchema = z.object({
   current_page: z.number(),
 });
 
-const PaginatedPayloadResponseSchema = z.object({
+const PaginatedPayloadResponseSchema = basePayloadResponseSchema.extend({
   data: z.object({
     items: z.array(z.any()),
     meta: PaginatedMetaSchema,

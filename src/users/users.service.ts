@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+
 import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryUserDto } from './dtos/query-user.dto';
+import { Prisma } from 'prisma/generated';
 
 @Injectable()
 export class UsersService {
@@ -14,44 +15,31 @@ export class UsersService {
     });
     return newUser;
   }
-  async getAllusers(query: QueryUserDto) {
-    const page = +(query.page ?? 1);
-    const limit = +(query.limit ?? 10);
-    const skip = (page - 1) * limit;
-    const take = limit;
-    const dynamicSearch: Prisma.UserWhereInput = {
-      ...(query.name && {
-        name: {
-          contains: query.name,
-          
-        },
-      }),
-      ...(query.role && {
-        role: query.role,
-      }),
-    };
 
+  async getAllusers(query: QueryUserDto) {
+    const skip = (query.page - 1) * query.limit;
+    const take = query.limit;
+    const dynamicSearch: Prisma.UserWhereInput = {
+      ...(query.name && { name: { contains: query.name } }),
+      ...(query.role && { role: query.role }),
+    };
     const users = await this.prisma.user.findMany({
-      where: dynamicSearch,
+      where: {
+        ...dynamicSearch,
+        NOT: { role: 'ADMIN' },
+      },
       select: {
         id: true,
         email: true,
-        image: true,
         name: true,
+        role: true,
         verified: true,
-        emailVerifiedAt: true,
       },
       skip,
       take,
     });
-
-    const totalUsers = await this.prisma.user.count({
-      where: dynamicSearch,
-    });
-    return {
-      users,
-      totalUsers,
-    };
+    const usersCount = await this.prisma.user.count({ where: dynamicSearch });
+    return { users, usersCount };
   }
 
   async getUserByEmail(email: string) {
@@ -85,13 +73,10 @@ export class UsersService {
   }
 
   async getUserById(id: string) {
-    return this.prisma.user.findUnique({
+    return await this.prisma.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        email: true,
-        emailVerifiedAt: true,
-        role: true,
+      omit: {
+        password: true,
       },
     });
   }
