@@ -5,13 +5,17 @@ import {
   Param,
   Patch,
   Query,
+  UploadedFile,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { QueryUserDto } from './dtos/query-user.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
-
+import { SkipThrottle } from '@nestjs/throttler';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from './enums/role.enums';
+@SkipThrottle()
 @UseGuards(AccessTokenGuard)
 @Controller('/protected/users')
 export class UsersController {
@@ -51,6 +55,7 @@ export class UsersController {
     if (!user) throw new NotFoundException('User Not Found');
     return user;
   }
-  @Patch(':id')
-  async updateUsers() {}
+
+  @Get('/profile')
+  async getProfile() {}
 }

@@ -21,7 +21,6 @@ export class RefreshTokenStrategy extends PassportStrategy(
       passReqToCallback: true,
     });
   }
-
   validate(req: Request, payload: any) {
     const refreshToken = req.cookies['refresh_token'];
     return { ...payload, refreshToken };

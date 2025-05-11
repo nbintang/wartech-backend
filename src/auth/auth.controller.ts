@@ -23,15 +23,16 @@ import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
 import { ResetPasswordDto } from './dtos/verify.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { ZodValidationException } from 'nestjs-zod';
 import { VerificationType } from 'src/verification-token/enums/verification.enum';
+import { SkipThrottle } from '@nestjs/throttler';
+
 @Controller('auth')
+@SkipThrottle({ default: true, long: true })
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
-
   @Post('signup')
   @UseInterceptors(FileInterceptor('file'))
   async signup(
@@ -39,19 +40,16 @@ export class AuthController {
     @Req() request: Request,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    console.log(body);
     try {
       if (file) {
         const validatedFile = await validateImageSchema.parseAsync(file);
-        console.log(validatedFile);
-        if (validatedFile instanceof ZodValidationException)
-          throw new BadRequestException(validatedFile.message);
-        const result = await this.cloudinaryService.uploadFile({
+        if (!validatedFile)
+          throw new BadRequestException("File doesn't match the schema");
+        const { secure_url } = await this.cloudinaryService.uploadFile({
           file: validatedFile,
           folder: 'users',
         });
-        console.log(result);
-        body.image = result.secure_url;
+        body.image = secure_url;
       }
       const doesHaveCookieRefreshToken = request.cookies['refresh_token'];
       if (doesHaveCookieRefreshToken)
@@ -92,7 +90,13 @@ export class AuthController {
   @Post('forgot-password')
   async forgotPassword(
     @Body() { email }: { email: string },
+    @Req() request: Request,
   ): Promise<PayloadResponseDto> {
+    const existedTokenCookie = request.cookies['refresh_token'];
+    if (existedTokenCookie)
+      throw new UnauthorizedException(
+        `You are already logged in! Please logout first.`,
+      );
     await this.authService.sendEmailVerification(
       email,
       VerificationType.PASSWORD_RESET,
@@ -102,9 +106,9 @@ export class AuthController {
     };
   }
 
-  @Get('resend-verification')
+  @Post('resend-verification')
   async resendVerification(
-    @Query('email') email: string,
+    @Body() { email }: { email: string; type: VerificationType },
   ): Promise<PayloadResponseDto> {
     await this.authService.sendEmailVerification(
       email,
@@ -162,11 +166,12 @@ export class AuthController {
   }
 
   @Delete('signout')
+  @SkipThrottle()
   async signout(
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
   ) {
-    const existedTokenCookie = (request as any).cookies['refresh_token'];
+    const existedTokenCookie = request.cookies['refresh_token'];
     if (!existedTokenCookie)
       throw new UnauthorizedException(
         'You are not logged in! Please login first.',
@@ -177,6 +182,7 @@ export class AuthController {
 
   @UseGuards(RefreshTokenGuard)
   @Post('refresh-token')
+  @SkipThrottle()
   async refreshTokens(@Req() request: Request) {
     const userId = (request as any).user.sub;
     const tokens = await this.authService.refreshToken(userId);

@@ -103,9 +103,10 @@ export class AuthService {
       );
     }
     const isTokenValid = await this.compareHash(token, verificationToken.token);
-    if (!isTokenValid) throw new BadRequestException('Invalid token');
-    if (user.emailVerifiedAt)
-      throw new BadRequestException('User already verified');
+    if (user.emailVerifiedAt || !isTokenValid) {
+      this.verificationTokenService.deleteTokensByUserId(user.id);
+      throw new BadRequestException('Invalid token');
+    }
     await this.usersService.updateUserById(
       { id: user.id },
       {
