@@ -1,35 +1,69 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
+  InternalServerErrorException,
   Post,
   Query,
   Req,
   Res,
   UnauthorizedException,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from 'src/users/dtos/mutate.dto';
+import { CreateUserDto, validateImageSchema } from 'src/users/dtos/mutate.dto';
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
 import { ResetPasswordDto } from './dtos/verify.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { ZodValidationException } from 'nestjs-zod';
+import { VerificationType } from 'src/verification-token/enums/verification.enum';
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
+
   @Post('signup')
-  async signup(@Body() user: CreateUserDto, @Req() request: Request) {
-    const doesHaveCookieRefreshToken = request.cookies['refresh_token'];
-    if (doesHaveCookieRefreshToken) {
-      throw new UnauthorizedException('Please Logout First');
+  @UseInterceptors(FileInterceptor('file'))
+  async signup(
+    @Body() body: CreateUserDto,
+    @Req() request: Request,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    console.log(body);
+    try {
+      if (file) {
+        const validatedFile = await validateImageSchema.parseAsync(file);
+        console.log(validatedFile);
+        if (validatedFile instanceof ZodValidationException)
+          throw new BadRequestException(validatedFile.message);
+        const result = await this.cloudinaryService.uploadFile({
+          file: validatedFile,
+          folder: 'users',
+        });
+        console.log(result);
+        body.image = result.secure_url;
+      }
+      const doesHaveCookieRefreshToken = request.cookies['refresh_token'];
+      if (doesHaveCookieRefreshToken)
+        throw new UnauthorizedException('Please Logout First');
+      await this.authService.signUp(body);
+      return {
+        message: 'Success!, Please check your email for the verification link',
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Something Went Wrong');
     }
-    await this.authService.signUp(user);
-    return {
-      message: 'Success!, Please check your email for the verification link',
-    };
   }
 
   @Get('verify')
@@ -59,7 +93,23 @@ export class AuthController {
   async forgotPassword(
     @Body() { email }: { email: string },
   ): Promise<PayloadResponseDto> {
-    await this.authService.forgotPassword(email);
+    await this.authService.sendEmailVerification(
+      email,
+      VerificationType.PASSWORD_RESET,
+    );
+    return {
+      message: 'Please check your email for the verification link',
+    };
+  }
+
+  @Get('resend-verification')
+  async resendVerification(
+    @Query('email') email: string,
+  ): Promise<PayloadResponseDto> {
+    await this.authService.sendEmailVerification(
+      email,
+      VerificationType.EMAIL_VERIFICATION,
+    );
     return {
       message: 'Please check your email for the verification link',
     };

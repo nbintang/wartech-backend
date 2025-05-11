@@ -3,6 +3,7 @@ import {
   Get,
   NotFoundException,
   Param,
+  Patch,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -46,8 +47,10 @@ export class UsersController {
 
   @Get(':id')
   async getUserById(@Param('id') id: string) {
-    const user = await this.usersService.getUserById(id);
+    const user = await this.usersService.getLevel1andLevel2Users(id);
     if (!user) throw new NotFoundException('User Not Found');
     return user;
   }
+  @Patch(':id')
+  async updateUsers() {}
 }

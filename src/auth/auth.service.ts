@@ -41,7 +41,7 @@ export class AuthService {
     return rawToken;
   }
 
-  async generateTokens(userId: string, email: string, role: string) {
+  async generateJwtTokens(userId: string, email: string, role: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         { sub: userId, email, role },
@@ -82,26 +82,10 @@ export class AuthService {
       acceptedTOS: createUserDto.accepted_terms,
       password: hashedPassword,
     });
-    const rawToken = await this.generateToken();
-    const hashedToken = await bcrypt.hash(rawToken, 10);
-    const newVerificationToken =
-      await this.verificationTokenService.createVerificationToken({
-        user: { connect: { id: newUser.id } },
-        type: VerificationType.EMAIL_VERIFICATION,
-        token: hashedToken,
-        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
-      });
-    if (!newVerificationToken)
-      throw new InternalServerErrorException('Something went wrong');
-    const sendedMail = await this.mailService.sendUserOtpVerification({
-      userName: newUser.name,
-      userEmail: newUser.email,
-      userId: newUser.id,
-      token: rawToken,
-    });
-    if (!sendedMail)
-      throw new InternalServerErrorException('Something went wrong');
-    return true;
+    await this.sendEmailVerification(
+      newUser.email,
+      VerificationType.EMAIL_VERIFICATION,
+    );
   }
 
   async verifyEmail({ userId, token }: VerifyEmailFromUrlDto) {
@@ -122,7 +106,7 @@ export class AuthService {
     if (!isTokenValid) throw new BadRequestException('Invalid token');
     if (user.emailVerifiedAt)
       throw new BadRequestException('User already verified');
-    await this.usersService.updateVerifiedUser(
+    await this.usersService.updateUserById(
       { id: user.id },
       {
         emailVerifiedAt: new Date(),
@@ -130,7 +114,7 @@ export class AuthService {
         verificationToken: { delete: { id: verificationToken.id } },
       },
     );
-    const { accessToken, refreshToken } = await this.generateTokens(
+    const { accessToken, refreshToken } = await this.generateJwtTokens(
       user.id,
       user.email,
       user.role,
@@ -145,7 +129,7 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid)
       throw new UnauthorizedException('Password is incorrect');
-    const { accessToken, refreshToken } = await this.generateTokens(
+    const { accessToken, refreshToken } = await this.generateJwtTokens(
       user.id,
       user.email,
       user.role,
@@ -157,28 +141,43 @@ export class AuthService {
     };
   }
 
-  async forgotPassword(email: string) {
+  async sendEmailVerification(email: string, type: VerificationType) {
     const user = await this.usersService.getUserByEmail(email);
     if (!user) throw new NotFoundException('User not found');
-    if (!user.verified) throw new BadRequestException('User is not verified');
     const rawToken = await this.generateToken();
     const hashedToken = await this.hashData(rawToken);
-    await this.verificationTokenService.deleteTokensByUserAndType({
-      userId: user.id,
-      type: VerificationType.PASSWORD_RESET,
-    });
-    await this.verificationTokenService.createVerificationToken({
-      user: { connect: { id: user.id } },
-      type: VerificationType.PASSWORD_RESET,
-      token: hashedToken,
-      expiresAt: new Date(Date.now() + 3 * 60 * 1000), // 3 min
-    });
-    await this.mailService.sendResetPassword({
+    if (user.verificationToken.length > 0) {
+      await this.verificationTokenService.deleteTokensByUserAndType({
+        userId: user.id,
+        type,
+      });
+    }
+    const newVerificationToken =
+      await this.verificationTokenService.createVerificationToken({
+        user: { connect: { id: user.id } },
+        type,
+        token: hashedToken,
+        expiresAt: new Date(Date.now() + 3 * 60 * 1000), // 3 min
+      });
+    if (!newVerificationToken)
+      throw new BadRequestException('Failed to create token');
+    const sendedMail = await this.mailService.sendEmailVerification({
       userName: user.name,
       userEmail: user.email,
       userId: user.id,
       token: rawToken,
+      routes:
+        type === VerificationType.PASSWORD_RESET
+          ? 'verify-reset-password'
+          : 'verify',
+      subject:
+        type === VerificationType.PASSWORD_RESET
+          ? 'Reset your password'
+          : 'Confirm your email',
     });
+    if (!sendedMail)
+      throw new InternalServerErrorException('Failed to send email');
+    return true;
   }
 
   async verifyResetPasswordToken({ userId, token }: VerifyEmailFromUrlDto) {
@@ -203,7 +202,7 @@ export class AuthService {
   async changePassword({ userId, token, newPassword }: ResetPasswordDto) {
     this.verifyResetPasswordToken({ userId, token });
     const hashedPassword = await this.hashData(newPassword);
-    await this.usersService.updateVerifiedUser(
+    await this.usersService.updateUserById(
       { id: userId },
       { password: hashedPassword },
     );
@@ -220,7 +219,7 @@ export class AuthService {
   async refreshToken(userId: string) {
     const user = await this.usersService.getUserById(userId);
     if (!user) throw new ForbiddenException('Access Denied');
-    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    const tokens = await this.generateJwtTokens(user.id, user.email, user.role);
     return tokens;
   }
   async signout() {

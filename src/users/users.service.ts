@@ -28,12 +28,10 @@ export class UsersService {
         ...dynamicSearch,
         NOT: { role: 'ADMIN' },
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        verified: true,
+      omit: {
+        password: true,
+        acceptedTOS: true,
+        emailVerifiedAt: true,
       },
       skip,
       take,
@@ -45,39 +43,33 @@ export class UsersService {
   async getUserByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email },
-      select: {
-        id: true,
-        email: true,
-        password: true,
-        name: true,
-        role: true,
-        verified: true,
-        emailVerifiedAt: true,
-      },
+      include: { verificationToken: true },
     });
   }
 
-  async updateVerifiedUser(
-    { id }: { id: string },
-    data: Prisma.UserUpdateInput,
-  ) {
-    const user = await this.prisma.user.update({
+  async updateUserById({ id }: { id: string }, data: Prisma.UserUpdateInput) {
+    return await this.prisma.user.update({
       where: { id },
       data,
-      select: {
-        id: true,
-        email: true,
+      omit: {
+        password: true,
+        acceptedTOS: true,
       },
     });
-    return user;
   }
 
+  async getLevel1andLevel2Users(id: string) {
+    return await this.prisma.user.findUnique({
+      where: { id, NOT: { role: 'ADMIN' } },
+      omit: {
+        password: true,
+        acceptedTOS: true,
+      },
+    });
+  }
   async getUserById(id: string) {
     return await this.prisma.user.findUnique({
       where: { id },
-      omit: {
-        password: true,
-      },
     });
   }
 }

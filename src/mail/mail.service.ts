@@ -7,6 +7,8 @@ type EmailContext = {
   userId: string;
   userEmail: string;
   token: string;
+  routes: string;
+  subject: string;
 };
 
 @Injectable()
@@ -20,39 +22,19 @@ export class MailService {
     this.baseUrl = 'http://localhost:3000/api';
   }
 
-  async sendUserOtpVerification({
+  async sendEmailVerification({
     userName,
     userEmail,
     userId,
+    routes,
     token,
+    subject = 'Confirm your email',
   }: EmailContext): Promise<boolean> {
-    const url = `${this.baseUrl}/auth/verify?token=${token}&userId=${userId}`;
+    const url = `${this.baseUrl}/auth/${routes}?token=${token}&userId=${userId}`;
     console.log(url);
     const res = await this.mailerService.sendMail({
       to: userEmail,
-      subject: 'Welcome! Confirm your email',
-      template: 'confirmation',
-      context: {
-        name: userName,
-        url,
-        token,
-      },
-    });
-    if (!res) return false;
-    return true;
-  }
-
-  async sendResetPassword({
-    userName,
-    userEmail,
-    userId,
-    token,
-  }: EmailContext): Promise<boolean> {
-    const url = `${this.baseUrl}/auth/verify-reset-password?token=${token}&userId=${userId}`;
-    console.log(url);
-    const res = await this.mailerService.sendMail({
-      to: userEmail,
-      subject: 'Reset Password',
+      subject,
       template: 'confirmation',
       context: {
         name: userName,
