@@ -1,12 +1,19 @@
 import {
+  BadRequestException,
+  Body,
   Controller,
+  Delete,
   Get,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   Patch,
   Query,
+  Req,
+  Res,
   UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
@@ -15,11 +22,21 @@ import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-r
 import { SkipThrottle } from '@nestjs/throttler';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from './enums/role.enums';
-@SkipThrottle()
+import { Request, Response } from 'express';
+import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { RoleGuard } from 'src/auth/guards/role.guard';
+import { UpdateUserDto, validateImageSchema } from './dtos/mutate.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { extractPublicId } from 'cloudinary-build-url';
 @UseGuards(AccessTokenGuard)
 @Controller('/protected/users')
+@SkipThrottle({ default: true, medium: true, long: true })
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
   @Get()
   async getAllUsers(
     @Query() query: QueryUserDto,
@@ -48,14 +65,79 @@ export class UsersController {
       },
     };
   }
-
-  @Get(':id')
-  async getUserById(@Param('id') id: string) {
-    const user = await this.usersService.getLevel1andLevel2Users(id);
-    if (!user) throw new NotFoundException('User Not Found');
-    return user;
+  @Get('/profile')
+  async getMe(
+    @Res({ passthrough: true }) response: Response,
+    @Req() request: Request,
+  ): Promise<PayloadResponseDto> {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const userId = request.user.sub;
+    const user = await this.usersService.getUserById(userId, {
+      role: true,
+      password: true,
+      acceptedTOS: true,
+      emailVerifiedAt: true,
+    });
+    return {
+      message: `${user.name} fetched successfully`,
+      data: user,
+    };
   }
 
-  @Get('/profile')
-  async getProfile() {}
+  @Get(':id')
+  async getUserById(@Param('id') id: string): Promise<PayloadResponseDto> {
+    const user = await this.usersService.getLevel1andLevel2Users(id);
+    console.log(user);
+    if (!user) throw new NotFoundException('User Not Found');
+    return {
+      message: `${user.name} fetched successfully`,
+      data: user,
+    };
+  }
+
+  @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
+  @UseGuards(RoleGuard)
+  @Patch(':id')
+  @SkipThrottle({ medium: false })
+  @UseInterceptors(FileInterceptor('image'))
+  async updateUserById(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: UpdateUserDto,
+  ): Promise<PayloadResponseDto> {
+    try {
+      if (file) {
+        const { image } = await this.usersService.getUserById(id);
+        const validatedImage = await validateImageSchema.parseAsync(file);
+        if (!validatedImage)
+          throw new BadRequestException("File doesn't match the schema");
+        const public_id = extractPublicId(image);
+        const { secure_url } = await this.cloudinaryService.updateFile({
+          file: validatedImage,
+          folder: 'users',
+          public_id,
+        });
+        body.image = secure_url;
+      }
+      const user = await this.usersService.updateUserById({ id }, body);
+      return {
+        message: `${user.name} updated successfully`,
+        data: user,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Something Went Wrong');
+    }
+  }
+  @Roles(Role.ADMIN)
+  @UseGuards(RoleGuard)
+  @Delete(':id')
+  async deleteUserById(@Param('id') id: string): Promise<PayloadResponseDto> {
+    const user = await this.usersService.deleteUserById(id);
+    if (!user) throw new NotFoundException('User Not Found');
+    return {
+      message: `${user.name} deleted successfully`,
+    };
+  }
 }

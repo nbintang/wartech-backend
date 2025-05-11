@@ -34,7 +34,7 @@ export class AuthController {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
   @Post('signup')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('image'))
   async signup(
     @Body() body: CreateUserDto,
     @Req() request: Request,
@@ -42,11 +42,11 @@ export class AuthController {
   ) {
     try {
       if (file) {
-        const validatedFile = await validateImageSchema.parseAsync(file);
-        if (!validatedFile)
+        const validatedImage = await validateImageSchema.parseAsync(file);
+        if (!validatedImage)
           throw new BadRequestException("File doesn't match the schema");
         const { secure_url } = await this.cloudinaryService.uploadFile({
-          file: validatedFile,
+          file: validatedImage,
           folder: 'users',
         });
         body.image = secure_url;

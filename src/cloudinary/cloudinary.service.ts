@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { CloudinaryResponse, CloudinaryUploadOptions } from './cloudinary.type';
-import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+import {
+  v2 as cloudinary,
+  DeleteApiResponse,
+  UploadApiResponse,
+} from 'cloudinary';
 import { Readable } from 'stream';
 
 function bufferToStream(buffer: Buffer): Readable {
@@ -12,6 +16,14 @@ function bufferToStream(buffer: Buffer): Readable {
 
 @Injectable()
 export class CloudinaryService {
+  async updateFile({
+    file,
+    folder = 'book-covers',
+    public_id,
+  }: CloudinaryUploadOptions): Promise<CloudinaryResponse> {
+    if (public_id) await this.deleteFile(public_id);
+    return this.uploadFile({ file, folder, public_id });
+  }
   async uploadFile({
     file,
     folder,
@@ -29,6 +41,18 @@ export class CloudinaryService {
         },
       );
       bufferToStream(file.buffer).pipe(uploadStream);
+    });
+  }
+  async deleteFile(public_id: string): Promise<DeleteApiResponse> {
+    return new Promise((resolve, reject) => {
+      cloudinary.api.resource(public_id, (error, result) => {
+        if (error || !result)
+          return reject(error || new Error('Resource not found'));
+        cloudinary.uploader.destroy(public_id, (destroyError) => {
+          if (destroyError) return reject(destroyError);
+          resolve(result);
+        });
+      });
     });
   }
 }

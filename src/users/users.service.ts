@@ -67,9 +67,20 @@ export class UsersService {
       },
     });
   }
-  async getUserById(id: string) {
-    return await this.prisma.user.findUnique({
+  async getUserById(id: string, except?: Prisma.UserOmit) {
+    const user = await this.prisma.user.findUnique({
       where: { id },
+      omit: except,
     });
+    const { createdAt, updatedAt, ...rest } = user;
+    return {
+      ...rest,
+      created_at: createdAt,
+      updated_at: updatedAt,
+    };
+  }
+
+  async deleteUserById(id: string) {
+    return await this.prisma.user.delete({ where: { id } });
   }
 }
