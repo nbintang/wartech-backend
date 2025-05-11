@@ -10,6 +10,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AccessTokenStrategy } from './strategies/access-token.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 import { AccessControlService } from './shared/access-control.service';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 @Module({
   imports: [
     PassportModule,
@@ -17,6 +18,7 @@ import { AccessControlService } from './shared/access-control.service';
     ConfigModule,
     UsersModule,
     MailModule,
+    CloudinaryModule,
     VerificationTokenModule,
   ],
   providers: [
