@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ForbiddenException,
-  HttpException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -68,11 +67,23 @@ export class AuthService {
     const existingUser = await this.usersService.getUserByEmail(
       createUserDto.email,
     );
-    if (existingUser)
-      throw new HttpException(
-        'Your already registered, please sign in or register with another account',
-        400,
-      );
+    if (existingUser) {
+      if (existingUser.verified) {
+        // User exists and is verified
+        throw new BadRequestException(
+          'Your email is already registered and verified. Please sign in.',
+        );
+      } else {
+        // User exists but is not verified
+        await this.resendVerificationToken(
+          existingUser.email,
+          VerificationType.EMAIL_VERIFICATION,
+        );
+        return {
+          message: 'Please check your email for the verification link',
+        };
+      }
+    }
     const hashedPassword = await this.hashData(createUserDto.password);
     const newUser = await this.usersService.createUser({
       name: createUserDto.name,
@@ -82,8 +93,8 @@ export class AuthService {
       acceptedTOS: createUserDto.accepted_terms,
       password: hashedPassword,
     });
-    await this.sendEmailVerification(
-      newUser.email,
+    await this.createAndSendVerificationToken(
+      newUser,
       VerificationType.EMAIL_VERIFICATION,
     );
   }
@@ -142,17 +153,14 @@ export class AuthService {
     };
   }
 
-  async sendEmailVerification(email: string, type: VerificationType) {
-    const user = await this.usersService.getUserByEmail(email);
+  async createAndSendVerificationToken(
+    getUser: { email: string },
+    type: VerificationType,
+  ) {
+    const user = await this.usersService.getUserByEmail(getUser.email);
     if (!user) throw new NotFoundException('User not found');
     const rawToken = await this.generateToken();
     const hashedToken = await this.hashData(rawToken);
-    if (user.verificationToken.length > 0) {
-      await this.verificationTokenService.deleteTokensByUserAndType({
-        userId: user.id,
-        type,
-      });
-    }
     const newVerificationToken =
       await this.verificationTokenService.createVerificationToken({
         user: { connect: { id: user.id } },
@@ -178,7 +186,27 @@ export class AuthService {
     });
     if (!sendedMail)
       throw new InternalServerErrorException('Failed to send email');
-    return true;
+    return {
+      message: 'Please check your email for the verification link',
+    };
+  }
+
+  async resendVerificationToken(email: string, type: VerificationType) {
+    const user = await this.usersService.getUserByEmail(email);
+    if (!user) throw new NotFoundException('User not found');
+    const verificationToken =
+      await this.verificationTokenService.getVerificationTokenByUserIdAndType({
+        userId: user.id,
+        type,
+      });
+    if (verificationToken && verificationToken.expiresAt > new Date()) {
+      // jika token ada dan sudah lebih dari 3 menit, maka hapus sisa token lama dan buat token baru
+      await this.verificationTokenService.deleteTokensByUserAndType({
+        userId: user.id,
+        type,
+      });
+    }
+    return this.createAndSendVerificationToken(user, type);
   }
 
   async verifyResetPasswordToken({ userId, token }: VerifyEmailFromUrlDto) {

@@ -2,27 +2,36 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { Role } from '../enums/role.enums';
 
-const schemaOptions = {
-  allowedFileTypes: ['image/png', 'image/jpeg', 'image/jpg'],
-  maxFileSize: 5 * 1024 * 1024,
-};
+const MAX_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
+const base64ImageRegex = /^data:image\/(png|jpeg|jpg);base64,[A-Za-z0-9+/=]+$/;
 
-export const validateImageSchema = z
-  .custom<Express.Multer.File>((file) => !!file && typeof file === 'object')
-  .refine((file) => schemaOptions.allowedFileTypes.includes(file.mimetype), {
-    message: 'Only PNG, JPEG, or JPG images are allowed',
+// Zod Schema
+export const Base64ImageSchema = z
+  .string()
+  .regex(base64ImageRegex, {
+    message: 'Invalid base64 image format',
   })
-  .refine((file) => file.size <= schemaOptions.maxFileSize, {
-    message: `File must be less than ${
-      schemaOptions.maxFileSize / (1024 * 1024)
-    }MB`,
-  });
+  .refine(
+    (base64) => {
+      const base64Str = base64.split(',')[1] || ''; // Get Base64 data only
+      const sizeInBytes =
+        (base64Str.length * 3) / 4 -
+        (base64Str.endsWith('==') ? 2 : base64Str.endsWith('=') ? 1 : 0);
+      return sizeInBytes <= MAX_SIZE_BYTES;
+    },
+    {
+      message: `Image exceeds maximum size of ${MAX_SIZE_BYTES / (1024 * 1024)} MB`,
+    },
+  );
 
 const baseUserSchema = z.object({
   name: z.string().min(6).max(100).trim(),
   role: z.nativeEnum(Role).optional(),
   email: z.string().email({ message: 'Invalid email' }),
-  image: z.string().url({ message: 'Invalid URL' }).optional().nullable(),
+  image: z
+    .union([z.string().url({ message: 'Invalid URL' }), Base64ImageSchema])
+    .optional()
+    .nullable(),
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters' })

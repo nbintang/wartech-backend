@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,18 +9,15 @@ import {
   Req,
   Res,
   UnauthorizedException,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto, validateImageSchema } from 'src/users/dtos/mutate.dto';
+import { CreateUserDto } from 'src/users/dtos/mutate.dto';
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
 import { ResetPasswordDto } from './dtos/verify.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { VerificationType } from 'src/verification-token/enums/verification.enum';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -34,20 +30,11 @@ export class AuthController {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
   @Post('signup')
-  @UseInterceptors(FileInterceptor('image'))
-  async signup(
-    @Body() body: CreateUserDto,
-    @Req() request: Request,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
+  async signup(@Body() body: CreateUserDto, @Req() request: Request) {
     try {
-      if (file) {
-        const validatedImage = await validateImageSchema.parseAsync(file);
-        if (!validatedImage)
-          throw new BadRequestException("File doesn't match the schema");
+      if (body.image) {
         const { secure_url } = await this.cloudinaryService.uploadFile({
-          file: validatedImage,
-          folder: 'users',
+          base64: body.image,
         });
         body.image = secure_url;
       }
@@ -97,10 +84,15 @@ export class AuthController {
       throw new UnauthorizedException(
         `You are already logged in! Please logout first.`,
       );
-    await this.authService.sendEmailVerification(
-      email,
-      VerificationType.PASSWORD_RESET,
-    );
+    const isTokenCreated =
+      await this.authService.createAndSendVerificationToken(
+        { email },
+        VerificationType.PASSWORD_RESET,
+      );
+    if (!isTokenCreated)
+      throw new InternalServerErrorException(
+        'Failed to send email, make the user is valid',
+      );
     return {
       message: 'Please check your email for the verification link',
     };
@@ -110,8 +102,8 @@ export class AuthController {
   async resendVerification(
     @Body() { email }: { email: string; type: VerificationType },
   ): Promise<PayloadResponseDto> {
-    await this.authService.sendEmailVerification(
-      email,
+    await this.authService.createAndSendVerificationToken(
+      { email },
       VerificationType.EMAIL_VERIFICATION,
     );
     return {

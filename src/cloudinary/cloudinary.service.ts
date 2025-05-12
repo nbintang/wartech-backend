@@ -1,58 +1,60 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { CloudinaryResponse, CloudinaryUploadOptions } from './cloudinary.type';
-import {
-  v2 as cloudinary,
-  DeleteApiResponse,
-  UploadApiResponse,
-} from 'cloudinary';
-import { Readable } from 'stream';
-
-function bufferToStream(buffer: Buffer): Readable {
-  const stream = new Readable();
-  stream.push(buffer);
-  stream.push(null);
-  return stream;
-}
+import { v2 as cloudinary } from 'cloudinary';
+import { UsersService } from 'src/users/users.service';
+import { Base64ImageSchema } from 'src/users/dtos/mutate.dto';
+import * as sharp from 'sharp';
 
 @Injectable()
 export class CloudinaryService {
-  async updateFile({
-    file,
-    folder = 'book-covers',
-    public_id,
-  }: CloudinaryUploadOptions): Promise<CloudinaryResponse> {
-    if (public_id) await this.deleteFile(public_id);
-    return this.uploadFile({ file, folder, public_id });
-  }
+  constructor(@Optional() private readonly usersService?: UsersService) {}
   async uploadFile({
-    file,
-    folder,
+    base64,
+    folder = 'users',
     public_id,
     resource_type = 'image',
   }: CloudinaryUploadOptions): Promise<CloudinaryResponse> {
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        { folder, resource_type, public_id },
-        (err: Error, result: UploadApiResponse) => {
-          console.log('err', err);
-          console.log('result', result);
-          if (err || !result) return reject(err);
+    const optimizedBase64 = await this.compressBase64Image(base64);
+    return new Promise<CloudinaryResponse>((resolve, reject) => {
+      cloudinary.uploader.upload(
+        optimizedBase64,
+        {
+          folder,
+          resource_type,
+          public_id,
+          overwrite: true,
+          invalidate: true,
+        },
+        (err, result) => {
+          if (err) return reject(err);
           resolve(result);
         },
       );
-      bufferToStream(file.buffer).pipe(uploadStream);
     });
   }
-  async deleteFile(public_id: string): Promise<DeleteApiResponse> {
-    return new Promise((resolve, reject) => {
-      cloudinary.api.resource(public_id, (error, result) => {
-        if (error || !result)
-          return reject(error || new Error('Resource not found'));
-        cloudinary.uploader.destroy(public_id, (destroyError) => {
-          if (destroyError) return reject(destroyError);
-          resolve(result);
-        });
-      });
-    });
+  private async compressBase64Image(base64: string): Promise<string> {
+    const [header, base64Data] = base64.split(',');
+    const buffer = Buffer.from(base64Data, 'base64');
+    const imageType = header.match(/image\/(png|jpeg|jpg)/)?.[1];
+    if (!imageType) throw new BadRequestException('Unsupported image format');
+    let compressedBuffer: Buffer;
+    switch (imageType) {
+      case 'png':
+        compressedBuffer = await sharp(buffer)
+          .resize({ width: 800 }) // Adjust size as needed
+          .png({ quality: 80, compressionLevel: 8 }) // Adjust quality for PNG
+          .toBuffer();
+        break;
+      case 'jpeg':
+      case 'jpg':
+        compressedBuffer = await sharp(buffer)
+          .resize({ width: 800 }) // Adjust size as needed
+          .jpeg({ quality: 70 }) // Adjust quality for JPEG
+          .toBuffer();
+        break;
+      default:
+        throw new BadRequestException('Unsupported image format');
+    }
+    return `${header},${compressedBuffer.toString('base64')}`;
   }
 }

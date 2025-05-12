@@ -24,7 +24,7 @@ export class VerificationTokenService {
       where: {
         userId,
         type,
-        expiresAt: { gt: new Date() }, // to check if token is expired
+        expiresAt: { gt: new Date() }, // to get tokens that are not expired
       },
       select: {
         id: true,

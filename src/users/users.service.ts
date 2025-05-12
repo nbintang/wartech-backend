@@ -42,8 +42,14 @@ export class UsersService {
 
   async getUserByEmail(email: string) {
     return this.prisma.user.findUnique({
-      where: { email },
-      include: { verificationToken: true },
+      where: {
+        email,
+      },
+      include: {
+        verificationToken: {
+          where: { expiresAt: { gt: new Date() } },
+        },
+      },
     });
   }
 

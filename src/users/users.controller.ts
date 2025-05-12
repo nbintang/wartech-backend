@@ -11,9 +11,7 @@ import {
   Query,
   Req,
   Res,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
@@ -24,9 +22,8 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from './enums/role.enums';
 import { Request, Response } from 'express';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { RoleGuard } from 'src/auth/guards/role.guard';
-import { UpdateUserDto, validateImageSchema } from './dtos/mutate.dto';
+import { UpdateUserDto } from './dtos/mutate.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { extractPublicId } from 'cloudinary-build-url';
 @UseGuards(AccessTokenGuard)
@@ -100,21 +97,21 @@ export class UsersController {
   @UseGuards(RoleGuard)
   @Patch(':id')
   @SkipThrottle({ medium: false })
-  @UseInterceptors(FileInterceptor('image'))
-  async updateUserById(
+  async updateProfile(
     @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File,
     @Body() body: UpdateUserDto,
   ): Promise<PayloadResponseDto> {
     try {
-      if (file) {
-        const { image } = await this.usersService.getUserById(id);
-        const validatedImage = await validateImageSchema.parseAsync(file);
-        if (!validatedImage)
-          throw new BadRequestException("File doesn't match the schema");
-        const public_id = extractPublicId(image);
-        const { secure_url } = await this.cloudinaryService.updateFile({
-          file: validatedImage,
+      if (body.image) {
+        let public_id: string;
+        if (id) {
+          const { image } = await this.usersService.getUserById(id);
+          public_id = extractPublicId(image);
+          if (!public_id)
+            throw new BadRequestException("File doesn't match the schema");
+        }
+        const { secure_url } = await this.cloudinaryService.uploadFile({
+          base64: body.image,
           folder: 'users',
           public_id,
         });
