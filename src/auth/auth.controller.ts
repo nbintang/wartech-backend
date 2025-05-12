@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   InternalServerErrorException,
   Post,
   Query,
@@ -46,8 +47,10 @@ export class AuthController {
         message: 'Success!, Please check your email for the verification link',
       };
     } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException('Something Went Wrong');
+      throw new HttpException(
+        error.message || 'Something Went Wrong',
+        error.status || 500,
+      );
     }
   }
 

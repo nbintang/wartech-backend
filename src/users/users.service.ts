@@ -78,12 +78,7 @@ export class UsersService {
       where: { id },
       omit: except,
     });
-    const { createdAt, updatedAt, ...rest } = user;
-    return {
-      ...rest,
-      created_at: createdAt,
-      updated_at: updatedAt,
-    };
+    return user;
   }
 
   async deleteUserById(id: string) {

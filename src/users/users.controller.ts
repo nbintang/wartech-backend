@@ -4,7 +4,7 @@ import {
   Controller,
   Delete,
   Get,
-  InternalServerErrorException,
+  HttpException,
   NotFoundException,
   Param,
   Patch,
@@ -25,7 +25,6 @@ import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { UpdateUserDto } from './dtos/mutate.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { extractPublicId } from 'cloudinary-build-url';
 @UseGuards(AccessTokenGuard)
 @Controller('/protected/users')
 @SkipThrottle({ default: true, medium: true, long: true })
@@ -81,7 +80,6 @@ export class UsersController {
       data: user,
     };
   }
-
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<PayloadResponseDto> {
     const user = await this.usersService.getLevel1andLevel2Users(id);
@@ -103,19 +101,7 @@ export class UsersController {
   ): Promise<PayloadResponseDto> {
     try {
       if (body.image) {
-        let public_id: string;
-        if (id) {
-          const { image } = await this.usersService.getUserById(id);
-          public_id = extractPublicId(image);
-          if (!public_id)
-            throw new BadRequestException("File doesn't match the schema");
-        }
-        const { secure_url } = await this.cloudinaryService.uploadFile({
-          base64: body.image,
-          folder: 'users',
-          public_id,
-        });
-        body.image = secure_url;
+        body.image = await this.handleImageUpdate(id, body.image);
       }
       const user = await this.usersService.updateUserById({ id }, body);
       return {
@@ -124,7 +110,10 @@ export class UsersController {
       };
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Something Went Wrong');
+      throw new HttpException(
+        error.message || 'Something Went Wrong',
+        error.status || 500,
+      );
     }
   }
   @Roles(Role.ADMIN)
@@ -136,5 +125,20 @@ export class UsersController {
     return {
       message: `${user.name} deleted successfully`,
     };
+  }
+
+  private async handleImageUpdate(
+    id: string,
+    base64Image: string,
+  ): Promise<string> {
+    const { image: currentImage } = await this.usersService.getUserById(id);
+    const public_id = this.cloudinaryService.extractPublicId(currentImage);
+    if (!public_id)
+      throw new BadRequestException("File doesn't match the schema");
+    const { secure_url } = await this.cloudinaryService.uploadFile({
+      base64: base64Image,
+      public_id,
+    });
+    return secure_url;
   }
 }

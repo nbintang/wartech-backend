@@ -28,10 +28,7 @@ const baseUserSchema = z.object({
   name: z.string().min(6).max(100).trim(),
   role: z.nativeEnum(Role).optional(),
   email: z.string().email({ message: 'Invalid email' }),
-  image: z
-    .union([z.string().url({ message: 'Invalid URL' }), Base64ImageSchema])
-    .optional()
-    .nullable(),
+  image: Base64ImageSchema.optional(),
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters' })

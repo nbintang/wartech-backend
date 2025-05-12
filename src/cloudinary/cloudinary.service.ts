@@ -1,13 +1,10 @@
-import { BadRequestException, Injectable, Optional } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CloudinaryResponse, CloudinaryUploadOptions } from './cloudinary.type';
 import { v2 as cloudinary } from 'cloudinary';
-import { UsersService } from 'src/users/users.service';
-import { Base64ImageSchema } from 'src/users/dtos/mutate.dto';
 import * as sharp from 'sharp';
 
 @Injectable()
 export class CloudinaryService {
-  constructor(@Optional() private readonly usersService?: UsersService) {}
   async uploadFile({
     base64,
     folder = 'users',
@@ -31,6 +28,13 @@ export class CloudinaryService {
         },
       );
     });
+  }
+  extractPublicId(imageUrl: string): string {
+    if (!imageUrl) return '';
+    const path = imageUrl.split('/').pop();
+    if (!path) return '';
+    const public_id = path.includes('/') ? path.split('/').pop() : path;
+    return public_id?.split('.')[0] || '';
   }
   private async compressBase64Image(base64: string): Promise<string> {
     const [header, base64Data] = base64.split(',');
