@@ -11,6 +11,7 @@ import { ResponseModule } from './common/response/response.module';
 import { ValidatorModule } from './common/validator/zod-validator.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ThrottlerConfigModule } from './common/throttler/throttler-config.module';
+import { ArticlesModule } from './articles/articles.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ThrottlerConfigModule } from './common/throttler/throttler-config.modul
     ResponseModule,
     ValidatorModule,
     CloudinaryModule,
+    ArticlesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -69,12 +69,10 @@ export class AuthService {
     );
     if (existingUser) {
       if (existingUser.verified) {
-        // User exists and is verified
         throw new BadRequestException(
           'Your email is already registered and verified. Please sign in.',
         );
       } else {
-        // User exists but is not verified
         await this.resendVerificationToken(
           existingUser.email,
           VerificationType.EMAIL_VERIFICATION,
