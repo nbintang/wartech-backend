@@ -12,6 +12,7 @@ import { ValidatorModule } from './common/validator/zod-validator.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ThrottlerConfigModule } from './common/throttler/throttler-config.module';
 import { ArticlesModule } from './articles/articles.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ArticlesModule } from './articles/articles.module';
     ValidatorModule,
     CloudinaryModule,
     ArticlesModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
