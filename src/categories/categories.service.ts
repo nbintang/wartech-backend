@@ -71,9 +71,7 @@ export class CategoriesService {
   }
 
   async updateCategoryBySlug(slug: string, data: CategoryDto) {
-    const currentCategory = await this.db.category.findUnique({
-      where: { slug },
-    });
+    const currentCategory = await this.getCategoryBySlug(slug);
     if (!currentCategory)
       throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
     if (data.name) {

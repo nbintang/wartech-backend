@@ -1,0 +1,10 @@
+import { createZodDto } from 'nestjs-zod';
+import { baseQueryRequestSchema } from 'src/common/dtos/base-query.dto';
+import { z } from 'zod';
+
+const queryTagSchema = baseQueryRequestSchema.extend({
+  name: z.string().optional(),
+  slug: z.string().optional(),
+});
+
+export class QueryTagDto extends createZodDto(queryTagSchema) {}

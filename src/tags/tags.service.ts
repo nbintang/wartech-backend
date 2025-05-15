@@ -1,26 +1,107 @@
-import { Injectable } from '@nestjs/common';
-import { CreateTagDto } from './dto/create-tag.dto';
-import { UpdateTagDto } from './dto/update-tag.dto';
-
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { QueryTagDto } from './dto/query-tag.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { TagDto } from './dto/mutate-tag.dto';
 @Injectable()
 export class TagsService {
-  create(createTagDto: CreateTagDto) {
-    return 'This action adds a new tag';
+  constructor(private db: PrismaService) {}
+
+  async createNewSlug(data: TagDto) {
+    const existedTag = await this.getTagBySlug(data.slug);
+    if (existedTag) throw new Error('Tag slug already exists');
+    const tag = await this.db.tag.create({
+      data: {
+        name: data.name,
+        slug: data.slug,
+      },
+    });
+    return tag;
   }
 
-  findAll() {
-    return `This action returns all tags`;
+  async getAllTags(query: QueryTagDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const skip = (page - 1) * limit;
+    const take = limit;
+    // const where: Prisma.TagWhereInput = {
+    //   articleTag: {
+    //     some: {
+    //       article: {
+    //         status: {
+    //           in: [ArticleStatus.PUBLISHED, ArticleStatus.ARCHIVED],
+    //         },
+    //       },
+    //     },
+    //   },
+    // };
+    const tags = await this.db.tag.findMany({
+      // where,
+      skip,
+      take,
+    });
+    const tagsCount = await this.db.tag.count({
+      //  where
+    });
+    const itemCount = tags.length;
+    const totalPages = Math.ceil(tagsCount / limit);
+    return {
+      tags,
+      currrentPage: page,
+      itemPerPages: limit,
+      itemCount,
+      totalPages,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} tag`;
+  async getTagBySlug(slug: string) {
+    // const where: Prisma.TagWhereUniqueInput = {
+    //   slug,
+    //   articleTag: {
+    //     some: {
+    //       article: {
+    //         status: { in: [ArticleStatus.PUBLISHED, ArticleStatus.ARCHIVED] },
+    //       },
+    //     },
+    //   },
+    // };
+    const tag = await this.db.tag.findUnique({ where: { slug } });
+    return tag;
   }
 
-  update(id: number, updateTagDto: UpdateTagDto) {
-    return `This action updates a #${id} tag`;
+  async updateTagsBySlug(slug: string, data: TagDto) {
+    const currentTag = await this.getTagBySlug(data.slug);
+    if (currentTag) throw new Error('Tag slug already exists');
+    if (data.name) {
+      const existingByName = await this.db.tag.findUnique({
+        where: { name: data.name },
+      });
+      if (existingByName && existingByName.id !== currentTag.id)
+        throw new HttpException(
+          'Tags name already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+    }
+    if (data.slug && data.slug !== currentTag.slug) {
+      const existingBySlug = await this.getTagBySlug(data.slug);
+      if (existingBySlug && existingBySlug.id !== currentTag.id)
+        throw new HttpException(
+          'Tags slug already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+    }
+    const tag = await this.db.tag.update({
+      where: { slug },
+      data: {
+        name: data.name,
+        slug: data.slug,
+      },
+    });
+    return tag;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} tag`;
+  async deleteTagBySlug(slug: string) {
+    const tag = await this.getTagBySlug(slug);
+    if (!tag) throw new Error('Tag not found');
+    return await this.db.tag.delete({ where: { slug } });
   }
 }

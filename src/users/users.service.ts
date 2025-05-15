@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryUserDto } from './dtos/query-user.dto';
 import { Prisma } from 'prisma/generated';
+import { Role } from './enums/role.enums';
 
 @Injectable()
 export class UsersService {
@@ -28,7 +29,7 @@ export class UsersService {
     const users = await this.db.user.findMany({
       where: {
         ...dynamicSearch,
-        NOT: { role: 'ADMIN' },
+        NOT: { role: Role.ADMIN },
       },
       omit: {
         password: true,

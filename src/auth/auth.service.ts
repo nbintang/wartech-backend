@@ -152,16 +152,16 @@ export class AuthService {
   }
 
   async createAndSendVerificationToken(
-    getUser: { email: string },
+    user: { email: string },
     type: VerificationType,
   ) {
-    const user = await this.usersService.getUserByEmail(getUser.email);
-    if (!user) throw new NotFoundException('User not found');
+    const existedUser = await this.usersService.getUserByEmail(user.email);
+    if (!existedUser) throw new NotFoundException('User not found');
     const rawToken = await this.generateToken();
     const hashedToken = await this.hashData(rawToken);
     const newVerificationToken =
       await this.verificationTokenService.createVerificationToken({
-        user: { connect: { id: user.id } },
+        user: { connect: { id: existedUser.id } },
         type,
         token: hashedToken,
         expiresAt: new Date(Date.now() + 3 * 60 * 1000), // 3 min
@@ -169,9 +169,9 @@ export class AuthService {
     if (!newVerificationToken)
       throw new BadRequestException('Failed to create token');
     const sendedMail = await this.mailService.sendEmailVerification({
-      userName: user.name,
-      userEmail: user.email,
-      userId: user.id,
+      userName: existedUser.name,
+      userEmail: existedUser.email,
+      userId: existedUser.id,
       token: rawToken,
       routes:
         type === VerificationType.PASSWORD_RESET

@@ -8,5 +8,6 @@ import { AccessControlService } from 'src/auth/shared/access-control.service';
   imports: [PrismaModule],
   controllers: [CategoriesController],
   providers: [CategoriesService, AccessControlService],
+  exports: [CategoriesService],
 })
 export class CategoriesModule {}
