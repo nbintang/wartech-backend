@@ -27,7 +27,7 @@ import { UpdateUserDto } from './dtos/mutate.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 @UseGuards(AccessTokenGuard)
 @Controller('/protected/users')
-@SkipThrottle({ default: true, medium: true, long: true })
+@SkipThrottle({ short: true, medium: true, long: true })
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
@@ -37,16 +37,14 @@ export class UsersController {
   async getAllUsers(
     @Query() query: QueryUserDto,
   ): Promise<PaginatedPayloadResponseDto> {
-    const currrentPage = +(query.page ?? 1);
-    const itemPerPages = +(query.limit ?? 10);
-    const { users, usersCount } = await this.usersService.getAllusers({
-      ...query,
-      page: currrentPage,
-      limit: itemPerPages,
-    });
-    const itemCount = users.length;
-    const totalItems = usersCount;
-    const totalPages = Math.ceil(totalItems / itemPerPages);
+    const {
+      users,
+      currrentPage,
+      itemPerPages,
+      itemCount,
+      totalPages,
+      totalItems,
+    } = await this.usersService.getAllusers(query);
     return {
       message: 'Users fetched successfully',
       data: {

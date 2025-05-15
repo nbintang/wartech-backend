@@ -21,10 +21,10 @@ import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
 import { ResetPasswordDto } from './dtos/verify.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { VerificationType } from 'src/verification-token/enums/verification.enum';
-import { SkipThrottle } from '@nestjs/throttler';
+import { minutes, SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
-@SkipThrottle({ default: true, long: true })
+@SkipThrottle({ short: true, long: true })
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -103,7 +103,7 @@ export class AuthController {
 
   @Post('resend-verification')
   async resendVerification(
-    @Body() { email }: { email: string; type: VerificationType },
+    @Body() { email }: { email: string },
   ): Promise<PayloadResponseDto> {
     await this.authService.createAndSendVerificationToken(
       { email },
@@ -113,8 +113,8 @@ export class AuthController {
       message: 'Please check your email for the verification link',
     };
   }
-
   @Get('verify-reset-password')
+  @Throttle({ long: { ttl: minutes(1), limit: 1, blockDuration: minutes(5) } })
   async resetPassword(
     @Query('userId') userId: string,
     @Query('token') token: string,
@@ -130,10 +130,17 @@ export class AuthController {
 
   @Post('change-password')
   async changePassword(@Body() body: ResetPasswordDto) {
-    await this.authService.changePassword(body);
-    return {
-      message: 'Password Changed Successfully',
-    };
+    try {
+      await this.authService.changePassword(body);
+      return {
+        message: 'Password Changed Successfully',
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Something Went Wrong',
+        error.status || 500,
+      );
+    }
   }
 
   @Post('signin')

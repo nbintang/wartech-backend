@@ -6,10 +6,10 @@ import { Prisma } from 'prisma/generated';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private db: PrismaService) {}
 
   async createUser(data: Prisma.UserCreateInput) {
-    const newUser = await this.prisma.user.create({
+    const newUser = await this.db.user.create({
       data,
       select: { id: true, email: true, name: true },
     });
@@ -17,13 +17,15 @@ export class UsersService {
   }
 
   async getAllusers(query: QueryUserDto) {
-    const skip = (query.page - 1) * query.limit;
-    const take = query.limit;
+    const page = +(query.page ?? 1);
+    const limit = +(query.limit ?? 10);
+    const skip = (page - 1) * limit;
+    const take = limit;
     const dynamicSearch: Prisma.UserWhereInput = {
       ...(query.name && { name: { contains: query.name } }),
       ...(query.role && { role: query.role }),
     };
-    const users = await this.prisma.user.findMany({
+    const users = await this.db.user.findMany({
       where: {
         ...dynamicSearch,
         NOT: { role: 'ADMIN' },
@@ -36,12 +38,21 @@ export class UsersService {
       skip,
       take,
     });
-    const usersCount = await this.prisma.user.count({ where: dynamicSearch });
-    return { users, usersCount };
+    const usersCount = await this.db.user.count({ where: dynamicSearch });
+    const itemCount = users.length;
+    const totalPages = Math.ceil(usersCount / limit);
+    return {
+      users,
+      currrentPage: page,
+      itemPerPages: limit,
+      itemCount,
+      totalItems: usersCount,
+      totalPages,
+    };
   }
 
   async getUserByEmail(email: string) {
-    return this.prisma.user.findUnique({
+    return this.db.user.findUnique({
       where: {
         email,
       },
@@ -54,18 +65,19 @@ export class UsersService {
   }
 
   async updateUserById({ id }: { id: string }, data: Prisma.UserUpdateInput) {
-    return await this.prisma.user.update({
+    return await this.db.user.update({
       where: { id },
       data,
       omit: {
-        password: true,
         acceptedTOS: true,
+        password: true,
+        emailVerifiedAt: true,
       },
     });
   }
 
   async getLevel1andLevel2Users(id: string) {
-    return await this.prisma.user.findUnique({
+    return await this.db.user.findUnique({
       where: { id, NOT: { role: 'ADMIN' } },
       omit: {
         password: true,
@@ -74,7 +86,7 @@ export class UsersService {
     });
   }
   async getUserById(id: string, except?: Prisma.UserOmit) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.db.user.findUnique({
       where: { id },
       omit: except,
     });
@@ -82,6 +94,6 @@ export class UsersService {
   }
 
   async deleteUserById(id: string) {
-    return await this.prisma.user.delete({ where: { id } });
+    return await this.db.user.delete({ where: { id } });
   }
 }

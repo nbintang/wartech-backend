@@ -29,13 +29,13 @@ const baseUserSchema = z.object({
   role: z.nativeEnum(Role).optional(),
   email: z.string().email({ message: 'Invalid email' }),
   image: Base64ImageSchema.optional(),
+});
+export const createUserSchema = baseUserSchema.extend({
+  accepted_terms: z.coerce.boolean().default(false),
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters' })
     .max(60, { message: 'Password must be at most 60 characters' }),
-});
-export const createUserSchema = baseUserSchema.extend({
-  accepted_terms: z.coerce.boolean().default(false),
 });
 export const updateUserSchema = baseUserSchema;
 export class UpdateUserDto extends createZodDto(updateUserSchema) {}

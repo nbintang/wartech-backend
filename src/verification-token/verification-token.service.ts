@@ -5,9 +5,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class VerificationTokenService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private db: PrismaService) {}
   async createVerificationToken(data: Prisma.VerificationTokenCreateInput) {
-    const verificationToken = await this.prisma.verificationToken.create({
+    const verificationToken = await this.db.verificationToken.create({
       data,
     });
     return verificationToken;
@@ -20,7 +20,7 @@ export class VerificationTokenService {
     userId: string;
     type: VerificationType;
   }) {
-    const verificationtoken = await this.prisma.verificationToken.findFirst({
+    const verificationtoken = await this.db.verificationToken.findFirst({
       where: {
         userId,
         type,
@@ -43,7 +43,7 @@ export class VerificationTokenService {
     userId: string;
     type: VerificationType;
   }): Promise<Prisma.BatchPayload> {
-    return await this.prisma.verificationToken.deleteMany({
+    return await this.db.verificationToken.deleteMany({
       where: {
         userId,
         type,
@@ -52,6 +52,6 @@ export class VerificationTokenService {
   }
 
   async deleteTokensByUserId(userId: string): Promise<void> {
-    await this.prisma.verificationToken.deleteMany({ where: { userId } });
+    await this.db.verificationToken.deleteMany({ where: { userId } });
   }
 }

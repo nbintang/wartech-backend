@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output = "../prisma/generated"
+  output   = "../prisma/generated"
 }
 
 datasource db {
@@ -43,15 +43,27 @@ model ArticleTag {
   @@map("article_tags")
 }
 
+model Tag {
+  id         String       @id @default(uuid())
+  name       String       @unique(map: "Tag_name_key") @db.VarChar(50)
+  slug       String       @unique
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @default(now())
+  articleTag ArticleTag[]
+
+  @@map("tags")
+}
+
 model Category {
   id          String    @id @default(uuid())
+  slug        String    @unique
   name        String    @unique(map: "Category_name_key") @db.VarChar(50)
   description String    @db.VarChar(255)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now())
   article     Article[]
 
-@@map("categories")
+  @@map("categories")
 }
 
 model Comment {
@@ -86,15 +98,6 @@ model Like {
   @@map("likes")
 }
 
-model Tag {
-  id         String       @id @default(uuid())
-  name       String       @unique(map: "Tag_name_key") @db.VarChar(50)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @default(now())
-  articleTag ArticleTag[]
-  @@map("tags")
-}
-
 model User {
   id                String              @id @default(uuid())
   name              String              @db.VarChar(100)
@@ -111,6 +114,7 @@ model User {
   comment           Comment[]
   like              Like[]
   verificationToken VerificationToken[]
+
   @@map("users")
 }
 

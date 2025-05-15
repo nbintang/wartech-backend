@@ -4,37 +4,40 @@ import { PrismaClient } from './generated';
 const prisma = new PrismaClient();
 
 async function main() {
+  // Hash password for all users
   const password = await bcrypt.hash('12345678', 10);
-  const totalUsers = 10;
-  const totalArticles = 20;
-  const users = [];
-  const articles = [];
 
+  // Create Users
   const admin = await prisma.user.create({
     data: {
-      name: `Admin`,
+      name: 'Admin',
       password,
-      email: `admin@gmail.com`,
+      email: 'admin@gmail.com',
       emailVerifiedAt: new Date(),
       role: 'ADMIN',
       acceptedTOS: true,
+      verified: true,
       image:
-        'https://www.gravatar.cbom/avatar/00000000000000000000000000000000?d=mp&f=y',
+        'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
     },
   });
+
   const reporter = await prisma.user.create({
     data: {
-      name: `Reporter`,
+      name: 'Reporter',
       password,
-      email: `reporter@gmail.com`,
+      email: 'reporter@gmail.com',
       emailVerifiedAt: new Date(),
       role: 'REPORTER',
       acceptedTOS: true,
+      verified: true,
       image:
-        'https://www.gravatar.cbom/avatar/00000000000000000000000000000000?d=mp&f=y',
+        'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
     },
   });
-  for (let i = 0; i < totalUsers; i++) {
+
+  const users = [];
+  for (let i = 0; i < 10; i++) {
     const user = await prisma.user.create({
       data: {
         name: `User ${i}`,
@@ -45,43 +48,95 @@ async function main() {
         acceptedTOS: true,
         verified: true,
         image:
-          'https://www.gravatar.cbom/avatar/00000000000000000000000000000000?d=mp&f=y',
+          'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
       },
     });
     users.push(user);
   }
 
-  const newCategoeries = await prisma.category.createMany({
-    data: [
-      { name: 'Technology', description: 'All about tech' },
-      { name: 'Health', description: 'Healthcare topics' },
-    ],
+  // Create Categories
+  const categoryData = [
+    { name: 'Technology', slug: 'technology', description: 'All about tech' },
+    { name: 'Health', slug: 'health', description: 'Healthcare topics' },
+    { name: 'Finance', slug: 'finance', description: 'Finance and business' },
+  ];
+
+  await prisma.category.createMany({
+    data: categoryData,
   });
+
   const categories = await prisma.category.findMany();
 
-  if (categories.length > 0) {
-    for (let i = 0; i < totalArticles; i++) {
-      const article = await prisma.article.create({
+  // Create Tags
+  const tagData = [
+    { name: 'JavaScript', slug: 'javascript' },
+    { name: 'Wellness', slug: 'wellness' },
+    { name: 'Startup', slug: 'startup' },
+  ];
+
+  await prisma.tag.createMany({
+    data: tagData,
+  });
+
+  const tags = await prisma.tag.findMany();
+
+  // Create Articles
+  for (let i = 0; i < 20; i++) {
+    const article = await prisma.article.create({
+      data: {
+        title: `Article ${i}`,
+        slug: `article-${i}`,
+        content: `<p>Content of article ${i}</p><h1>Article ${i}</h1>`,
+        status: 'PUBLISHED',
+        image: 'https://dummyimage.com/600x400/000/fff',
+        publishedAt: new Date(),
+        author: {
+          connect: { id: admin.id },
+        },
+        category: {
+          connect: { id: categories[i % categories.length].id },
+        },
+      },
+    });
+
+    // Assign 1-2 tags per article
+    const assignedTags = [tags[i % tags.length], tags[(i + 1) % tags.length]];
+    for (const tag of assignedTags) {
+      await prisma.articleTag.create({
         data: {
-          title: `Article ${i}`,
-          slug: `article-${i}`,
-          content: `<p>Content of article ${i}</p></br><h1>Article ${i}</h1>`,
-          status: 'PUBLISHED',
-          image: 'https://dummyimage.com/600x400/000/fff',
-          publishedAt: new Date(),
-          author: { connect: { id: admin.id } },
-          category: { connect: { id: categories[0].id } },
+          articleId: article.id,
+          tagId: tag.id,
         },
       });
-      articles.push(article);
+    }
+
+    // Generate random likes and comments
+    const likedBy = users.filter((_, idx) => (idx % (i + 1)) % 3 === 0);
+    for (const user of likedBy) {
+      await prisma.like.create({
+        data: {
+          userId: user.id,
+          articleId: article.id,
+        },
+      });
+
+      await prisma.comment.create({
+        data: {
+          content: `Nice article ${i}!`,
+          userId: user.id,
+          articleId: article.id,
+        },
+      });
     }
   }
-
-  console.log('User created:', users);
-  console.log('Admin created:', admin);
-  console.log('Reporter created:', reporter);
-  console.log('Categories created:', newCategoeries);
-  console.log('Articles created:', articles);
+  console.log('✅ Seed completed.');
+  console.log({
+    admin,
+    reporter,
+    users,
+    categories,
+    tags,
+  });
 }
 
 main()
