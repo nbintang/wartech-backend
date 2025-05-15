@@ -6,7 +6,7 @@ const MAX_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
 const base64ImageRegex = /^data:image\/(png|jpeg|jpg);base64,[A-Za-z0-9+/=]+$/;
 
 // Zod Schema
-export const Base64ImageSchema = z
+export const ProfileUserBase64ImageSchema = z
   .string()
   .regex(base64ImageRegex, {
     message: 'Invalid base64 image format',
@@ -28,7 +28,7 @@ const baseUserSchema = z.object({
   name: z.string().min(6).max(100).trim(),
   role: z.nativeEnum(Role).optional(),
   email: z.string().email({ message: 'Invalid email' }),
-  image: Base64ImageSchema.optional(),
+  image: ProfileUserBase64ImageSchema.optional(),
 });
 export const createUserSchema = baseUserSchema.extend({
   accepted_terms: z.coerce.boolean().default(false),

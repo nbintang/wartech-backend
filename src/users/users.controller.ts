@@ -23,7 +23,7 @@ import { Role } from './enums/role.enums';
 import { Request, Response } from 'express';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 import { RoleGuard } from 'src/auth/guards/role.guard';
-import { UpdateUserDto } from './dtos/mutate.dto';
+import { UpdateUserDto } from './dtos/mutate-user.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 @UseGuards(AccessTokenGuard)
 @Controller('/protected/users')

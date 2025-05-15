@@ -13,7 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from 'src/users/dtos/mutate.dto';
+import { CreateUserDto } from 'src/users/dtos/mutate-user.dto';
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
@@ -168,7 +168,6 @@ export class AuthController {
   }
 
   @Delete('signout')
-  @SkipThrottle()
   async signout(
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
@@ -184,7 +183,11 @@ export class AuthController {
 
   @UseGuards(RefreshTokenGuard)
   @Post('refresh-token')
-  @SkipThrottle()
+  @SkipThrottle({
+    long: true,
+    medium: true,
+    short: true,
+  })
   async refreshTokens(@Req() request: Request) {
     const userId = (request as any).user.sub;
     const tokens = await this.authService.refreshToken(userId);

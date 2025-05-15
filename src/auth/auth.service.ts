@@ -10,7 +10,7 @@ import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { CreateUserDto } from 'src/users/dtos/mutate.dto';
+import { CreateUserDto } from 'src/users/dtos/mutate-user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { VerificationTokenService } from 'src/verification-token/verification-token.service';
 import { LocalSigninDto } from './dtos/auth.dto';

@@ -8,14 +8,19 @@ import {
   Delete,
   Query,
   NotFoundException,
+  UseGuards,
+  HttpException,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
 import { QueryCategoriesDto } from './dto/query-categories.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/users/enums/role.enums';
+import { RoleGuard } from 'src/auth/guards/role.guard';
+import { CategoryDto } from './dto/mutate-category.dto';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
 @SkipThrottle({
   short: true,
@@ -26,10 +31,23 @@ import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
+  @Roles(Role.ADMIN)
+  @UseGuards(AccessTokenGuard, RoleGuard)
+  @SkipThrottle({ short: false })
   @Post()
-  create(@Body() createCategoryDto: CreateCategoryDto) {}
+  async createArticleCategory(@Body() body: CategoryDto) {
+    try {
+      const newCategory =
+        await this.categoriesService.createArticleCategory(body);
+      return newCategory;
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Something Went Wrong',
+        error.status || 500,
+      );
+    }
+  }
 
-  @SkipThrottle()
   @Get()
   async getAllCategories(
     @Query() query: QueryCategoriesDto,
@@ -62,16 +80,42 @@ export class CategoriesController {
     };
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateCategoryDto: UpdateCategoryDto,
+  @Roles(Role.ADMIN)
+  @UseGuards(AccessTokenGuard, RoleGuard)
+  @Patch(':slug')
+  @SkipThrottle({ short: false })
+  async updateCategoryBySlug(
+    @Param('slug') slug: string,
+    @Body() body: CategoryDto,
   ) {
-    return this.categoriesService.update(+id, updateCategoryDto);
+    try {
+      const category = await this.categoriesService.updateCategoryBySlug(
+        slug,
+        body,
+      );
+      return category;
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Something Went Wrong',
+        error.status || 500,
+      );
+    }
   }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoriesService.remove(+id);
+  @Roles(Role.ADMIN)
+  @UseGuards(AccessTokenGuard, RoleGuard)
+  @SkipThrottle({ short: false })
+  @Delete(':slug')
+  async deleteCategoryBySlug(@Param('slug') slug: string) {
+    try {
+      await this.categoriesService.deleteCategoryBySlug(slug);
+      return {
+        message: 'Category deleted successfully',
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Something Went Wrong',
+        error.status || 500,
+      );
+    }
   }
 }

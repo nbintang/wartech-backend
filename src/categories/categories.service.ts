@@ -1,23 +1,24 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { CategoryDto } from './dto/mutate-category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from 'prisma/generated';
 import { QueryCategoriesDto } from './dto/query-categories.dto';
 
-const slugify = (str: string) =>
-  str
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .trim();
 @Injectable()
 export class CategoriesService {
   constructor(private db: PrismaService) {}
-  async createArticleCategory(data: Prisma.CategoryCreateInput) {
-    const slug = slugify(data.name);
-
-    return this.db.category.create({ data });
+  async createArticleCategory(data: CategoryDto) {
+    const existedCategory = await this.getCategoryBySlug(data.slug);
+    if (existedCategory)
+      throw new HttpException('Category already exists', 400);
+    const newCategory = await this.db.category.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        slug: data.slug,
+      },
+    });
+    return newCategory;
   }
 
   async getAllCategories(query: QueryCategoriesDto) {
@@ -69,11 +70,46 @@ export class CategoriesService {
     return await this.db.category.findUnique({ where: { slug } });
   }
 
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    return `This action updates a #${id} category`;
+  async updateCategoryBySlug(slug: string, data: CategoryDto) {
+    const currentCategory = await this.db.category.findUnique({
+      where: { slug },
+    });
+    if (!currentCategory)
+      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+    if (data.name) {
+      const existingByName = await this.db.category.findUnique({
+        where: { name: data.name },
+      });
+      if (existingByName && existingByName.id !== currentCategory.id)
+        throw new HttpException(
+          'Category name already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+    }
+    if (data.slug && data.slug !== slug) {
+      const existingBySlug = await this.getCategoryBySlug(data.slug);
+      if (existingBySlug && existingBySlug.id !== currentCategory.id)
+        throw new HttpException(
+          'Category slug already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+    }
+    const updatedCategory = await this.db.category.update({
+      where: { slug },
+      data: {
+        name: data.name,
+        description: data.description,
+        slug: data.slug ?? slug,
+      },
+    });
+
+    return updatedCategory;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} category`;
+  async deleteCategoryBySlug(slug: string) {
+    const existedCategory = await this.getCategoryBySlug(slug);
+    if (!existedCategory)
+      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+    return await this.db.category.delete({ where: { slug } });
   }
 }

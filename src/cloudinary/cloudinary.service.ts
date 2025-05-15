@@ -45,14 +45,14 @@ export class CloudinaryService {
     switch (imageType) {
       case 'png':
         compressedBuffer = await sharp(buffer)
-          .resize({ width: 800 }) // Adjust size as needed
-          .png({ quality: 80, compressionLevel: 8 }) // Adjust quality for PNG
+          .resize({ width: 400 }) // Adjust size as needed
+          .png({ quality: 70, compressionLevel: 8 }) // Adjust quality for PNG
           .toBuffer();
         break;
       case 'jpeg':
       case 'jpg':
         compressedBuffer = await sharp(buffer)
-          .resize({ width: 800 }) // Adjust size as needed
+          .resize({ width: 400 }) // Adjust size as needed
           .jpeg({ quality: 70 }) // Adjust quality for JPEG
           .toBuffer();
         break;

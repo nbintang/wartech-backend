@@ -58,7 +58,7 @@ model Category {
   id          String    @id @default(uuid())
   slug        String    @unique
   name        String    @unique(map: "Category_name_key") @db.VarChar(50)
-  description String    @db.VarChar(255)
+  description String?    @db.VarChar(255)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now())
   article     Article[]
