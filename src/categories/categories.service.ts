@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CategoryDto } from './dto/mutate-category.dto';
+import { CategoryDto } from './dtos/mutate-category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from 'prisma/generated';
-import { QueryCategoriesDto } from './dto/query-categories.dto';
+import { QueryCategoriesDto } from './dtos/query-categories.dto';
 
 @Injectable()
 export class CategoriesService {

@@ -19,26 +19,16 @@ import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
 import { ResetPasswordDto } from './dtos/verify.dto';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { VerificationType } from 'src/verification-token/enums/verification.enum';
 import { minutes, SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 @SkipThrottle({ short: true, long: true })
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
   @Post('signup')
   async signup(@Body() body: CreateUserDto, @Req() request: Request) {
     try {
-      if (body.image) {
-        const { secure_url } = await this.cloudinaryService.uploadFile({
-          base64: body.image,
-        });
-        body.image = secure_url;
-      }
       const doesHaveCookieRefreshToken = request.cookies['refresh_token'];
       if (doesHaveCookieRefreshToken)
         throw new UnauthorizedException('Please Logout First');

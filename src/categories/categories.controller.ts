@@ -12,14 +12,14 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { QueryCategoriesDto } from './dto/query-categories.dto';
+import { QueryCategoriesDto } from './dtos/query-categories.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/users/enums/role.enums';
 import { RoleGuard } from 'src/auth/guards/role.guard';
-import { CategoryDto } from './dto/mutate-category.dto';
+import { CategoryDto } from './dtos/mutate-category.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
 @SkipThrottle({

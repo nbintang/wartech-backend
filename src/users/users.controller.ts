@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -24,15 +23,11 @@ import { Request, Response } from 'express';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { UpdateUserDto } from './dtos/mutate-user.dto';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 @UseGuards(AccessTokenGuard)
 @Controller('/protected/users')
 @SkipThrottle({ short: true, medium: true, long: true })
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
   @Get()
   async getAllUsers(
     @Query() query: QueryUserDto,
@@ -98,9 +93,6 @@ export class UsersController {
     @Body() body: UpdateUserDto,
   ): Promise<PayloadResponseDto> {
     try {
-      if (body.image) {
-        body.image = await this.handleImageUpdate(id, body.image);
-      }
       const user = await this.usersService.updateUserById({ id }, body);
       return {
         message: `${user.name} updated successfully`,
@@ -123,20 +115,5 @@ export class UsersController {
     return {
       message: `${user.name} deleted successfully`,
     };
-  }
-
-  private async handleImageUpdate(
-    id: string,
-    base64Image: string,
-  ): Promise<string> {
-    const { image: currentImage } = await this.usersService.getUserById(id);
-    const public_id = this.cloudinaryService.extractPublicId(currentImage);
-    if (!public_id)
-      throw new BadRequestException("File doesn't match the schema");
-    const { secure_url } = await this.cloudinaryService.uploadFile({
-      base64: base64Image,
-      public_id,
-    });
-    return secure_url;
   }
 }

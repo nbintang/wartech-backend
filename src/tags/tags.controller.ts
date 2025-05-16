@@ -11,8 +11,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { TagsService } from './tags.service';
-import { TagDto } from './dto/mutate-tag.dto';
-import { QueryTagDto } from './dto/query-tag.dto';
+import { TagDto } from './dtos/mutate-tag.dto';
+import { QueryTagDto } from './dtos/query-tag.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';

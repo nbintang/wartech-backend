@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { QueryTagDto } from './dto/query-tag.dto';
+import { QueryTagDto } from './dtos/query-tag.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { TagDto } from './dto/mutate-tag.dto';
+import { TagDto } from './dtos/mutate-tag.dto';
 @Injectable()
 export class TagsService {
   constructor(private db: PrismaService) {}
