@@ -33,37 +33,20 @@ export class ArticlesService {
       },
       include: {
         category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
+          select: { id: true, name: true, slug: true },
         },
         author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
+          select: { id: true, name: true, email: true, image: true },
         },
         articleTags: {
           select: {
             tag: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
+              select: { id: true, name: true, slug: true },
             },
           },
         },
         _count: {
-          select: {
-            comments: true,
-            articleTags: true,
-            likes: true,
-          },
+          select: { comments: true, articleTags: true, likes: true },
         },
       },
       orderBy: [
@@ -95,12 +78,80 @@ export class ArticlesService {
       },
     };
   }
-  create(createArticleDto: CreateArticleDto) {
-    return 'This action adds a new article';
+  async createArticle(createArticleDto: CreateArticleDto) {
+    const {
+      tagIds = [],
+      categoryId,
+      authorId,
+      title,
+      slug,
+      content,
+      image,
+    } = createArticleDto;
+    const newArticle = await this.db.article.create({
+      data: {
+        title,
+        slug,
+        content,
+        image,
+        author: { connect: { id: authorId } },
+        category: { connect: { id: categoryId } },
+        articleTags: tagIds.length
+          ? {
+              create: tagIds.map((tagId) => ({
+                tag: { connect: { id: tagId } },
+              })),
+            }
+          : undefined,
+      },
+    });
+    return newArticle;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} article`;
+  async getArticleBySlug(slug: string) {
+    const article = await this.db.article.findUnique({
+      where: {
+        slug,
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+          },
+        },
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            verified: true,
+            image: true,
+          },
+        },
+        articleTags: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
+            articleTags: true,
+            likes: true,
+          },
+        },
+      },
+    });
+    return article;
   }
 
   update(id: number, updateArticleDto) {

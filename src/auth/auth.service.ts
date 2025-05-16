@@ -83,13 +83,16 @@ export class AuthService {
       }
     }
     const hashedPassword = await this.hashData(createUserDto.password);
-
+    const { image, role, name, email, acceptedTOS } = createUserDto;
+    if (!name) {
+      throw new BadRequestException('Name is required');
+    }
     const newUser = await this.usersService.createUser({
-      image: createUserDto.image || null,
-      role: createUserDto.role || Role.READER,
-      name: createUserDto.name,
-      email: createUserDto.email, // add this line
-      acceptedTOS: createUserDto.acceptedTOS,
+      name,
+      email,
+      acceptedTOS,
+      image: image || null,
+      role: role || Role.READER,
       password: hashedPassword,
     });
     await this.createAndSendVerificationToken(
