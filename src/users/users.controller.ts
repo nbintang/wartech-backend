@@ -32,25 +32,12 @@ export class UsersController {
   async getAllUsers(
     @Query() query: QueryUserDto,
   ): Promise<PaginatedPayloadResponseDto> {
-    const {
-      users,
-      currrentPage,
-      itemPerPages,
-      itemCount,
-      totalPages,
-      totalItems,
-    } = await this.usersService.getAllusers(query);
+    const { users, meta } = await this.usersService.getAllusers(query);
     return {
       message: 'Users fetched successfully',
       data: {
         items: users,
-        meta: {
-          item_count: itemCount,
-          item_per_page: itemPerPages,
-          total_items: totalItems,
-          total_pages: totalPages,
-          current_page: currrentPage,
-        },
+        meta,
       },
     };
   }

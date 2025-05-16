@@ -44,11 +44,13 @@ export class UsersService {
     const totalPages = Math.ceil(usersCount / limit);
     return {
       users,
-      currrentPage: page,
-      itemPerPages: limit,
-      itemCount,
-      totalItems: usersCount,
-      totalPages,
+      meta: {
+        currentPage: page,
+        itemPerPages: limit,
+        itemCount,
+        totalItems: usersCount,
+        totalPages,
+      },
     };
   }
 
@@ -58,7 +60,7 @@ export class UsersService {
         email,
       },
       include: {
-        verificationToken: {
+        verificationTokens: {
           where: { expiresAt: { gt: new Date() } },
         },
       },

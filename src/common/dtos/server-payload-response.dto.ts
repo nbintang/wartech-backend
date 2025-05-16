@@ -6,15 +6,15 @@ const errorMessageSchema = z.array(
 );
 
 const baseServerPayloadResponseSchema = z.object({
-  status_code: z.number(),
+  statusCode: z.number(),
   success: z.boolean(),
   message: z.string(),
-  error_messages: errorMessageSchema,
+  errorMessages: errorMessageSchema,
   data: z.any(),
 });
 
 const serverPayloadResponseSchema = baseServerPayloadResponseSchema.partial({
-  error_messages: true,
+  errorMessages: true,
   data: true,
 });
 export class ServerPayloadResponseDto extends createZodDto(

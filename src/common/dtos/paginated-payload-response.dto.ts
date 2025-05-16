@@ -3,11 +3,11 @@ import { z } from 'zod';
 import { basePayloadResponseSchema } from './payload-response.dto';
 
 const PaginatedMetaSchema = z.object({
-  total_items: z.number(),
-  item_count: z.number(),
-  item_per_page: z.number(),
-  total_pages: z.number(),
-  current_page: z.number(),
+  totalItems: z.number(),
+  itemCount: z.number(),
+  itemPerPages: z.number(),
+  totalPages: z.number(),
+  currentPage: z.number(),
 });
 
 const PaginatedPayloadResponseSchema = basePayloadResponseSchema.extend({
@@ -23,11 +23,11 @@ export class PaginatedPayloadResponseDto<T = any> extends createZodDto(
   data: {
     items: T[];
     meta: {
-      total_items: number;
-      item_count: number;
-      item_per_page: number;
-      total_pages: number;
-      current_page: number;
+      totalItems: number;
+      itemCount: number;
+      itemPerPages: number;
+      totalPages: number;
+      currentPage: number;
     };
   };
 }

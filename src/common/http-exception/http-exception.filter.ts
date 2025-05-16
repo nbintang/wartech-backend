@@ -37,9 +37,9 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
         `ZodValidationException on ${request.method} ${request.url}: ${zodError.message}`,
       );
       return response.status(400).json({
-        status_code: 400,
+        statusCode: 400,
         success: false,
-        error_messages: zodError.errors.map(({ message, path }) => ({
+        errorMessages: zodError.errors.map(({ message, path }) => ({
           field: path.join('.'),
           message,
         })),
@@ -47,7 +47,7 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
     }
     if (exception instanceof UnauthorizedException) {
       return response.status(401).json({
-        status_code: 401,
+        statusCode: 401,
         success: false,
         message: exception.message || 'Unauthorized',
       });
@@ -68,13 +68,12 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
         ? responseMessage
         : responseMessage['message'] || 'Internal server error';
 
-    if (exception instanceof HttpException) {
+    if (exception instanceof HttpException)
       this.logger.error(
         `${request.method} ${request.url} ${status} ${message}`,
       );
-    }
     response.status(status).json({
-      status_code: status,
+      statusCode: status,
       success: false,
       message,
     });

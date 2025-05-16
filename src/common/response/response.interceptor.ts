@@ -18,7 +18,7 @@ export class ResponseInterceptor implements NestInterceptor {
           ? result
           : { data: result, message: 'Success' };
         return {
-          status_code: response.statusCode,
+          statusCode: response.statusCode,
           success: true,
           message,
           data,

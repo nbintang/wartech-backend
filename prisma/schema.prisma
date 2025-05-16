@@ -22,9 +22,9 @@ model Article {
   updatedAt   DateTime      @default(now())
   author      User          @relation(fields: [authorId], references: [id], map: "Article_authorId_fkey", onDelete: Cascade)
   category    Category      @relation(fields: [categoryId], references: [id], map: "Article_categoryId_fkey")
-  articleTag  ArticleTag[]
-  comment     Comment[]
-  like        Like[]
+  articleTags ArticleTag[]    // pluralized here
+  comments    Comment[]       // pluralized here
+  likes       Like[]          // pluralized here
 
   @@index([authorId], map: "Article_authorId_fkey")
   @@index([categoryId], map: "Article_categoryId_fkey")
@@ -44,12 +44,12 @@ model ArticleTag {
 }
 
 model Tag {
-  id         String       @id @default(uuid())
-  name       String       @unique(map: "Tag_name_key") @db.VarChar(50)
-  slug       String       @unique
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @default(now())
-  articleTag ArticleTag[]
+  id          String       @id @default(uuid())
+  name        String       @unique(map: "Tag_name_key") @db.VarChar(50)
+  slug        String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now())
+  articleTags ArticleTag[]    // pluralized here
 
   @@map("tags")
 }
@@ -58,10 +58,10 @@ model Category {
   id          String    @id @default(uuid())
   slug        String    @unique
   name        String    @unique(map: "Category_name_key") @db.VarChar(50)
-  description String?    @db.VarChar(255)
+  description String?   @db.VarChar(255)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now())
-  article     Article[]
+  articles    Article[]    // pluralized here
 
   @@map("categories")
 }
@@ -99,21 +99,21 @@ model Like {
 }
 
 model User {
-  id                String              @id @default(uuid())
-  name              String              @db.VarChar(100)
-  password          String
-  email             String              @unique(map: "User_email_key")
-  verified          Boolean             @default(false)
-  emailVerifiedAt   DateTime?
-  acceptedTOS       Boolean             @default(false)
-  image             String?
-  role              UserRole            @default(READER)
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @default(now())
-  article           Article[]
-  comment           Comment[]
-  like              Like[]
-  verificationToken VerificationToken[]
+  id                 String              @id @default(uuid())
+  name               String              @db.VarChar(100)
+  password           String
+  email              String              @unique(map: "User_email_key")
+  verified           Boolean             @default(false)
+  emailVerifiedAt    DateTime?
+  acceptedTOS        Boolean             @default(false)
+  image              String?
+  role               UserRole            @default(READER)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @default(now())
+  articles           Article[]           // pluralized here
+  comments           Comment[]           // pluralized here
+  likes              Like[]              // pluralized here
+  verificationTokens VerificationToken[] // pluralized here
 
   @@map("users")
 }

@@ -29,7 +29,7 @@ export class AuthController {
   @Post('signup')
   async signup(@Body() body: CreateUserDto, @Req() request: Request) {
     try {
-      const doesHaveCookieRefreshToken = request.cookies['refresh_token'];
+      const doesHaveCookieRefreshToken = request.cookies['refreshToken'];
       if (doesHaveCookieRefreshToken)
         throw new UnauthorizedException('Please Logout First');
       await this.authService.signUp(body);
@@ -56,14 +56,14 @@ export class AuthController {
       token,
     });
     if (accessToken && refreshToken)
-      response.cookie('refresh_token', refreshToken, {
+      response.cookie('refreshToken', refreshToken, {
         sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
         secure: process.env.NODE_ENV !== 'development',
         httpOnly: true,
       });
     return {
       message: 'Email verified successfully',
-      data: { access_token: accessToken },
+      data: { accessToken: accessToken },
     };
   }
 
@@ -72,7 +72,7 @@ export class AuthController {
     @Body() { email }: { email: string },
     @Req() request: Request,
   ): Promise<PayloadResponseDto> {
-    const existedTokenCookie = request.cookies['refresh_token'];
+    const existedTokenCookie = request.cookies['refreshToken'];
     if (existedTokenCookie)
       throw new UnauthorizedException(
         `You are already logged in! Please logout first.`,
@@ -139,14 +139,14 @@ export class AuthController {
     @Req() request: Request,
     @Body() body: SigninDto,
   ): Promise<PayloadResponseDto> {
-    const existedTokenCookie = request.cookies['refresh_token'];
+    const existedTokenCookie = request.cookies['refreshToken'];
     if (existedTokenCookie)
       throw new UnauthorizedException(
         `You are already logged in! Please logout first.`,
       );
     const { accessToken, refreshToken } = await this.authService.signIn(body);
     if (accessToken && refreshToken)
-      response.cookie('refresh_token', refreshToken, {
+      response.cookie('refreshToken', refreshToken, {
         sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
         secure: process.env.NODE_ENV !== 'development',
         httpOnly: true,
@@ -162,12 +162,12 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
   ) {
-    const existedTokenCookie = request.cookies['refresh_token'];
+    const existedTokenCookie = request.cookies['refreshToken'];
     if (!existedTokenCookie)
       throw new UnauthorizedException(
         'You are not logged in! Please login first.',
       );
-    response.clearCookie('refresh_token');
+    response.clearCookie('refreshToken');
     return await this.authService.signout();
   }
 
@@ -181,6 +181,6 @@ export class AuthController {
   async refreshTokens(@Req() request: Request) {
     const userId = (request as any).user.sub;
     const tokens = await this.authService.refreshToken(userId);
-    return { access_token: tokens.accessToken };
+    return { accessToken: tokens.accessToken };
   }
 }

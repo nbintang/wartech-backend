@@ -32,7 +32,7 @@ export class CategoriesService {
       skip,
       take,
       include: {
-        article: {
+        articles: {
           select: {
             id: true,
             title: true,
@@ -47,7 +47,7 @@ export class CategoriesService {
           orderBy: {
             publishedAt: 'desc',
           },
-          take: Math.min(query.articles_per_category, 10), // Limit to max 10 for safety
+          take: Math.min(query.articlesPerCategory, 10), // Limit to max 10 for safety
         },
       },
     });
@@ -58,11 +58,13 @@ export class CategoriesService {
     const totalPages = Math.ceil(categoriesCount / query.limit);
     return {
       categories,
-      currrentPage: query.page,
-      itemPerPages: query.limit,
-      itemCount,
-      totalItems: categoriesCount,
-      totalPages,
+      meta: {
+        currentPage: query.page,
+        itemPerPages: query.limit,
+        itemCount,
+        totalItems: categoriesCount,
+        totalPages,
+      },
     };
   }
 

@@ -83,12 +83,13 @@ export class AuthService {
       }
     }
     const hashedPassword = await this.hashData(createUserDto.password);
+
     const newUser = await this.usersService.createUser({
-      name: createUserDto.name,
-      email: createUserDto.email, // add this line
       image: createUserDto.image || null,
       role: createUserDto.role || Role.READER,
-      acceptedTOS: createUserDto.accepted_terms,
+      name: createUserDto.name,
+      email: createUserDto.email, // add this line
+      acceptedTOS: createUserDto.acceptedTOS,
       password: hashedPassword,
     });
     await this.createAndSendVerificationToken(
@@ -121,7 +122,7 @@ export class AuthService {
       {
         emailVerifiedAt: new Date(),
         verified: true,
-        verificationToken: { delete: { id: verificationToken.id } },
+        verificationTokens: { delete: { id: verificationToken.id } },
       },
     );
     const { accessToken, refreshToken } = await this.generateJwtTokens(

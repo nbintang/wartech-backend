@@ -52,25 +52,13 @@ export class CategoriesController {
   async getAllCategories(
     @Query() query: QueryCategoriesDto,
   ): Promise<PaginatedPayloadResponseDto> {
-    const {
-      categories,
-      currrentPage,
-      itemPerPages,
-      itemCount,
-      totalPages,
-      totalItems,
-    } = await this.categoriesService.getAllCategories(query);
+    const { categories, meta } =
+      await this.categoriesService.getAllCategories(query);
     return {
       message: 'Categories fetched successfully',
       data: {
         items: categories,
-        meta: {
-          total_items: totalItems,
-          item_count: itemCount,
-          item_per_page: itemPerPages,
-          total_pages: totalPages,
-          current_page: currrentPage,
-        },
+        meta,
       },
     };
   }

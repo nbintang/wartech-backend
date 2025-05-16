@@ -32,11 +32,13 @@ export class TagsService {
     const totalPages = Math.ceil(tagsCount / limit);
     return {
       tags,
-      totalItems: tagsCount,
-      currrentPage: page,
-      itemPerPages: limit,
-      itemCount,
-      totalPages,
+      meta: {
+        totalItems: tagsCount,
+        currentPage: page,
+        itemPerPages: limit,
+        itemCount,
+        totalPages,
+      },
     };
   }
 
@@ -76,7 +78,6 @@ export class TagsService {
     });
     return tag;
   }
-
   async deleteTagBySlug(slug: string) {
     const tag = await this.getTagBySlug(slug);
     if (!tag) throw new Error('Tag not found');

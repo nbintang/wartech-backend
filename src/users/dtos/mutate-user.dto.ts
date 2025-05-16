@@ -9,7 +9,7 @@ const baseUserSchema = z.object({
   image: z.string().url({ message: 'Invalid image url' }).optional(),
 });
 export const createUserSchema = baseUserSchema.extend({
-  accepted_terms: z.coerce.boolean().default(false),
+  acceptedTOS: z.coerce.boolean().default(false),
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters' })
