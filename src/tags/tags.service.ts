@@ -23,29 +23,16 @@ export class TagsService {
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
     const take = limit;
-    // const where: Prisma.TagWhereInput = {
-    //   articleTag: {
-    //     some: {
-    //       article: {
-    //         status: {
-    //           in: [ArticleStatus.PUBLISHED, ArticleStatus.ARCHIVED],
-    //         },
-    //       },
-    //     },
-    //   },
-    // };
     const tags = await this.db.tag.findMany({
-      // where,
       skip,
       take,
     });
-    const tagsCount = await this.db.tag.count({
-      //  where
-    });
+    const tagsCount = await this.db.tag.count();
     const itemCount = tags.length;
     const totalPages = Math.ceil(tagsCount / limit);
     return {
       tags,
+      totalItems: tagsCount,
       currrentPage: page,
       itemPerPages: limit,
       itemCount,
@@ -54,23 +41,14 @@ export class TagsService {
   }
 
   async getTagBySlug(slug: string) {
-    // const where: Prisma.TagWhereUniqueInput = {
-    //   slug,
-    //   articleTag: {
-    //     some: {
-    //       article: {
-    //         status: { in: [ArticleStatus.PUBLISHED, ArticleStatus.ARCHIVED] },
-    //       },
-    //     },
-    //   },
-    // };
     const tag = await this.db.tag.findUnique({ where: { slug } });
     return tag;
   }
 
   async updateTagsBySlug(slug: string, data: TagDto) {
-    const currentTag = await this.getTagBySlug(data.slug);
-    if (currentTag) throw new Error('Tag slug already exists');
+    const currentTag = await this.getTagBySlug(slug);
+    if (!currentTag)
+      throw new HttpException('Tag not found', HttpStatus.NOT_FOUND);
     if (data.name) {
       const existingByName = await this.db.tag.findUnique({
         where: { name: data.name },

@@ -6,6 +6,8 @@ export const basePayloadResponseSchema = z.object({
   data: z.record(z.string(), z.any()),
 });
 
-export class PayloadResponseDto extends createZodDto(
-  basePayloadResponseSchema,
-) {}
+export class PayloadResponseDto<
+  T = Record<string, unknown>,
+> extends createZodDto(basePayloadResponseSchema) {
+  data?: T;
+}

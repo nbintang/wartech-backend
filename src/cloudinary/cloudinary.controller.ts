@@ -17,11 +17,12 @@ import { ImageDto } from './dtos/mutate-file.dto';
 import { QueryFileDto } from './dtos/query-file.dto';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 
+@UseGuards(AccessTokenGuard)
 @Controller('/protected/upload')
 export class CloudinaryController {
   constructor(private readonly cloudinaryService: CloudinaryService) {}
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(RoleGuard)
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(

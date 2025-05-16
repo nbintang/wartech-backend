@@ -40,13 +40,20 @@ export class TagsController {
   async getAllTags(
     @Query() query: QueryTagDto,
   ): Promise<PaginatedPayloadResponseDto> {
-    const { tags, currrentPage, itemPerPages, itemCount, totalPages } =
-      await this.tagsService.getAllTags(query);
+    const {
+      tags,
+      currrentPage,
+      itemPerPages,
+      itemCount,
+      totalPages,
+      totalItems,
+    } = await this.tagsService.getAllTags(query);
     return {
       message: 'Tags fetched successfully',
       data: {
         items: tags,
         meta: {
+          total_items: totalItems,
           item_count: itemCount,
           item_per_page: itemPerPages,
           total_pages: totalPages,

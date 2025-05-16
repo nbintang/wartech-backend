@@ -76,7 +76,6 @@ export class UsersController {
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<PayloadResponseDto> {
     const user = await this.usersService.getLevel1andLevel2Users(id);
-    console.log(user);
     if (!user) throw new NotFoundException('User Not Found');
     return {
       message: `${user.name} fetched successfully`,
@@ -99,7 +98,6 @@ export class UsersController {
         data: user,
       };
     } catch (error) {
-      console.log(error);
       throw new HttpException(
         error.message || 'Something Went Wrong',
         error.status || 500,

@@ -17,6 +17,17 @@ const PaginatedPayloadResponseSchema = basePayloadResponseSchema.extend({
   }),
 });
 
-export class PaginatedPayloadResponseDto extends createZodDto(
+export class PaginatedPayloadResponseDto<T = any> extends createZodDto(
   PaginatedPayloadResponseSchema,
-) {}
+) {
+  data: {
+    items: T[];
+    meta: {
+      total_items: number;
+      item_count: number;
+      item_per_page: number;
+      total_pages: number;
+      current_page: number;
+    };
+  };
+}
