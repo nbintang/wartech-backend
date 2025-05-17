@@ -47,7 +47,9 @@ export class CategoriesService {
           orderBy: {
             publishedAt: 'desc',
           },
-          take: Math.min(query.articlesPerCategory, 10), // Limit to max 10 for safety
+          ...(query['articles-per-category'] && {
+            take: query['articles-per-category'],
+          }),
         },
       },
     });
@@ -76,28 +78,10 @@ export class CategoriesService {
     const currentCategory = await this.getCategoryBySlug(slug);
     if (!currentCategory)
       throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
-    if (data.name) {
-      const existingByName = await this.db.category.findUnique({
-        where: { name: data.name },
-      });
-      if (existingByName && existingByName.id !== currentCategory.id)
-        throw new HttpException(
-          'Category name already exists',
-          HttpStatus.BAD_REQUEST,
-        );
-    }
-    if (data.slug && data.slug !== slug) {
-      const existingBySlug = await this.getCategoryBySlug(data.slug);
-      if (existingBySlug && existingBySlug.id !== currentCategory.id)
-        throw new HttpException(
-          'Category slug already exists',
-          HttpStatus.BAD_REQUEST,
-        );
-    }
     const updatedCategory = await this.db.category.update({
-      where: { slug },
+      where: { id: currentCategory.id },
       data: {
-        name: data.name,
+        name: data.name ?? currentCategory.name,
         description: data.description,
         slug: data.slug ?? slug,
       },

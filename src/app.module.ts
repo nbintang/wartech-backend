@@ -14,6 +14,7 @@ import { ThrottlerConfigModule } from './common/throttler/throttler-config.modul
 import { ArticlesModule } from './articles/articles.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TagsModule } from './tags/tags.module';
+import { ArticleTagsModule } from './article-tags/article-tags.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { TagsModule } from './tags/tags.module';
     ArticlesModule,
     CategoriesModule,
     TagsModule,
+    ArticleTagsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -11,8 +11,6 @@ const categorySchema = z.object({
 const authorSchema = z.object({
   id: z.string(),
   name: z.string(),
-  email: z.string(),
-  image: z.string(),
 });
 
 const tagSchema = z.object({

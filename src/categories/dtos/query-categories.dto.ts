@@ -5,7 +5,7 @@ import { z } from 'zod';
 const queryCategorisSchema = baseQueryRequestSchema.extend({
   name: z.string().optional(),
   slug: z.string().optional(),
-  articlesPerCategory: z.coerce.number().optional(),
+  'articles-per-category': z.coerce.number().optional(),
 });
 
 export class QueryCategoriesDto extends createZodDto(queryCategorisSchema) {}

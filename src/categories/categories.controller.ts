@@ -75,8 +75,6 @@ export class CategoriesController {
     };
   }
 
-  @Roles(Role.ADMIN)
-  @UseGuards(AccessTokenGuard, RoleGuard)
   @Patch(':slug')
   @SkipThrottle({ short: false })
   async updateCategoryBySlug(

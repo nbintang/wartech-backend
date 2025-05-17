@@ -11,18 +11,19 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
-import { CreateArticleDto } from './dtos/mutate-article.dto';
+import { ArticleDto } from './dtos/mutate-article.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { ArticlesDto } from './dtos/response-article.dto';
 import { QueryArticleDto } from './dtos/query-article.dto';
 import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
-import { Prisma } from 'prisma/generated';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('/protected/articles')
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
   @Get()
+  @SkipThrottle({ short: true, medium: true })
   async getArticles(
     @Query() query: QueryArticleDto,
   ): Promise<PaginatedPayloadResponseDto<ArticlesDto>> {
@@ -36,25 +37,52 @@ export class ArticlesController {
     };
   }
   @Post()
-  create(@Body() createArticleDto: CreateArticleDto) {
-    return this.articlesService.createArticle(createArticleDto);
+  async createArticle(@Body() createArticleDto: ArticleDto) {
+    return await this.articlesService.createArticle(createArticleDto);
   }
 
   @Get(':slug')
-  async findOne(@Param('slug') slug: string): Promise<PayloadResponseDto> {
+  @SkipThrottle({ short: true, medium: true })
+  async getArticleBySlug(
+    @Param('slug') slug: string,
+  ): Promise<PayloadResponseDto> {
     const article = await this.articlesService.getArticleBySlug(slug);
     if (!article)
       throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
-    return { message: 'Article fetched successfully', data: article };
+    const { articleTags, _count, ...rest } = article;
+    const mappedArticle: ArticlesDto = {
+      ...rest,
+      tags: articleTags.map(({ tag }) => tag),
+      commentsCount: _count.comments,
+      tagsCount: _count.articleTags,
+      likesCount: _count.likes,
+    };
+    return {
+      message: 'Article fetched successfully',
+      data: { ...mappedArticle },
+    };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateArticleDto) {
-    return this.articlesService.update(+id, updateArticleDto);
+  @Patch(':slug')
+  async updateArticleBySlug(
+    @Param('slug') slug: string,
+    @Body() updateArticleDto: ArticleDto,
+  ) {
+    try {
+      return await this.articlesService.updateArticleBySlug(
+        slug,
+        updateArticleDto,
+      );
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Something went wrong',
+        HttpStatus.BAD_REQUEST || 500,
+      );
+    }
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.articlesService.remove(+id);
+  @Delete(':slug')
+  async remove(@Param('slug') slug: string) {
+    return await this.articlesService.deleteArticleBySlug(slug);
   }
 }

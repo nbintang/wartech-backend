@@ -51,29 +51,11 @@ export class TagsService {
     const currentTag = await this.getTagBySlug(slug);
     if (!currentTag)
       throw new HttpException('Tag not found', HttpStatus.NOT_FOUND);
-    if (data.name) {
-      const existingByName = await this.db.tag.findUnique({
-        where: { name: data.name },
-      });
-      if (existingByName && existingByName.id !== currentTag.id)
-        throw new HttpException(
-          'Tags name already exists',
-          HttpStatus.BAD_REQUEST,
-        );
-    }
-    if (data.slug && data.slug !== currentTag.slug) {
-      const existingBySlug = await this.getTagBySlug(data.slug);
-      if (existingBySlug && existingBySlug.id !== currentTag.id)
-        throw new HttpException(
-          'Tags slug already exists',
-          HttpStatus.BAD_REQUEST,
-        );
-    }
     const tag = await this.db.tag.update({
-      where: { slug },
+      where: { id: currentTag.id },
       data: {
-        name: data.name,
-        slug: data.slug,
+        name: data.name ?? currentTag.name,
+        slug: data.slug ?? slug,
       },
     });
     return tag;

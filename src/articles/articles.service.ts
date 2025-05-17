@@ -1,15 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { CreateArticleDto } from './dtos/mutate-article.dto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ArticleDto } from './dtos/mutate-article.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from 'prisma/generated';
 import { QueryArticleDto } from './dtos/query-article.dto';
 import { ArticlesDto } from './dtos/response-article.dto';
-
 @Injectable()
 export class ArticlesService {
   constructor(private db: PrismaService) {}
   async getArticeles(query: QueryArticleDto) {
-    const isPaginated = query.isPaginated ?? false;
+    const isPaginated = query['is-paginated'] ?? false;
     const page = isPaginated ? +(query.page ?? 1) : undefined;
     const limit = isPaginated ? +(query.limit ?? 10) : undefined;
     const skip = isPaginated ? (page - 1) * limit : undefined;
@@ -26,28 +25,14 @@ export class ArticlesService {
       where,
       skip,
       take,
-      omit: {
-        content: true,
-        authorId: true,
-        categoryId: true,
-      },
+      omit: { content: true, authorId: true, categoryId: true },
       include: {
-        category: {
-          select: { id: true, name: true, slug: true },
-        },
-        author: {
-          select: { id: true, name: true, email: true, image: true },
-        },
+        category: { select: { id: true, name: true, slug: true } },
+        author: { select: { id: true, name: true } },
         articleTags: {
-          select: {
-            tag: {
-              select: { id: true, name: true, slug: true },
-            },
-          },
+          select: { tag: { select: { id: true, name: true, slug: true } } },
         },
-        _count: {
-          select: { comments: true, articleTags: true, likes: true },
-        },
+        _count: { select: { comments: true, articleTags: true, likes: true } },
       },
       orderBy: [
         { updatedAt: 'desc' },
@@ -58,7 +43,7 @@ export class ArticlesService {
     const articlesCount = await this.db.article.count({ where });
     const itemCount = articles.length;
     const totalPages = isPaginated ? Math.ceil(articlesCount / limit) : 1;
-    const articleResponse: ArticlesDto[] = articles.map(
+    const mappedArticles: ArticlesDto[] = articles.map(
       ({ _count, articleTags, ...article }) => ({
         ...article,
         commentsCount: _count.comments,
@@ -68,7 +53,7 @@ export class ArticlesService {
       }),
     );
     return {
-      articles: articleResponse,
+      articles: mappedArticles,
       meta: {
         totalItems: articlesCount,
         currentPage: page,
@@ -78,7 +63,15 @@ export class ArticlesService {
       },
     };
   }
-  async createArticle(createArticleDto: CreateArticleDto) {
+  async createArticle(createArticleDto: ArticleDto) {
+    const existedArticleTitle = await this.getArticleBySlug(
+      createArticleDto.slug,
+    );
+    if (existedArticleTitle)
+      throw new HttpException(
+        'Article title already exists',
+        HttpStatus.BAD_REQUEST,
+      );
     const {
       tagIds = [],
       categoryId,
@@ -154,11 +147,29 @@ export class ArticlesService {
     return article;
   }
 
-  update(id: number, updateArticleDto) {
-    return `This action updates a #${id} article`;
+  async updateArticleBySlug(slug: string, updateArticleDto: ArticleDto) {
+    const currentArticle = await this.getArticleBySlug(slug);
+    if (!currentArticle)
+      throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+    const updatedArticle = await this.db.article.update({
+      where: { id: currentArticle.id },
+      data: {
+        title: updateArticleDto.title,
+        slug: updateArticleDto.slug,
+        content: updateArticleDto.content,
+        image: updateArticleDto.image,
+        author: { connect: { id: updateArticleDto.authorId } },
+        category: { connect: { id: updateArticleDto.categoryId } },
+      },
+    });
+    return updatedArticle;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} article`;
+  async deleteArticleBySlug(slug: string) {
+    const deletedArticle = await this.db.article.delete({ where: { slug } });
+    if (!deletedArticle) throw new HttpException('Failed to delete', 500);
+    return {
+      message: 'Article deleted successfully',
+    };
   }
 }

@@ -51,6 +51,7 @@ export class TagsController {
   }
 
   @Get(':slug')
+  @SkipThrottle({ short: true, medium: true, long: true })
   async getTagsBySlug(
     @Param('slug') slug: string,
   ): Promise<PayloadResponseDto> {
