@@ -1,34 +1,72 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { ArticleTagsService } from './article-tags.service';
-import { ArticleTagsDto } from './dto/mutate-article-tag.dto';
-import { UpdateArticleTagDto } from './dto/update-article-tag.dto';
+import { ArticleTagDto, ArticleTagsDto } from './dto/mutate-article-tag.dto';
+import { QueryArticleTagDto } from './dto/query-article-tag.dto';
+import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
+import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 
-@Controller('article-tags')
+@Controller('/protected/article-tags')
 export class ArticleTagsController {
   constructor(private readonly articleTagsService: ArticleTagsService) {}
 
+  @Post('/bulk')
+  addArticleTags(@Body() body: ArticleTagsDto) {
+    return this.articleTagsService.addArticleTags(body);
+  }
+
   @Post()
-  create(@Body() createArticleTagDto: ArticleTagsDto) {
-    return this.articleTagsService.addArticleTags(createArticleTagDto);
+  addArticleTag(@Body() body: ArticleTagDto) {
+    return this.articleTagsService.addArticleTag(body);
   }
 
   @Get()
-  findAll() {
-    return this.articleTagsService.getAllArticleTags();
+  async getAllArticleTags(
+    @Query() query: QueryArticleTagDto,
+  ): Promise<PaginatedPayloadResponseDto> {
+    const { articleTags, meta } =
+      await this.articleTagsService.getAllArticleTags(query);
+    return {
+      message: 'Article Tags fetched successfully',
+      data: {
+        items: articleTags,
+        meta,
+      },
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.articleTagsService.getArticleTagById(+id);
+  async getArticleTagById(
+    @Param('id') id: string,
+  ): Promise<PayloadResponseDto> {
+    const articleTag = await this.articleTagsService.getArticleTagById(id);
+    return {
+      message: 'Article Tag fetched successfully',
+      data: articleTag,
+    };
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateArticleTagDto: UpdateArticleTagDto) {
-    return this.articleTagsService.updateArticleTagById(+id, updateArticleTagDto);
+  async updateArticleTagById(
+    @Param('id') id: string,
+    @Body() updateArticleTagDto: ArticleTagDto,
+  ) {
+    return await this.articleTagsService.updateArticleTagById(
+      id,
+      updateArticleTagDto,
+    );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.articleTagsService.removeArticleTagById(+id);
+  async removeArticleTagById(@Param('id') id: string) {
+    return await this.articleTagsService.removeArticleTagById(id);
   }
 }
