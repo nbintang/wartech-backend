@@ -9,8 +9,6 @@ import {
 } from '@nestjs/common';
 import { LikesService } from './likes.service';
 import { LikeDto } from './dto/mutate-like.dto';
-import { UpdateLikeDto } from './dto/update-like.dto';
-
 @Controller('likes')
 export class LikesController {
   constructor(private readonly likesService: LikesService) {}
@@ -22,7 +20,7 @@ export class LikesController {
 
   @Get()
   findAll() {
-    return this.likesService.getLikes();
+    return this.likesService.getAllLikes();
   }
 
   @Get(':id')

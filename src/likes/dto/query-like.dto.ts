@@ -1,7 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
+import { baseQueryRequestSchema } from 'src/common/dtos/base-query-request.schema';
 import { z } from 'zod';
 
-const queryLikeSchema = z.object({
+const queryLikeSchema = baseQueryRequestSchema.extend({
   'article-slug': z.string().optional(),
 });
 
