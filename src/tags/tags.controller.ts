@@ -15,7 +15,7 @@ import { TagDto } from './dtos/mutate-tag.dto';
 import { QueryTagDto } from './dtos/query-tag.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
-import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
+import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 @Controller('/protected/tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
@@ -23,7 +23,7 @@ export class TagsController {
   @Post()
   async createNewSlug(
     @Body() createTagDto: TagDto,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     try {
       const tag = await this.tagsService.createNewSlug(createTagDto);
       return { message: 'Tag created successfully', data: tag };
@@ -54,7 +54,7 @@ export class TagsController {
   @SkipThrottle({ short: true, medium: true, long: true })
   async getTagsBySlug(
     @Param('slug') slug: string,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     const tag = await this.tagsService.getTagBySlug(slug);
     if (!tag) throw new HttpException('Tag not found', HttpStatus.NOT_FOUND);
     return { message: 'Tag fetched successfully', data: tag };
@@ -64,7 +64,7 @@ export class TagsController {
   async updateTagsBySlug(
     @Param('slug') slug: string,
     @Body() updateTagDto: TagDto,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     try {
       const tag = await this.tagsService.updateTagsBySlug(slug, updateTagDto);
       return { message: 'Tag updated successfully', data: tag };
@@ -79,7 +79,7 @@ export class TagsController {
   @Delete(':slug')
   async deleteTagBySlug(
     @Param('slug') slug: string,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     try {
       await this.tagsService.deleteTagBySlug(slug);
       return { message: 'Tag deleted successfully' };

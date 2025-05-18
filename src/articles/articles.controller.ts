@@ -15,7 +15,7 @@ import { ArticleDto } from './dtos/mutate-article.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { ArticlesDto } from './dtos/response-article.dto';
 import { QueryArticleDto } from './dtos/query-article.dto';
-import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
+import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('/protected/articles')
@@ -45,7 +45,7 @@ export class ArticlesController {
   @SkipThrottle({ short: true, medium: true })
   async getArticleBySlug(
     @Param('slug') slug: string,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     const article = await this.articlesService.getArticleBySlug(slug);
     if (!article)
       throw new HttpException('Article not found', HttpStatus.NOT_FOUND);

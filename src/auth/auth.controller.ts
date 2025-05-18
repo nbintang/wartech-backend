@@ -16,7 +16,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dtos/mutate-user.dto';
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
+import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
 import { ResetPasswordDto } from './dtos/verify.dto';
 import { VerificationType } from 'src/verification-token/enums/verification.enum';
@@ -49,7 +49,7 @@ export class AuthController {
     @Query('userId') userId: string,
     @Query('token') token: string,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     if (!token) throw new UnauthorizedException('Please provide token');
     const { accessToken, refreshToken } = await this.authService.verifyEmail({
       userId,
@@ -71,7 +71,7 @@ export class AuthController {
   async forgotPassword(
     @Body() { email }: { email: string },
     @Req() request: Request,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     const existedTokenCookie = request.cookies['refreshToken'];
     if (existedTokenCookie)
       throw new UnauthorizedException(
@@ -94,7 +94,7 @@ export class AuthController {
   @Post('resend-verification')
   async resendVerification(
     @Body() { email }: { email: string },
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     await this.authService.createAndSendVerificationToken(
       { email },
       VerificationType.EMAIL_VERIFICATION,
@@ -108,7 +108,7 @@ export class AuthController {
   async resetPassword(
     @Query('userId') userId: string,
     @Query('token') token: string,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     const isTokenValid = await this.authService.verifyResetPasswordToken({
       userId,
       token,
@@ -138,7 +138,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
     @Body() body: SigninDto,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     const existedTokenCookie = request.cookies['refreshToken'];
     if (existedTokenCookie)
       throw new UnauthorizedException(

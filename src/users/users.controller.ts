@@ -20,7 +20,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from './enums/role.enums';
 import { Request, Response } from 'express';
-import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
+import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { UpdateUserDto } from './dtos/mutate-user.dto';
 @UseGuards(AccessTokenGuard)
@@ -45,7 +45,7 @@ export class UsersController {
   async getMe(
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const userId = request.user.sub;
@@ -61,7 +61,9 @@ export class UsersController {
     };
   }
   @Get(':id')
-  async getUserById(@Param('id') id: string): Promise<PayloadResponseDto> {
+  async getUserById(
+    @Param('id') id: string,
+  ): Promise<SinglePayloadResponseDto> {
     const user = await this.usersService.getLevel1andLevel2Users(id);
     if (!user) throw new NotFoundException('User Not Found');
     return {
@@ -77,7 +79,7 @@ export class UsersController {
   async updateProfile(
     @Param('id') id: string,
     @Body() body: UpdateUserDto,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     try {
       const user = await this.usersService.updateUserById({ id }, body);
       return {
@@ -94,7 +96,9 @@ export class UsersController {
   @Roles(Role.ADMIN)
   @UseGuards(RoleGuard)
   @Delete(':id')
-  async deleteUserById(@Param('id') id: string): Promise<PayloadResponseDto> {
+  async deleteUserById(
+    @Param('id') id: string,
+  ): Promise<SinglePayloadResponseDto> {
     const user = await this.usersService.deleteUserById(id);
     if (!user) throw new NotFoundException('User Not Found');
     return {

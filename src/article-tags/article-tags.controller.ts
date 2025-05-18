@@ -9,10 +9,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { ArticleTagsService } from './article-tags.service';
-import { ArticleTagDto, ArticleTagsDto } from './dto/mutate-article-tag.dto';
-import { QueryArticleTagDto } from './dto/query-article-tag.dto';
+import { ArticleTagDto, ArticleTagsDto } from './dtos/mutate-article-tag.dto';
+import { QueryArticleTagDto } from './dtos/query-article-tag.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
-import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
+import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 
 @Controller('/protected/article-tags')
 export class ArticleTagsController {
@@ -46,7 +46,7 @@ export class ArticleTagsController {
   @Get(':id')
   async getArticleTagById(
     @Param('id') id: string,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     const articleTag = await this.articleTagsService.getArticleTagById(id);
     return {
       message: 'Article Tag fetched successfully',

@@ -15,12 +15,12 @@ import { CategoriesService } from './categories.service';
 import { QueryCategoriesDto } from './dtos/query-categories.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
-import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/users/enums/role.enums';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { CategoryDto } from './dtos/mutate-category.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 
 @SkipThrottle({
   short: true,
@@ -66,7 +66,7 @@ export class CategoriesController {
   @Get(':slug')
   async getCategoryBySlug(
     @Param('slug') slug: string,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     const category = await this.categoriesService.getCategoryBySlug(slug);
     if (!category) throw new NotFoundException('Category Not Found');
     return {

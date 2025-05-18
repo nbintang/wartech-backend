@@ -11,7 +11,7 @@ import { BaseExceptionFilter } from '@nestjs/core';
 import { Request, Response } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ZodValidationException } from 'nestjs-zod';
-import { ServerPayloadResponseDto } from 'src/common/dtos/server-payload-response.dto';
+import { ServerErrorPayloadResponseDto } from 'src/common/dtos/server-payload-response.dto';
 
 @Catch()
 export class HttpExceptionFilter extends BaseExceptionFilter {
@@ -26,7 +26,7 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
     host: ArgumentsHost,
   ) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response<ServerPayloadResponseDto>>();
+    const response = ctx.getResponse<Response<ServerErrorPayloadResponseDto>>();
     const request = ctx.getRequest<Request>();
     if (exception instanceof ZodValidationException) {
       const zodError = exception.getZodError();

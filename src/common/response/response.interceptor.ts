@@ -9,17 +9,20 @@ import { ServerPayloadResponseDto } from '../dtos/server-payload-response.dto';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const ctx = context.switchToHttp();
-    const response = ctx.getResponse();
+  intercept(_: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       map((result): ServerPayloadResponseDto => {
-        const { data, message } = result?.message
+        const { data, message, statusCode, success } = result?.message
           ? result
-          : { data: result, message: 'Success' };
+          : {
+              data: result,
+              message: 'Success',
+              statusCode: 200,
+              success: true,
+            };
         return {
-          statusCode: response.statusCode,
-          success: true,
+          statusCode,
+          success,
           message,
           data,
         };

@@ -15,7 +15,7 @@ import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { ImageDto } from './dtos/mutate-file.dto';
 import { QueryFileDto } from './dtos/query-file.dto';
-import { PayloadResponseDto } from 'src/common/dtos/payload-response.dto';
+import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 
 @UseGuards(AccessTokenGuard)
 @Controller('/protected/upload')
@@ -28,7 +28,7 @@ export class CloudinaryController {
   async uploadFile(
     @UploadedFile() file: ImageDto,
     @Query() query: QueryFileDto,
-  ): Promise<PayloadResponseDto> {
+  ): Promise<SinglePayloadResponseDto> {
     try {
       const { folder } = query;
       if (!folder) throw new HttpException('Folder is required', 400);

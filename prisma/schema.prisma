@@ -22,9 +22,9 @@ model Article {
   updatedAt   DateTime      @default(now())
   author      User          @relation(fields: [authorId], references: [id], map: "Article_authorId_fkey", onDelete: Cascade)
   category    Category      @relation(fields: [categoryId], references: [id], map: "Article_categoryId_fkey")
-  articleTags ArticleTag[]    // pluralized here
-  comments    Comment[]       // pluralized here
-  likes       Like[]          // pluralized here
+  articleTags ArticleTag[] // pluralized here
+  comments    Comment[] // pluralized here
+  likes       Like[] // pluralized here
 
   @@index([authorId], map: "Article_authorId_fkey")
   @@index([categoryId], map: "Article_categoryId_fkey")
@@ -49,7 +49,7 @@ model Tag {
   slug        String       @unique
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @default(now())
-  articleTags ArticleTag[]    // pluralized here
+  articleTags ArticleTag[] // pluralized here
 
   @@map("tags")
 }
@@ -61,7 +61,7 @@ model Category {
   description String?   @db.VarChar(255)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now())
-  articles    Article[]    // pluralized here
+  articles    Article[] // pluralized here
 
   @@map("categories")
 }
@@ -73,6 +73,7 @@ model Comment {
   articleId String
   parentId  String?
   createdAt DateTime  @default(now())
+  isEdited  Boolean   @default(false)
   updatedAt DateTime  @default(now())
   article   Article   @relation(fields: [articleId], references: [id], map: "Comment_articleId_fkey", onDelete: Cascade)
   parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id], map: "Comment_parentId_fkey", onDelete: Cascade)
@@ -110,9 +111,9 @@ model User {
   role               UserRole            @default(READER)
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @default(now())
-  articles           Article[]           // pluralized here
-  comments           Comment[]           // pluralized here
-  likes              Like[]              // pluralized here
+  articles           Article[] // pluralized here
+  comments           Comment[] // pluralized here
+  likes              Like[] // pluralized here
   verificationTokens VerificationToken[] // pluralized here
 
   @@map("users")
