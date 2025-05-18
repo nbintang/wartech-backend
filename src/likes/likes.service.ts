@@ -3,18 +3,21 @@ import { LikeDto } from './dto/mutate-like.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryLikeDto } from './dto/query-like.dto';
 import { Prisma } from 'prisma/generated';
+import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 
 @Injectable()
 export class LikesService {
   constructor(private db: PrismaService) {}
-  async createLike(createLikeDto: LikeDto) {
+  async createLike(createLikeDto: LikeDto): Promise<SinglePayloadResponseDto> {
     const like = await this.db.like.create({
       data: {
         userId: createLikeDto.userId,
         articleId: createLikeDto.articleId,
       },
     });
-    return like;
+    return {
+      data: like,
+    };
   }
 
   async getAllLikes(query: QueryLikeDto) {

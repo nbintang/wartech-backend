@@ -6,35 +6,52 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { LikesService } from './likes.service';
 import { LikeDto } from './dto/mutate-like.dto';
-@Controller('likes')
+import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
+import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
+import { QueryLikeDto } from './dto/query-like.dto';
+@Controller('/protected/likes')
 export class LikesController {
   constructor(private readonly likesService: LikesService) {}
 
   @Post()
-  create(@Body() createLikeDto: LikeDto) {
-    return this.likesService.createLike(createLikeDto);
+  async createLike(
+    @Body() createLikeDto: LikeDto,
+  ): Promise<SinglePayloadResponseDto> {
+    return await this.likesService.createLike(createLikeDto);
   }
 
   @Get()
-  findAll() {
-    return this.likesService.getAllLikes();
+  async getAllLikes(
+    @Query() query: QueryLikeDto,
+  ): Promise<PaginatedPayloadResponseDto> {
+    const { likes, meta } = await this.likesService.getAllLikes(query);
+    return {
+      data: {
+        items: likes,
+        meta,
+      },
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.likesService.getLikeById(+id);
+  async getLikeById(@Param('id') id: string) {
+    return await this.likesService.getLikeById(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLikeDto: UpdateLikeDto) {
-    return this.likesService.updateLikeById(+id, updateLikeDto);
+  async updateLikeById(
+    @Param('id') id: string,
+    @Body() updateLikeDto: LikeDto,
+  ) {
+    return await this.likesService.updateLikeById(id, updateLikeDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.likesService.removeLikeById(+id);
+  async removeLikeById(@Param('id') id: string) {
+    return await this.likesService.removeLikeById(id);
   }
 }
