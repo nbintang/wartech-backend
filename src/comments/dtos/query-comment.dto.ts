@@ -3,7 +3,7 @@ import { baseQueryRequestSchema } from 'src/common/dtos/base-query-request.schem
 import { z } from 'zod';
 
 export const queryCommentSchema = baseQueryRequestSchema.extend({
-  'article-slug': z.string().uuid().optional(),
+  'article-slug': z.string().optional(),
 });
 
 export class QueryCommentDto extends createZodDto(queryCommentSchema) {}
