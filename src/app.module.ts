@@ -15,6 +15,7 @@ import { ArticlesModule } from './articles/articles.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TagsModule } from './tags/tags.module';
 import { ArticleTagsModule } from './article-tags/article-tags.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ArticleTagsModule } from './article-tags/article-tags.module';
     CategoriesModule,
     TagsModule,
     ArticleTagsModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
