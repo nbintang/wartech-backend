@@ -1,13 +1,15 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CategoryDto } from './dtos/mutate-category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from 'prisma/generated';
+import { Category, Prisma } from 'prisma/generated';
 import { QueryCategoriesDto } from './dtos/query-categories.dto';
+import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
+import { ArticleStatus } from 'src/articles/enums/article-status.enum';
 
 @Injectable()
 export class CategoriesService {
   constructor(private db: PrismaService) {}
-  async createArticleCategory(data: CategoryDto) {
+  async createArticleCategory(data: CategoryDto): Promise<Category> {
     const existedCategory = await this.getCategoryBySlug(data.slug);
     if (existedCategory)
       throw new HttpException('Category already exists', 400);
@@ -21,7 +23,30 @@ export class CategoriesService {
     return newCategory;
   }
 
-  async getAllCategories(query: QueryCategoriesDto) {
+  async getAllCategories(query: QueryCategoriesDto): Promise<
+    PaginatedPayloadResponseDto<
+      Prisma.CategoryGetPayload<{
+        include: {
+          articles: {
+            select: {
+              id: true;
+              title: true;
+              slug: true;
+              image: true;
+              status: true;
+              publishedAt: true;
+            };
+            where: {
+              status: ArticleStatus.PUBLISHED;
+            };
+            orderBy: {
+              publishedAt: 'desc';
+            };
+          };
+        };
+      }>
+    >
+  > {
     const skip = (query.page - 1) * query.limit;
     const take = query.limit;
     const dynamicSearch: Prisma.CategoryWhereInput = {
@@ -42,7 +67,7 @@ export class CategoriesService {
             publishedAt: true,
           },
           where: {
-            status: 'PUBLISHED',
+            status: ArticleStatus.PUBLISHED,
           },
           orderBy: {
             publishedAt: 'desc',
@@ -59,22 +84,27 @@ export class CategoriesService {
     const itemCount = categories.length;
     const totalPages = Math.ceil(categoriesCount / query.limit);
     return {
-      categories,
-      meta: {
-        currentPage: query.page,
-        itemPerPages: query.limit,
-        itemCount,
-        totalItems: categoriesCount,
-        totalPages,
+      data: {
+        items: categories,
+        meta: {
+          currentPage: query.page,
+          itemPerPages: query.limit,
+          itemCount,
+          totalItems: categoriesCount,
+          totalPages,
+        },
       },
     };
   }
 
-  async getCategoryBySlug(slug: string) {
+  async getCategoryBySlug(slug: string): Promise<Category> {
     return await this.db.category.findUnique({ where: { slug } });
   }
 
-  async updateCategoryBySlug(slug: string, data: CategoryDto) {
+  async updateCategoryBySlug(
+    slug: string,
+    data: CategoryDto,
+  ): Promise<Category> {
     const currentCategory = await this.getCategoryBySlug(slug);
     if (!currentCategory)
       throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
@@ -86,11 +116,10 @@ export class CategoriesService {
         slug: data.slug ?? slug,
       },
     });
-
     return updatedCategory;
   }
 
-  async deleteCategoryBySlug(slug: string) {
+  async deleteCategoryBySlug(slug: string): Promise<Category> {
     const existedCategory = await this.getCategoryBySlug(slug);
     if (!existedCategory)
       throw new HttpException('Category not found', HttpStatus.NOT_FOUND);

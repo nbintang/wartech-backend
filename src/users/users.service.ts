@@ -2,14 +2,23 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryUserDto } from './dtos/query-user.dto';
-import { Prisma } from 'prisma/generated';
+import { Prisma, User } from 'prisma/generated';
 import { Role } from './enums/role.enums';
+import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 
+type UserPayload<T extends Prisma.UserDefaultArgs = object> =
+  Prisma.UserGetPayload<T>;
+
+type SafeUser = UserPayload<{
+  omit: { password: true; acceptedTOS: true; emailVerifiedAt: true };
+}>;
 @Injectable()
 export class UsersService {
   constructor(private db: PrismaService) {}
 
-  async createUser(data: Prisma.UserCreateInput) {
+  async createUser(
+    data: Prisma.UserCreateInput,
+  ): Promise<UserPayload<{ select: { id: true; email: true; name: true } }>> {
     const newUser = await this.db.user.create({
       data,
       select: { id: true, email: true, name: true },
@@ -17,7 +26,9 @@ export class UsersService {
     return newUser;
   }
 
-  async getAllusers(query: QueryUserDto) {
+  async getAllusers(
+    query: QueryUserDto,
+  ): Promise<PaginatedPayloadResponseDto<SafeUser>> {
     const page = +(query.page ?? 1);
     const limit = +(query.limit ?? 10);
     const skip = (page - 1) * limit;
@@ -43,31 +54,29 @@ export class UsersService {
     const itemCount = users.length;
     const totalPages = Math.ceil(usersCount / limit);
     return {
-      users,
-      meta: {
-        currentPage: page,
-        itemPerPages: limit,
-        itemCount,
-        totalItems: usersCount,
-        totalPages,
+      data: {
+        items: users,
+        meta: {
+          currentPage: page,
+          itemPerPages: limit,
+          itemCount,
+          totalItems: usersCount,
+          totalPages,
+        },
       },
     };
   }
 
-  async getUserByEmail(email: string) {
+  async getUserByEmail(email: string): Promise<User> {
     return this.db.user.findUnique({
-      where: {
-        email,
-      },
-      include: {
-        verificationTokens: {
-          where: { expiresAt: { gt: new Date() } },
-        },
-      },
+      where: { email },
     });
   }
 
-  async updateUserById({ id }: { id: string }, data: Prisma.UserUpdateInput) {
+  async updateUserById(
+    { id }: { id: string },
+    data: Prisma.UserUpdateInput,
+  ): Promise<SafeUser> {
     return await this.db.user.update({
       where: { id },
       data,
@@ -79,16 +88,20 @@ export class UsersService {
     });
   }
 
-  async getLevel1andLevel2Users(id: string) {
+  async getLevel1andLevel2Users(id: string): Promise<SafeUser> {
     return await this.db.user.findUnique({
       where: { id, NOT: { role: 'ADMIN' } },
       omit: {
         password: true,
         acceptedTOS: true,
+        emailVerifiedAt: true,
       },
     });
   }
-  async getUserById(id: string, except?: Prisma.UserOmit) {
+  async getUserById(
+    id: string,
+    except?: Prisma.UserOmit,
+  ): Promise<UserPayload<{ omit: Prisma.UserOmit }>> {
     const user = await this.db.user.findUnique({
       where: { id },
       omit: except,
@@ -97,6 +110,9 @@ export class UsersService {
   }
 
   async deleteUserById(id: string) {
-    return await this.db.user.delete({ where: { id } });
+    await this.db.user.delete({ where: { id } });
+    return {
+      message: `User deleted successfully`,
+    };
   }
 }

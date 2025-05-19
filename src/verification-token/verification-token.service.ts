@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, VerificationType } from 'prisma/generated';
-
 import { PrismaService } from 'src/prisma/prisma.service';
 
+type VerificationToken<T extends Prisma.VerificationTokenDefaultArgs = object> =
+  Prisma.VerificationTokenGetPayload<T>;
 @Injectable()
 export class VerificationTokenService {
   constructor(private db: PrismaService) {}
-  async createVerificationToken(data: Prisma.VerificationTokenCreateInput) {
+  async createVerificationToken(
+    data: Prisma.VerificationTokenCreateInput,
+  ): Promise<VerificationToken> {
     const verificationToken = await this.db.verificationToken.create({
       data,
     });
@@ -19,7 +22,16 @@ export class VerificationTokenService {
   }: {
     userId: string;
     type: VerificationType;
-  }) {
+  }): Promise<
+    VerificationToken<{
+      select: {
+        id: true;
+        userId: true;
+        token: true;
+        expiresAt: true;
+      };
+    }>
+  > {
     const verificationtoken = await this.db.verificationToken.findFirst({
       where: {
         userId,
@@ -42,16 +54,17 @@ export class VerificationTokenService {
   }: {
     userId: string;
     type: VerificationType;
-  }): Promise<Prisma.BatchPayload> {
-    return await this.db.verificationToken.deleteMany({
+  }): Promise<number> {
+    const tokens = await this.db.verificationToken.deleteMany({
       where: {
         userId,
         type,
       },
     });
+    return tokens.count;
   }
 
-  async deleteTokensByUserId(userId: string): Promise<void> {
-    await this.db.verificationToken.deleteMany({ where: { userId } });
+  async deleteTokensByUserId(userId: string): Promise<Prisma.BatchPayload> {
+    return await this.db.verificationToken.deleteMany({ where: { userId } });
   }
 }

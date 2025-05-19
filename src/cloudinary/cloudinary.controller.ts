@@ -33,8 +33,10 @@ export class CloudinaryController {
       const { folder } = query;
       if (!folder) throw new HttpException('Folder is required', 400);
       let exitedPublicId: string | null | undefined;
-      if (query.imageUrl) {
-        exitedPublicId = this.cloudinaryService.extractPublicId(query.imageUrl);
+      if (query['image-url']) {
+        exitedPublicId = this.cloudinaryService.extractPublicId(
+          query['image-url'],
+        );
       }
       const { secure_url, public_id, created_at } =
         await this.cloudinaryService.uploadFile({

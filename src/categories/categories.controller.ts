@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { QueryCategoriesDto } from './dtos/query-categories.dto';
-import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/users/enums/role.enums';
@@ -49,18 +48,8 @@ export class CategoriesController {
   }
 
   @Get()
-  async getAllCategories(
-    @Query() query: QueryCategoriesDto,
-  ): Promise<PaginatedPayloadResponseDto> {
-    const { categories, meta } =
-      await this.categoriesService.getAllCategories(query);
-    return {
-      message: 'Categories fetched successfully',
-      data: {
-        items: categories,
-        meta,
-      },
-    };
+  async getAllCategories(@Query() query: QueryCategoriesDto) {
+    return await this.categoriesService.getAllCategories(query);
   }
 
   @Get(':slug')

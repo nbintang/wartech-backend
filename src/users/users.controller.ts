@@ -15,7 +15,6 @@ import {
 import { UsersService } from './users.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { QueryUserDto } from './dtos/query-user.dto';
-import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from './enums/role.enums';
@@ -29,17 +28,8 @@ import { UpdateUserDto } from './dtos/mutate-user.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   @Get()
-  async getAllUsers(
-    @Query() query: QueryUserDto,
-  ): Promise<PaginatedPayloadResponseDto> {
-    const { users, meta } = await this.usersService.getAllusers(query);
-    return {
-      message: 'Users fetched successfully',
-      data: {
-        items: users,
-        meta,
-      },
-    };
+  async getAllUsers(@Query() query: QueryUserDto) {
+    return await this.usersService.getAllusers(query);
   }
   @Get('/profile')
   async getMe(
@@ -76,10 +66,7 @@ export class UsersController {
   @UseGuards(RoleGuard)
   @Patch(':id')
   @SkipThrottle({ medium: false })
-  async updateProfile(
-    @Param('id') id: string,
-    @Body() body: UpdateUserDto,
-  ): Promise<SinglePayloadResponseDto> {
+  async updateProfile(@Param('id') id: string, @Body() body: UpdateUserDto) {
     try {
       const user = await this.usersService.updateUserById({ id }, body);
       return {
@@ -96,13 +83,7 @@ export class UsersController {
   @Roles(Role.ADMIN)
   @UseGuards(RoleGuard)
   @Delete(':id')
-  async deleteUserById(
-    @Param('id') id: string,
-  ): Promise<SinglePayloadResponseDto> {
-    const user = await this.usersService.deleteUserById(id);
-    if (!user) throw new NotFoundException('User Not Found');
-    return {
-      message: `${user.name} deleted successfully`,
-    };
+  async deleteUserById(@Param('id') id: string) {
+    return await this.usersService.deleteUserById(id);
   }
 }

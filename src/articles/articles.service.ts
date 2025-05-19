@@ -4,10 +4,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from 'prisma/generated';
 import { QueryArticleDto } from './dtos/query-article.dto';
 import { ArticlesDto } from './dtos/response-article.dto';
+import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 @Injectable()
 export class ArticlesService {
   constructor(private db: PrismaService) {}
-  async getArticeles(query: QueryArticleDto) {
+  async getArticeles(
+    query: QueryArticleDto,
+  ): Promise<PaginatedPayloadResponseDto<ArticlesDto>> {
     const isPaginated = query['is-paginated'] ?? false;
     const page = isPaginated ? +(query.page ?? 1) : undefined;
     const limit = isPaginated ? +(query.limit ?? 10) : undefined;
@@ -53,13 +56,15 @@ export class ArticlesService {
       }),
     );
     return {
-      articles: mappedArticles,
-      meta: {
-        totalItems: articlesCount,
-        currentPage: page,
-        itemPerPages: limit,
-        itemCount,
-        totalPages,
+      data: {
+        items: mappedArticles,
+        meta: {
+          totalItems: articlesCount,
+          currentPage: page,
+          itemPerPages: limit,
+          itemCount,
+          totalPages,
+        },
       },
     };
   }
@@ -101,7 +106,33 @@ export class ArticlesService {
     return newArticle;
   }
 
-  async getArticleBySlug(slug: string) {
+  async getArticleBySlug(slug: string): Promise<
+    Prisma.ArticleGetPayload<{
+      include: {
+        category: {
+          select: {
+            id: true;
+            name: true;
+            slug: true;
+            description: true;
+          };
+        };
+        author: {
+          select: {
+            id: true;
+            name: true;
+            email: true;
+            verified: true;
+            image: true;
+          };
+        };
+        articleTags: {
+          select: { tag: { select: { id: true; name: true; slug: true } } };
+        };
+        _count: { select: { comments: true; articleTags: true; likes: true } };
+      };
+    }>
+  > {
     const article = await this.db.article.findUnique({
       where: {
         slug,

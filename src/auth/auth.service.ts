@@ -18,6 +18,8 @@ import { ResetPasswordDto, VerifyEmailFromUrlDto } from './dtos/verify.dto';
 import { VerificationType } from 'src/verification-token/enums/verification.enum';
 import { Role } from 'src/users/enums/role.enums';
 import * as crypto from 'crypto';
+
+export type JwtTokenResponse = { accessToken: string; refreshToken: string };
 @Injectable()
 export class AuthService {
   constructor(
@@ -40,7 +42,11 @@ export class AuthService {
     return rawToken;
   }
 
-  async generateJwtTokens(userId: string, email: string, role: string) {
+  async generateJwtTokens(
+    userId: string,
+    email: string,
+    role: string,
+  ): Promise<JwtTokenResponse> {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         { sub: userId, email, role },
@@ -63,7 +69,9 @@ export class AuthService {
     };
   }
 
-  async signUp(createUserDto: CreateUserDto) {
+  async signUp(
+    createUserDto: CreateUserDto,
+  ): Promise<{ message: string } | void> {
     const existingUser = await this.usersService.getUserByEmail(
       createUserDto.email,
     );
@@ -101,7 +109,10 @@ export class AuthService {
     );
   }
 
-  async verifyEmail({ userId, token }: VerifyEmailFromUrlDto) {
+  async verifyEmail({
+    userId,
+    token,
+  }: VerifyEmailFromUrlDto): Promise<JwtTokenResponse> {
     const user = await this.usersService.getUserById(userId);
     if (!user) throw new NotFoundException('User not found');
     const verificationToken =
@@ -133,10 +144,10 @@ export class AuthService {
       user.email,
       user.role,
     );
-    return { user, accessToken, refreshToken };
+    return { accessToken, refreshToken };
   }
 
-  async signIn({ email, password }: LocalSigninDto): Promise<any> {
+  async signIn({ email, password }: LocalSigninDto): Promise<JwtTokenResponse> {
     const user = await this.usersService.getUserByEmail(email);
     if (!user || !user.verified)
       throw new UnauthorizedException('User is not verified');
@@ -149,7 +160,6 @@ export class AuthService {
       user.role,
     );
     return {
-      user,
       accessToken,
       refreshToken,
     };
@@ -230,7 +240,11 @@ export class AuthService {
     return true;
   }
 
-  async changePassword({ userId, token, newPassword }: ResetPasswordDto) {
+  async changePassword({
+    userId,
+    token,
+    newPassword,
+  }: ResetPasswordDto): Promise<boolean> {
     this.verifyResetPasswordToken({ userId, token });
     const hashedPassword = await this.hashData(newPassword);
     await this.usersService.updateUserById(
@@ -247,7 +261,7 @@ export class AuthService {
     return true;
   }
 
-  async refreshToken(userId: string) {
+  async refreshToken(userId: string): Promise<{ accessToken: string }> {
     const user = await this.usersService.getUserById(userId);
     if (!user) throw new ForbiddenException('Access Denied');
     const tokens = await this.generateJwtTokens(user.id, user.email, user.role);

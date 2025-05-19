@@ -13,7 +13,6 @@ import {
 import { TagsService } from './tags.service';
 import { TagDto } from './dtos/mutate-tag.dto';
 import { QueryTagDto } from './dtos/query-tag.dto';
-import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 @Controller('/protected/tags')
@@ -37,17 +36,8 @@ export class TagsController {
 
   @Get()
   @SkipThrottle({ short: true, medium: true, long: true })
-  async getAllTags(
-    @Query() query: QueryTagDto,
-  ): Promise<PaginatedPayloadResponseDto> {
-    const { tags, meta } = await this.tagsService.getAllTags(query);
-    return {
-      message: 'Tags fetched successfully',
-      data: {
-        items: tags,
-        meta,
-      },
-    };
+  async getAllTags(@Query() query: QueryTagDto) {
+    return await this.tagsService.getAllTags(query);
   }
 
   @Get(':slug')

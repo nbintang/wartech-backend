@@ -12,7 +12,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthService, JwtTokenResponse } from './auth.service';
 import { CreateUserDto } from 'src/users/dtos/mutate-user.dto';
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
@@ -115,6 +115,7 @@ export class AuthController {
     });
     return {
       message: `Token is ${isTokenValid ? 'valid' : 'invalid'}`,
+      data: { valid: isTokenValid, redirect: isTokenValid },
     };
   }
 
@@ -153,7 +154,7 @@ export class AuthController {
       });
     return {
       message: 'Successfully signed in',
-      data: { access_token: accessToken },
+      data: { accessToken: accessToken },
     };
   }
 
@@ -161,7 +162,7 @@ export class AuthController {
   async signout(
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
-  ) {
+  ): Promise<SinglePayloadResponseDto> {
     const existedTokenCookie = request.cookies['refreshToken'];
     if (!existedTokenCookie)
       throw new UnauthorizedException(
@@ -178,9 +179,20 @@ export class AuthController {
     medium: true,
     short: true,
   })
-  async refreshTokens(@Req() request: Request) {
+  async refreshTokens(@Req() request: Request): Promise<
+    SinglePayloadResponseDto<{
+      tokens: Omit<JwtTokenResponse, 'refreshToken'>;
+    }>
+  > {
     const userId = (request as any).user.sub;
     const tokens = await this.authService.refreshToken(userId);
-    return { accessToken: tokens.accessToken };
+    return {
+      message: 'Token refreshed successfully',
+      data: {
+        tokens: {
+          accessToken: tokens.accessToken,
+        },
+      },
+    };
   }
 }

@@ -11,7 +11,6 @@ import {
 import { LikesService } from './likes.service';
 import { LikeDto } from './dto/mutate-like.dto';
 import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
-import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { QueryLikeDto } from './dto/query-like.dto';
 @Controller('/protected/likes')
 export class LikesController {
@@ -25,16 +24,8 @@ export class LikesController {
   }
 
   @Get()
-  async getAllLikes(
-    @Query() query: QueryLikeDto,
-  ): Promise<PaginatedPayloadResponseDto> {
-    const { likes, meta } = await this.likesService.getAllLikes(query);
-    return {
-      data: {
-        items: likes,
-        meta,
-      },
-    };
+  async getAllLikes(@Query() query: QueryLikeDto) {
+    return await this.likesService.getAllLikes(query);
   }
 
   @Get(':id')
