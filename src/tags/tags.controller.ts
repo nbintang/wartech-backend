@@ -9,16 +9,23 @@ import {
   Query,
   HttpException,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { TagsService } from './tags.service';
 import { TagDto } from './dtos/mutate-tag.dto';
 import { QueryTagDto } from './dtos/query-tag.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/users/enums/role.enums';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { RoleGuard } from 'src/auth/guards/role.guard';
 @Controller('/protected/tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
+  @Roles(Role.ADMIN)
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Post()
   async createNewSlug(
     @Body() createTagDto: TagDto,
@@ -49,7 +56,8 @@ export class TagsController {
     if (!tag) throw new HttpException('Tag not found', HttpStatus.NOT_FOUND);
     return { message: 'Tag fetched successfully', data: tag };
   }
-
+  @Roles(Role.ADMIN)
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Patch(':slug')
   async updateTagsBySlug(
     @Param('slug') slug: string,
@@ -65,7 +73,8 @@ export class TagsController {
       );
     }
   }
-
+  @Roles(Role.ADMIN)
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Delete(':slug')
   async deleteTagBySlug(
     @Param('slug') slug: string,

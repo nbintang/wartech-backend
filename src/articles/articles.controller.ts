@@ -81,7 +81,8 @@ export class ArticlesController {
       );
     }
   }
-
+  @Roles(Role.ADMIN, Role.REPORTER)
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Delete(':slug')
   async remove(@Param('slug') slug: string): Promise<SinglePayloadResponseDto> {
     return await this.articlesService.deleteArticleBySlug(slug);

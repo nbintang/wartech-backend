@@ -7,22 +7,29 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ArticleTagsService } from './article-tags.service';
 import { ArticleTagDto, ArticleTagsDto } from './dtos/mutate-article-tag.dto';
 import { QueryArticleTagDto } from './dtos/query-article-tag.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/users/enums/role.enums';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { RoleGuard } from 'src/auth/guards/role.guard';
 
 @Controller('/protected/article-tags')
 export class ArticleTagsController {
   constructor(private readonly articleTagsService: ArticleTagsService) {}
-
+  @Roles(Role.ADMIN, Role.REPORTER)
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Post('/bulk')
   addArticleTags(@Body() body: ArticleTagsDto) {
     return this.articleTagsService.addArticleTags(body);
   }
-
+  @Roles(Role.ADMIN, Role.REPORTER)
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Post()
   addArticleTag(@Body() body: ArticleTagDto) {
     return this.articleTagsService.addArticleTag(body);
@@ -32,15 +39,7 @@ export class ArticleTagsController {
   async getAllArticleTags(
     @Query() query: QueryArticleTagDto,
   ): Promise<PaginatedPayloadResponseDto> {
-    const { articleTags, meta } =
-      await this.articleTagsService.getAllArticleTags(query);
-    return {
-      message: 'Article Tags fetched successfully',
-      data: {
-        items: articleTags,
-        meta,
-      },
-    };
+    return await this.articleTagsService.getAllArticleTags(query);
   }
 
   @Get(':id')
@@ -53,7 +52,8 @@ export class ArticleTagsController {
       data: articleTag,
     };
   }
-
+  @Roles(Role.ADMIN, Role.REPORTER)
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Patch(':id')
   async updateArticleTagById(
     @Param('id') id: string,
@@ -64,7 +64,8 @@ export class ArticleTagsController {
       updateArticleTagDto,
     );
   }
-
+  @Roles(Role.ADMIN, Role.REPORTER)
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Delete(':id')
   async removeArticleTagById(@Param('id') id: string) {
     return await this.articleTagsService.removeArticleTagById(id);

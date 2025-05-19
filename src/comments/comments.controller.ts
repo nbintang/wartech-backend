@@ -7,17 +7,23 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CommentDto } from './dtos/mutate-comment.dto';
 import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { QueryCommentDto } from './dtos/query-comment.dto';
+import { Role } from 'src/users/enums/role.enums';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { RoleGuard } from 'src/auth/guards/role.guard';
 
 @Controller('/protected/comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
-
+  @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Post()
   async createComment(
     @Body() createCommentDto: CommentDto,
@@ -51,7 +57,8 @@ export class CommentsController {
       data: comment,
     };
   }
-
+  @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Patch(':id')
   async updateCommentById(
     @Param('id') id: string,
@@ -65,7 +72,8 @@ export class CommentsController {
       data: comment,
     };
   }
-
+  @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Delete(':id')
   async removeCommentById(
     @Param('id') id: string,

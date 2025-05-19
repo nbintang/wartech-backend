@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryArticleTagDto } from './dtos/query-article-tag.dto';
 import { Prisma } from 'prisma/generated';
 import { ArticleTagDto, ArticleTagsDto } from './dtos/mutate-article-tag.dto';
+import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 
 @Injectable()
 export class ArticleTagsService {
@@ -75,7 +76,16 @@ export class ArticleTagsService {
     return articleTags;
   }
 
-  async getAllArticleTags(query: QueryArticleTagDto) {
+  async getAllArticleTags(query: QueryArticleTagDto): Promise<
+    PaginatedPayloadResponseDto<
+      Prisma.ArticleTagGetPayload<{
+        include: {
+          article: { select: { id: true; title: true; slug: true } };
+          tag: { select: { id: true; name: true; slug: true } };
+        };
+      }>
+    >
+  > {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
@@ -94,13 +104,15 @@ export class ArticleTagsService {
     });
     const articleTagsCount = await this.db.articleTag.count({ where });
     return {
-      articleTags,
-      meta: {
-        totalItems: articleTagsCount,
-        currentPage: page,
-        itemPerPages: limit,
-        itemCount: articleTags.length,
-        totalPages: Math.ceil(articleTagsCount / limit),
+      data: {
+        items: articleTags,
+        meta: {
+          totalItems: articleTagsCount,
+          currentPage: page,
+          itemPerPages: limit,
+          itemCount: articleTags.length,
+          totalPages: Math.ceil(articleTagsCount / limit),
+        },
       },
     };
   }
