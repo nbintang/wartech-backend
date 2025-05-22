@@ -11,9 +11,20 @@ export class CommentsService {
     const comment = await this.db.comment.create({
       data: {
         content: createCommentDto.content,
-        userId: createCommentDto.userId,
+        userId: createCommentDto.userId!,
         articleId: createCommentDto.articleId,
         parentId: createCommentDto.parentId,
+      },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        isEdited: true,
+        user: { select: { id: true, name: true, image: true } },
+        article: {
+          select: { id: true, title: true, slug: true, publishedAt: true },
+        },
       },
     });
     return comment;
@@ -33,7 +44,12 @@ export class CommentsService {
       where,
       skip,
       take,
-      include: {
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        isEdited: true,
         user: { select: { id: true, name: true, image: true } },
         article: {
           select: { id: true, title: true, slug: true, publishedAt: true },
@@ -57,7 +73,12 @@ export class CommentsService {
   async getCommentById(id: string) {
     const comment = await this.db.comment.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        isEdited: true,
         user: { select: { id: true, name: true, image: true } },
         article: {
           select: { id: true, title: true, slug: true, publishedAt: true },
@@ -76,9 +97,20 @@ export class CommentsService {
       data: {
         isEdited: true,
         content: updateCommentDto.content,
-        userId: updateCommentDto.userId,
+        userId: updateCommentDto.userId!,
         articleId: updateCommentDto.articleId,
         parentId: updateCommentDto.parentId,
+      },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        isEdited: true,
+        user: { select: { id: true, name: true, image: true } },
+        article: {
+          select: { id: true, title: true, slug: true, publishedAt: true },
+        },
       },
     });
     return comment;

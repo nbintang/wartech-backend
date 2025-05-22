@@ -5,6 +5,7 @@ import { Prisma } from 'prisma/generated';
 import { QueryArticleDto } from './dtos/query-article.dto';
 import { ArticlesDto } from './dtos/response-article.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
+import sanitizeHtml from 'sanitize-html';
 @Injectable()
 export class ArticlesService {
   constructor(private db: PrismaService) {}
@@ -90,7 +91,7 @@ export class ArticlesService {
       data: {
         title,
         slug,
-        content,
+        content: sanitizeHtml(content),
         image,
         author: { connect: { id: authorId } },
         category: { connect: { id: categoryId } },
@@ -187,7 +188,7 @@ export class ArticlesService {
       data: {
         title: updateArticleDto.title,
         slug: updateArticleDto.slug,
-        content: updateArticleDto.content,
+        content: sanitizeHtml(updateArticleDto.content),
         image: updateArticleDto.image,
         author: { connect: { id: updateArticleDto.authorId } },
         category: { connect: { id: updateArticleDto.categoryId } },

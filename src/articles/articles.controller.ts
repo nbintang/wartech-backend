@@ -26,6 +26,7 @@ import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 @Controller('/protected/articles')
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
+
   @Get()
   @SkipThrottle({ short: true, medium: true })
   async getArticles(

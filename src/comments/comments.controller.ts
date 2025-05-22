@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CommentDto } from './dtos/mutate-comment.dto';
@@ -27,9 +28,15 @@ export class CommentsController {
   @Post()
   async createComment(
     @Body() createCommentDto: CommentDto,
+    @Request() request: Request,
   ): Promise<SinglePayloadResponseDto> {
-    const newComment =
-      await this.commentsService.createComment(createCommentDto);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const userId = request.user.sub;
+    const newComment = await this.commentsService.createComment({
+      ...createCommentDto,
+      userId,
+    });
     return {
       data: newComment,
     };
@@ -63,11 +70,15 @@ export class CommentsController {
   async updateCommentById(
     @Param('id') id: string,
     @Body() updateCommentDto: CommentDto,
+    @Request() request: Request,
   ): Promise<SinglePayloadResponseDto> {
-    const comment = await this.commentsService.updateCommentById(
-      id,
-      updateCommentDto,
-    );
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const userId = request.user.sub;
+    const comment = await this.commentsService.updateCommentById(id, {
+      ...updateCommentDto,
+      userId,
+    });
     return {
       data: comment,
     };
