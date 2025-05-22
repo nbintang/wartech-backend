@@ -8,7 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
-  Request,
+  Req,
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CommentDto } from './dtos/mutate-comment.dto';
@@ -19,6 +19,7 @@ import { Role } from 'src/users/enums/role.enums';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
+import { Request } from 'express';
 
 @Controller('/protected/comments')
 export class CommentsController {
@@ -28,7 +29,7 @@ export class CommentsController {
   @Post()
   async createComment(
     @Body() createCommentDto: CommentDto,
-    @Request() request: Request,
+    @Req() request: Request,
   ): Promise<SinglePayloadResponseDto> {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -70,7 +71,7 @@ export class CommentsController {
   async updateCommentById(
     @Param('id') id: string,
     @Body() updateCommentDto: CommentDto,
-    @Request() request: Request,
+    @Req() request: Request,
   ): Promise<SinglePayloadResponseDto> {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

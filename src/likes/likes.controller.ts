@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { LikesService } from './likes.service';
 import { LikeDto } from './dto/mutate-like.dto';
@@ -17,6 +18,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/users/enums/role.enums';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
+import { Request } from 'express';
 @Controller('/protected/likes')
 export class LikesController {
   constructor(private readonly likesService: LikesService) {}
@@ -25,8 +27,15 @@ export class LikesController {
   @Post()
   async createLike(
     @Body() createLikeDto: LikeDto,
+    @Req() request: Request,
   ): Promise<SinglePayloadResponseDto> {
-    return await this.likesService.createLike(createLikeDto);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const userId = request.user.sub;
+    return await this.likesService.createLike({
+      ...createLikeDto,
+      userId,
+    });
   }
 
   @Get()
