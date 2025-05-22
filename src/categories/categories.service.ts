@@ -108,6 +108,17 @@ export class CategoriesService {
     const currentCategory = await this.getCategoryBySlug(slug);
     if (!currentCategory)
       throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+    const existedCategories = await this.db.category.findMany({
+      where: {
+        slug: data.slug,
+        NOT: { id: currentCategory.id },
+      },
+    });
+    if (existedCategories.length > 0)
+      throw new HttpException(
+        'Category already exists',
+        HttpStatus.BAD_REQUEST,
+      );
     const updatedCategory = await this.db.category.update({
       where: { id: currentCategory.id },
       data: {
@@ -123,6 +134,9 @@ export class CategoriesService {
     const existedCategory = await this.getCategoryBySlug(slug);
     if (!existedCategory)
       throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
-    return await this.db.category.delete({ where: { slug } });
+
+    return this.db.category.delete({
+      where: { id: existedCategory.id },
+    });
   }
 }

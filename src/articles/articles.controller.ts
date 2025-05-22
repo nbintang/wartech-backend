@@ -39,7 +39,14 @@ export class ArticlesController {
   @Post()
   @SkipThrottle({ short: true, long: true })
   async createArticle(@Body() createArticleDto: ArticleDto) {
-    return await this.articlesService.createArticle(createArticleDto);
+    try {
+      return await this.articlesService.createArticle(createArticleDto);
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Something went wrong',
+        error.status || 500,
+      );
+    }
   }
   @Get(':slug')
   @SkipThrottle({ short: true, medium: true })

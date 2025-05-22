@@ -110,7 +110,7 @@ export class UsersService {
   }
 
   async deleteUserById(id: string) {
-    await this.db.user.delete({ where: { id } });
+    await this.db.user.delete({ where: { id, NOT: { role: 'ADMIN' } } });
     return {
       message: `User deleted successfully`,
     };

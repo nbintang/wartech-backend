@@ -25,6 +25,16 @@ export class CommentsService {
         article: {
           select: { id: true, title: true, slug: true, publishedAt: true },
         },
+        parent: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true,
+            isEdited: true,
+            user: { select: { id: true, name: true, image: true } },
+          },
+        },
       },
     });
     return comment;
@@ -130,6 +140,16 @@ export class CommentsService {
         user: { select: { id: true, name: true, image: true } },
         article: {
           select: { id: true, title: true, slug: true, publishedAt: true },
+        },
+        parent: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true,
+            isEdited: true,
+            user: { select: { id: true, name: true, image: true } },
+          },
         },
       },
     });

@@ -21,7 +21,7 @@ model Article {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @default(now())
   author      User          @relation(fields: [authorId], references: [id], map: "Article_authorId_fkey", onDelete: Cascade)
-  category    Category      @relation(fields: [categoryId], references: [id], map: "Article_categoryId_fkey")
+  category    Category      @relation(fields: [categoryId], references: [id], map: "Article_categoryId_fkey", onDelete: Cascade)
   articleTags ArticleTag[] // pluralized here
   comments    Comment[] // pluralized here
   likes       Like[] // pluralized here
@@ -55,13 +55,14 @@ model Tag {
 }
 
 model Category {
-  id          String    @id @default(uuid())
-  slug        String    @unique
-  name        String    @unique(map: "Category_name_key") @db.VarChar(50)
-  description String?   @db.VarChar(255)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now())
-  articles    Article[] // pluralized here
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String   @unique(map: "Category_name_key") @db.VarChar(50)
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  articles Article[] // pluralized here
 
   @@map("categories")
 }
