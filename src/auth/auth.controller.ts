@@ -179,19 +179,15 @@ export class AuthController {
     medium: true,
     short: true,
   })
-  async refreshTokens(@Req() request: Request): Promise<
-    SinglePayloadResponseDto<{
-      tokens: Omit<JwtTokenResponse, 'refreshToken'>;
-    }>
-  > {
+  async refreshTokens(
+    @Req() request: Request,
+  ): Promise<SinglePayloadResponseDto<Omit<JwtTokenResponse, 'refreshToken'>>> {
     const userId = (request as any).user.sub;
     const tokens = await this.authService.refreshToken(userId);
     return {
       message: 'Token refreshed successfully',
       data: {
-        tokens: {
-          accessToken: tokens.accessToken,
-        },
+        accessToken: tokens.accessToken,
       },
     };
   }

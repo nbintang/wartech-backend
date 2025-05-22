@@ -7,5 +7,12 @@ const articleTagSchema = baseQueryRequestSchema.extend({
   'tag-id': z.string().uuid().optional(),
   'article-slug': z.string().optional(),
 });
+const typePostArticleTagSchema = z.object({
+  bulk: z.coerce.boolean().optional(),
+});
+
+export class QueryArticleTagTypePostDto extends createZodDto(
+  typePostArticleTagSchema,
+) {}
 
 export class QueryArticleTagDto extends createZodDto(articleTagSchema) {}

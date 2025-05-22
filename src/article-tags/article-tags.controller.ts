@@ -8,10 +8,14 @@ import {
   Delete,
   Query,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { ArticleTagsService } from './article-tags.service';
-import { ArticleTagDto, ArticleTagsDto } from './dtos/mutate-article-tag.dto';
-import { QueryArticleTagDto } from './dtos/query-article-tag.dto';
+import { ArticleTagDto } from './dtos/mutate-article-tag.dto';
+import {
+  QueryArticleTagDto,
+  QueryArticleTagTypePostDto,
+} from './dtos/query-article-tag.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -22,16 +26,21 @@ import { RoleGuard } from 'src/auth/guards/role.guard';
 @Controller('/protected/article-tags')
 export class ArticleTagsController {
   constructor(private readonly articleTagsService: ArticleTagsService) {}
-  @Roles(Role.ADMIN, Role.REPORTER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
-  @Post('/bulk')
-  addArticleTags(@Body() body: ArticleTagsDto) {
-    return this.articleTagsService.addArticleTags(body);
-  }
+
   @Roles(Role.ADMIN, Role.REPORTER)
   @UseGuards(AccessTokenGuard, RoleGuard)
   @Post()
-  addArticleTag(@Body() body: ArticleTagDto) {
+  addArticleTag(
+    @Body() body: ArticleTagDto,
+    @Query() query: QueryArticleTagTypePostDto,
+  ) {
+    if (query?.bulk || body.tagIds?.length > 1) {
+      if (!body.tagIds || body.tagIds.length === 0)
+        throw new BadRequestException('tagIds must be provided in bulk mode');
+      return this.articleTagsService.addArticleTags(body);
+    }
+    if (!body.tagId)
+      throw new BadRequestException('tagId must be provided in non-bulk mode');
     return this.articleTagsService.addArticleTag(body);
   }
 
@@ -59,6 +68,8 @@ export class ArticleTagsController {
     @Param('id') id: string,
     @Body() updateArticleTagDto: ArticleTagDto,
   ) {
+    if (!updateArticleTagDto)
+      throw new BadRequestException('please provide a body');
     return await this.articleTagsService.updateArticleTagById(
       id,
       updateArticleTagDto,

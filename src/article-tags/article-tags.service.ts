@@ -2,13 +2,22 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryArticleTagDto } from './dtos/query-article-tag.dto';
 import { Prisma } from 'prisma/generated';
-import { ArticleTagDto, ArticleTagsDto } from './dtos/mutate-article-tag.dto';
+import { ArticleTagDto } from './dtos/mutate-article-tag.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
+import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 
 @Injectable()
 export class ArticleTagsService {
   constructor(private db: PrismaService) {}
-  async addArticleTag(createArticleTagDto: ArticleTagDto) {
+  async addArticleTag(createArticleTagDto: ArticleTagDto): Promise<
+    Prisma.ArticleTagGetPayload<{
+      select: {
+        id: true;
+        articleId: true;
+        tag: { select: { id: true; name: true; slug: true } };
+      };
+    }>
+  > {
     const existedArticle = await this.db.article.findUnique({
       where: { slug: createArticleTagDto.articleSlug },
     });
@@ -38,11 +47,21 @@ export class ArticleTagsService {
         article: { connect: { id: existedArticle.id } },
         tag: { connect: { id: existedTag.id } },
       },
+      select: {
+        id: true,
+        articleId: true,
+        tag: { select: { id: true, name: true, slug: true } },
+      },
     });
     return articleTag;
   }
 
-  async addArticleTags({ tagIds, articleSlug }: ArticleTagsDto) {
+  async addArticleTags({ tagIds, articleSlug }: ArticleTagDto): Promise<
+    SinglePayloadResponseDto<{
+      articleId: string;
+      tags: { id: string; name: string; slug: string }[];
+    }>
+  > {
     const existedArticle = await this.db.article.findUnique({
       where: { slug: articleSlug },
     });
@@ -69,17 +88,47 @@ export class ArticleTagsService {
       articleId: existedArticle.id,
       tagId,
     }));
-    const articleTags = await this.db.articleTag.createMany({
+    const createdArticleTags = await this.db.articleTag.createMany({
       data,
       skipDuplicates: true,
     });
-    return articleTags;
+    if (createdArticleTags.count === 0)
+      throw new HttpException(
+        'Article tag already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    const articletags = await this.db.articleTag.findMany({
+      where: {
+        articleId: existedArticle.id,
+        tagId: { in: validTagIds },
+      },
+      select: {
+        id: true,
+        tag: { select: { id: true, name: true, slug: true } },
+      },
+    });
+
+    const mappedArticleTags = articletags.map((tag) => ({
+      id: tag.tag.id,
+      name: tag.tag.name,
+      slug: tag.tag.slug,
+    }));
+
+    return {
+      message: 'Article tags created successfully',
+      data: {
+        articleId: existedArticle.id,
+        tags: mappedArticleTags,
+      },
+    };
   }
 
   async getAllArticleTags(query: QueryArticleTagDto): Promise<
     PaginatedPayloadResponseDto<
       Prisma.ArticleTagGetPayload<{
-        include: {
+        select: {
+          id: true;
           article: { select: { id: true; title: true; slug: true } };
           tag: { select: { id: true; name: true; slug: true } };
         };
@@ -97,7 +146,8 @@ export class ArticleTagsService {
       where,
       skip,
       take,
-      include: {
+      select: {
+        id: true,
         article: { select: { id: true, title: true, slug: true } },
         tag: { select: { id: true, name: true, slug: true } },
       },
@@ -120,7 +170,8 @@ export class ArticleTagsService {
   async getArticleTagById(id: string) {
     const articleTag = await this.db.articleTag.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
         article: { select: { id: true, title: true, slug: true } },
         tag: { select: { id: true, name: true, slug: true } },
       },
@@ -128,17 +179,31 @@ export class ArticleTagsService {
     return articleTag;
   }
 
-  async updateArticleTagById(id: string, updateArticleTagDto: ArticleTagDto) {
-    const existedArticleTag = await this.db.articleTag.findUnique({
-      where: { id },
-    });
+  async updateArticleTagById(
+    id: string,
+    updateArticleTagDto: ArticleTagDto,
+  ): Promise<
+    Prisma.ArticleTagGetPayload<{
+      select: {
+        id: true;
+        articleId: true;
+        tag: { select: { id: true; name: true; slug: true } };
+      };
+    }>
+  > {
+    const existedArticleTag = await this.getArticleTagById(id);
     if (!existedArticleTag)
       throw new HttpException('Article tag not found', HttpStatus.NOT_FOUND);
     const articleTag = await this.db.articleTag.update({
       where: { id },
       data: {
-        article: { connect: { id: existedArticleTag.articleId } },
+        article: { connect: { id: existedArticleTag.article.id } },
         tag: { connect: { id: updateArticleTagDto.tagId } },
+      },
+      select: {
+        id: true,
+        articleId: true,
+        tag: { select: { id: true, name: true, slug: true } },
       },
     });
     return articleTag;
