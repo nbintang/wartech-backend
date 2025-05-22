@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Query,
@@ -19,6 +18,8 @@ import { Role } from 'src/users/enums/role.enums';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Request } from 'express';
+import { SkipThrottle } from '@nestjs/throttler';
+@SkipThrottle({ short: true, medium: true, long: true })
 @Controller('/protected/likes')
 export class LikesController {
   constructor(private readonly likesService: LikesService) {}
@@ -47,15 +48,7 @@ export class LikesController {
   async getLikeById(@Param('id') id: string) {
     return await this.likesService.getLikeById(id);
   }
-  @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
-  @Patch(':id')
-  async updateLikeById(
-    @Param('id') id: string,
-    @Body() updateLikeDto: LikeDto,
-  ) {
-    return await this.likesService.updateLikeById(id, updateLikeDto);
-  }
+
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
   @UseGuards(AccessTokenGuard, RoleGuard)
   @Delete(':id')

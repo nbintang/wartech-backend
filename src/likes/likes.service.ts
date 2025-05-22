@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { LikeDto } from './dto/mutate-like.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { QueryLikeDto } from './dto/query-like.dto';
-import { Like, Prisma } from 'prisma/generated';
+import { Prisma } from 'prisma/generated';
 import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
 
@@ -11,17 +11,45 @@ type LikeWithUserAndArticle = Prisma.LikeGetPayload<{
     user: { select: { id: true; name: true } };
     article: { select: { id: true; title: true; slug: true } };
   };
+  omit: {
+    userId: true;
+    articleId: true;
+  };
 }>;
 @Injectable()
 export class LikesService {
   constructor(private db: PrismaService) {}
-  async createLike(
-    createLikeDto: LikeDto,
-  ): Promise<SinglePayloadResponseDto<Like>> {
+  async createLike(createLikeDto: LikeDto): Promise<
+    SinglePayloadResponseDto<
+      Prisma.LikeGetPayload<{
+        select: {
+          id: true;
+          user: { select: { id: true; name: true } };
+          article: { select: { id: true; title: true; slug: true } };
+        };
+      }>
+    >
+  > {
+    const existedLikeFromArticle = await this.db.like.findMany({
+      where: {
+        articleId: createLikeDto.articleId,
+        userId: createLikeDto.userId,
+      },
+    });
+    if (existedLikeFromArticle.length > 0)
+      throw new HttpException(
+        'You Already Liked the article',
+        HttpStatus.BAD_REQUEST,
+      );
     const like = await this.db.like.create({
       data: {
         userId: createLikeDto.userId,
         articleId: createLikeDto.articleId,
+      },
+      select: {
+        id: true,
+        user: { select: { id: true, name: true } },
+        article: { select: { id: true, title: true, slug: true } },
       },
     });
     return {
@@ -49,6 +77,10 @@ export class LikesService {
         user: { select: { id: true, name: true } },
         article: { select: { id: true, title: true, slug: true } },
       },
+      omit: {
+        userId: true,
+        articleId: true,
+      },
     });
     const likesCount = await this.db.like.count({
       where,
@@ -70,24 +102,15 @@ export class LikesService {
   }
 
   async getLikeById(id: string): Promise<LikeWithUserAndArticle> {
-    return await this.db.like.findUnique({
+    const like = await this.db.like.findUnique({
       where: { id },
       include: {
         user: { select: { id: true, name: true } },
         article: { select: { id: true, title: true, slug: true } },
       },
-    });
-  }
-
-  async updateLikeById(id: string, updateLikeDto: LikeDto): Promise<Like> {
-    const existedLike = await this.db.like.findUnique({ where: { id } });
-    if (!existedLike)
-      throw new HttpException('Like not found', HttpStatus.NOT_FOUND);
-    const like = await this.db.like.update({
-      where: { id },
-      data: {
-        userId: updateLikeDto.userId,
-        articleId: updateLikeDto.articleId,
+      omit: {
+        userId: true,
+        articleId: true,
       },
     });
     return like;
