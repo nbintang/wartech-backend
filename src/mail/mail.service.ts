@@ -18,8 +18,8 @@ export class MailService {
     private mailerService: MailerService,
     private configService: ConfigService,
   ) {
-    // const PROD_URL = this.configService.get<string>('PROD_URL');
-    this.baseUrl = 'http://localhost:3000/api';
+    const PROD_URL = this.configService.get<string>('PROD_URL');
+    this.baseUrl = PROD_URL ? PROD_URL : 'http://localhost:3000';
   }
 
   async sendEmailVerification({

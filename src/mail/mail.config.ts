@@ -10,12 +10,14 @@ export const MailConfig: MailerAsyncOptions['useFactory'] = async (
     port: config.get<number>('EMAIL_PORT'),
     secure: false,
     auth: {
-      user: config.get<string>('EMAIL_TEST_USER'),
-      pass: config.get<string>('EMAIL_TEST_PASS'),
+      user: config.get<string>('EMAIL_USER'),
+      pass: config.get<string>('EMAIL_PASS'),
     },
+    debug: true,
+    logger: true,
   },
   defaults: {
-    from: `"No Reply" <${config.get<string>('EMAIL_FROM')}>`,
+    from: `${config.get<string>('EMAIL_FROM')}`,
   },
   template: {
     dir: process.cwd() + '/src/mail/templates',
