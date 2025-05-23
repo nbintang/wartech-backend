@@ -15,7 +15,7 @@ import {
 import { UsersService } from './users.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { QueryUserDto } from './dtos/query-user.dto';
-import { SkipThrottle } from '@nestjs/throttler';
+import { minutes, SkipThrottle, Throttle } from '@nestjs/throttler';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from './enums/role.enums';
 import { Request, Response } from 'express';
@@ -24,14 +24,15 @@ import { RoleGuard } from 'src/auth/guards/role.guard';
 import { UpdateUserDto } from './dtos/mutate-user.dto';
 @UseGuards(AccessTokenGuard)
 @Controller('/protected/users')
-@SkipThrottle({ short: true, medium: true, long: true })
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   @Get()
+  @SkipThrottle({ short: true, medium: true, long: true })
   async getAllUsers(@Query() query: QueryUserDto) {
     return await this.usersService.getAllusers(query);
   }
   @Get('/profile')
+  @SkipThrottle({ short: true, medium: true, long: true })
   async getMe(
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
@@ -65,7 +66,7 @@ export class UsersController {
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
   @UseGuards(RoleGuard)
   @Patch(':id')
-  @SkipThrottle({ medium: false })
+  @Throttle({ medium: { ttl: minutes(1), limit: 10 } })
   async updateProfile(@Param('id') id: string, @Body() body: UpdateUserDto) {
     try {
       const user = await this.usersService.updateUserById({ id }, body);
@@ -82,6 +83,7 @@ export class UsersController {
   }
   @Roles(Role.ADMIN)
   @UseGuards(RoleGuard)
+  @SkipThrottle({ short: true, medium: true })
   @Delete(':id')
   async deleteUserById(@Param('id') id: string) {
     return await this.usersService.deleteUserById(id);

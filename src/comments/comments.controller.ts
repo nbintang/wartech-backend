@@ -20,6 +20,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Request } from 'express';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('/protected/comments')
 export class CommentsController {
@@ -27,6 +28,7 @@ export class CommentsController {
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
   @UseGuards(AccessTokenGuard, RoleGuard)
   @Post()
+  @SkipThrottle({ short: true, medium: true })
   async createComment(
     @Body() createCommentDto: CommentDto,
     @Req() request: Request,
@@ -44,6 +46,7 @@ export class CommentsController {
   }
 
   @Get()
+  @SkipThrottle({ short: true, medium: true })
   async getAllComments(
     @Query() query: QueryCommentDto,
   ): Promise<PaginatedPayloadResponseDto> {
@@ -57,6 +60,7 @@ export class CommentsController {
   }
 
   @Get(':id')
+  @SkipThrottle({ short: true, medium: true })
   async getCommentById(
     @Param('id') id: string,
   ): Promise<SinglePayloadResponseDto> {
@@ -68,6 +72,7 @@ export class CommentsController {
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
   @UseGuards(AccessTokenGuard, RoleGuard)
   @Patch(':id')
+  @SkipThrottle({ short: true, medium: true })
   async updateCommentById(
     @Param('id') id: string,
     @Body() updateCommentDto: CommentDto,
@@ -87,6 +92,7 @@ export class CommentsController {
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
   @UseGuards(AccessTokenGuard, RoleGuard)
   @Delete(':id')
+  @SkipThrottle({ short: true, medium: true })
   async removeCommentById(
     @Param('id') id: string,
   ): Promise<SinglePayloadResponseDto> {

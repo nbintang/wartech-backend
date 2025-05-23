@@ -28,7 +28,6 @@ export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
   @Get()
-  @SkipThrottle({ short: true, medium: true })
   async getArticles(
     @Query() query: QueryArticleDto,
   ): Promise<PaginatedPayloadResponseDto<ArticlesDto>> {
@@ -49,7 +48,6 @@ export class ArticlesController {
     }
   }
   @Get(':slug')
-  @SkipThrottle({ short: true, medium: true })
   async getArticleBySlug(
     @Param('slug') slug: string,
   ): Promise<SinglePayloadResponseDto> {

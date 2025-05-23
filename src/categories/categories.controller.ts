@@ -20,12 +20,7 @@ import { RoleGuard } from 'src/auth/guards/role.guard';
 import { CategoryDto } from './dtos/mutate-category.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
-
-@SkipThrottle({
-  short: true,
-  medium: true,
-  long: true,
-})
+@SkipThrottle({ short: true, medium: true, long: true })
 @Controller('/protected/categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
@@ -48,11 +43,13 @@ export class CategoriesController {
   }
 
   @Get()
+  @SkipThrottle({ short: true, medium: true })
   async getAllCategories(@Query() query: QueryCategoriesDto) {
     return await this.categoriesService.getAllCategories(query);
   }
 
   @Get(':slug')
+  @SkipThrottle({ short: true, medium: true })
   async getCategoryBySlug(
     @Param('slug') slug: string,
   ): Promise<SinglePayloadResponseDto> {
@@ -85,7 +82,7 @@ export class CategoriesController {
   }
   @Roles(Role.ADMIN)
   @UseGuards(AccessTokenGuard, RoleGuard)
-  @SkipThrottle({ short: false })
+  @SkipThrottle({ short: true })
   @Delete(':slug')
   async deleteCategoryBySlug(@Param('slug') slug: string) {
     try {

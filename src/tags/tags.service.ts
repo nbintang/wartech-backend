@@ -8,7 +8,7 @@ import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-r
 export class TagsService {
   constructor(private db: PrismaService) {}
 
-  async createNewSlug(data: TagDto): Promise<Tag> {
+  async createTag(data: TagDto): Promise<Tag> {
     const existedTag = await this.getTagBySlug(data.slug);
     if (existedTag) throw new Error('Tag slug already exists');
     const tag = await this.db.tag.create({

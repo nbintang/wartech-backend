@@ -16,9 +16,11 @@ import { RoleGuard } from 'src/auth/guards/role.guard';
 import { ImageDto } from './dtos/mutate-file.dto';
 import { QueryFileDto } from './dtos/query-file.dto';
 import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @UseGuards(AccessTokenGuard)
 @Controller('/protected/upload')
+@SkipThrottle({ short: true })
 export class CloudinaryController {
   constructor(private readonly cloudinaryService: CloudinaryService) {}
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)

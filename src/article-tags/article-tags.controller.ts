@@ -22,6 +22,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/users/enums/role.enums';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('/protected/article-tags')
 export class ArticleTagsController {
@@ -30,6 +31,7 @@ export class ArticleTagsController {
   @Roles(Role.ADMIN, Role.REPORTER)
   @UseGuards(AccessTokenGuard, RoleGuard)
   @Post()
+  @SkipThrottle({ short: true })
   addArticleTag(
     @Body() body: ArticleTagDto,
     @Query() query: QueryArticleTagTypePostDto,
@@ -45,6 +47,7 @@ export class ArticleTagsController {
   }
 
   @Get()
+  @SkipThrottle({ short: true, medium: true })
   async getAllArticleTags(
     @Query() query: QueryArticleTagDto,
   ): Promise<PaginatedPayloadResponseDto> {
@@ -52,6 +55,7 @@ export class ArticleTagsController {
   }
 
   @Get(':id')
+  @SkipThrottle({ short: true, medium: true })
   async getArticleTagById(
     @Param('id') id: string,
   ): Promise<SinglePayloadResponseDto> {
@@ -64,6 +68,7 @@ export class ArticleTagsController {
   @Roles(Role.ADMIN, Role.REPORTER)
   @UseGuards(AccessTokenGuard, RoleGuard)
   @Patch(':id')
+  @SkipThrottle({ short: true })
   async updateArticleTagById(
     @Param('id') id: string,
     @Body() updateArticleTagDto: ArticleTagDto,
@@ -78,6 +83,7 @@ export class ArticleTagsController {
   @Roles(Role.ADMIN, Role.REPORTER)
   @UseGuards(AccessTokenGuard, RoleGuard)
   @Delete(':id')
+  @SkipThrottle({ short: true })
   async removeArticleTagById(@Param('id') id: string) {
     return await this.articleTagsService.removeArticleTagById(id);
   }

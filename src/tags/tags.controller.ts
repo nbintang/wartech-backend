@@ -26,12 +26,13 @@ export class TagsController {
 
   @Roles(Role.ADMIN)
   @UseGuards(AccessTokenGuard, RoleGuard)
+  @SkipThrottle({ short: true })
   @Post()
-  async createNewSlug(
+  async createTag(
     @Body() createTagDto: TagDto,
   ): Promise<SinglePayloadResponseDto> {
     try {
-      const tag = await this.tagsService.createNewSlug(createTagDto);
+      const tag = await this.tagsService.createTag(createTagDto);
       return { message: 'Tag created successfully', data: tag };
     } catch (error) {
       throw new HttpException(
@@ -42,13 +43,13 @@ export class TagsController {
   }
 
   @Get()
-  @SkipThrottle({ short: true, medium: true, long: true })
+  @SkipThrottle({ short: true, medium: true })
   async getAllTags(@Query() query: QueryTagDto) {
     return await this.tagsService.getAllTags(query);
   }
 
   @Get(':slug')
-  @SkipThrottle({ short: true, medium: true, long: true })
+  @SkipThrottle({ short: true, medium: true })
   async getTagsBySlug(
     @Param('slug') slug: string,
   ): Promise<SinglePayloadResponseDto> {
@@ -59,6 +60,7 @@ export class TagsController {
   @Roles(Role.ADMIN)
   @UseGuards(AccessTokenGuard, RoleGuard)
   @Patch(':slug')
+  @SkipThrottle({ short: true })
   async updateTagsBySlug(
     @Param('slug') slug: string,
     @Body() updateTagDto: TagDto,
@@ -76,6 +78,7 @@ export class TagsController {
   @Roles(Role.ADMIN)
   @UseGuards(AccessTokenGuard, RoleGuard)
   @Delete(':slug')
+  @SkipThrottle({ short: true })
   async deleteTagBySlug(
     @Param('slug') slug: string,
   ): Promise<SinglePayloadResponseDto> {
