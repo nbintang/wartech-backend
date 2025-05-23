@@ -14,7 +14,7 @@ async function bootstrap() {
   app.useBodyParser('urlencoded', { extended: true });
   app.use(compression());
   app.enableCors({
-    origin: ['http://localhost:3000', process.env.PROD_URL],
+    origin: ['http://localhost:3000'],
     credentials: true,
   });
   await app.listen(process.env.PORT ?? 3000);
