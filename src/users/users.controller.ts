@@ -13,14 +13,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { QueryUserDto } from './dtos/query-user.dto';
 import { minutes, SkipThrottle, Throttle } from '@nestjs/throttler';
-import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from './enums/role.enums';
 import { Request, Response } from 'express';
-import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
-import { RoleGuard } from 'src/auth/guards/role.guard';
+import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
+import { RoleGuard } from '../auth/guards/role.guard';
 import { UpdateUserDto } from './dtos/mutate-user.dto';
 @UseGuards(AccessTokenGuard)
 @Controller('/protected/users')

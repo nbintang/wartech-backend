@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CategoryDto } from './dtos/mutate-category.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { Category, Prisma } from 'prisma/generated';
 import { QueryCategoriesDto } from './dtos/query-categories.dto';
-import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
-import { ArticleStatus } from 'src/articles/enums/article-status.enum';
+import { PaginatedPayloadResponseDto } from '../common/dtos/paginated-payload-response.dto';
+import { ArticleStatus } from '../articles/enums/article-status.enum';
 
 @Injectable()
 export class CategoriesService {

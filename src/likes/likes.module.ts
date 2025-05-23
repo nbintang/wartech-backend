@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { LikesService } from './likes.service';
 import { LikesController } from './likes.controller';
-import { AccessControlService } from 'src/auth/shared/access-control.service';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { AccessControlService } from '../auth/shared/access-control.service';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],

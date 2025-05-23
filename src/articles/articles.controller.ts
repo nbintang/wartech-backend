@@ -13,15 +13,15 @@ import {
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { ArticleDto } from './dtos/mutate-article.dto';
-import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
+import { PaginatedPayloadResponseDto } from '../common/dtos/paginated-payload-response.dto';
 import { ArticlesDto } from './dtos/response-article.dto';
 import { QueryArticleDto } from './dtos/query-article.dto';
-import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
+import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/users/enums/role.enums';
-import { RoleGuard } from 'src/auth/guards/role.guard';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../users/enums/role.enums';
+import { RoleGuard } from '../auth/guards/role.guard';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 
 @Controller('/protected/articles')
 export class ArticlesController {

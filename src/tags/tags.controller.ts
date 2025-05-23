@@ -15,11 +15,11 @@ import { TagsService } from './tags.service';
 import { TagDto } from './dtos/mutate-tag.dto';
 import { QueryTagDto } from './dtos/query-tag.dto';
 import { SkipThrottle } from '@nestjs/throttler';
-import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/users/enums/role.enums';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
-import { RoleGuard } from 'src/auth/guards/role.guard';
+import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../users/enums/role.enums';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
+import { RoleGuard } from '../auth/guards/role.guard';
 @Controller('/protected/tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}

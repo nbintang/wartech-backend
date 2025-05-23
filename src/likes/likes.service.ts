@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { LikeDto } from './dto/mutate-like.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { QueryLikeDto } from './dto/query-like.dto';
 import { Prisma } from 'prisma/generated';
-import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
-import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
+import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
+import { PaginatedPayloadResponseDto } from '../common/dtos/paginated-payload-response.dto';
 
 type LikeWithUserAndArticle = Prisma.LikeGetPayload<{
   include: {

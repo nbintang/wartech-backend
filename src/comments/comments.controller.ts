@@ -12,13 +12,13 @@ import {
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CommentDto } from './dtos/mutate-comment.dto';
-import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
-import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
+import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
+import { PaginatedPayloadResponseDto } from '../common/dtos/paginated-payload-response.dto';
 import { QueryCommentDto } from './dtos/query-comment.dto';
-import { Role } from 'src/users/enums/role.enums';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
-import { RoleGuard } from 'src/auth/guards/role.guard';
+import { Role } from '../users/enums/role.enums';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
+import { RoleGuard } from '../auth/guards/role.guard';
 import { Request } from 'express';
 import { SkipThrottle } from '@nestjs/throttler';
 

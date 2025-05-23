@@ -14,12 +14,12 @@ import {
 import { CategoriesService } from './categories.service';
 import { QueryCategoriesDto } from './dtos/query-categories.dto';
 import { SkipThrottle } from '@nestjs/throttler';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/users/enums/role.enums';
-import { RoleGuard } from 'src/auth/guards/role.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../users/enums/role.enums';
+import { RoleGuard } from '../auth/guards/role.guard';
 import { CategoryDto } from './dtos/mutate-category.dto';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
-import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
+import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
 @SkipThrottle({ short: true, medium: true, long: true })
 @Controller('/protected/categories')
 export class CategoriesController {

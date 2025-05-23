@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { QueryUserDto } from './dtos/query-user.dto';
 import { Prisma, User } from 'prisma/generated';
 import { Role } from './enums/role.enums';
-import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
+import { PaginatedPayloadResponseDto } from '../common/dtos/paginated-payload-response.dto';
 
 type UserPayload<T extends Prisma.UserDefaultArgs = object> =
   Prisma.UserGetPayload<T>;

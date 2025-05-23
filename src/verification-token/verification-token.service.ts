@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, VerificationType } from 'prisma/generated';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 type VerificationToken<T extends Prisma.VerificationTokenDefaultArgs = object> =
   Prisma.VerificationTokenGetPayload<T>;

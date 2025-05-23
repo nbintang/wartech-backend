@@ -15,8 +15,8 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
 import { VerificationTokenService } from '../verification-token/verification-token.service';
-import { Role } from 'src/users/enums/role.enums';
-import { VerificationType } from 'src/verification-token/enums/verification.enum';
+import { Role } from '../users/enums/role.enums';
+import { VerificationType } from '../verification-token/enums/verification.enum';
 
 // Mock bcrypt and crypto modules
 jest.mock('bcrypt');

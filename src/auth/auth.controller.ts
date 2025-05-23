@@ -13,13 +13,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService, JwtTokenResponse } from './auth.service';
-import { CreateUserDto } from 'src/users/dtos/mutate-user.dto';
+import { CreateUserDto } from '../users/dtos/mutate-user.dto';
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
+import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
 import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
 import { ResetPasswordDto } from './dtos/verify.dto';
-import { VerificationType } from 'src/verification-token/enums/verification.enum';
+import { VerificationType } from '../verification-token/enums/verification.enum';
 import { minutes, SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @Controller('auth')

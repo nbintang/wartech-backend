@@ -6,17 +6,17 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { CreateUserDto } from 'src/users/dtos/mutate-user.dto';
-import { MailService } from 'src/mail/mail.service';
-import { VerificationTokenService } from 'src/verification-token/verification-token.service';
+import { CreateUserDto } from '../users/dtos/mutate-user.dto';
+import { MailService } from '../mail/mail.service';
+import { VerificationTokenService } from '../verification-token/verification-token.service';
 import { LocalSigninDto } from './dtos/auth.dto';
 import { ResetPasswordDto, VerifyEmailFromUrlDto } from './dtos/verify.dto';
-import { VerificationType } from 'src/verification-token/enums/verification.enum';
-import { Role } from 'src/users/enums/role.enums';
+import { VerificationType } from '../verification-token/enums/verification.enum';
+import { Role } from '../users/enums/role.enums';
 import crypto from 'crypto';
 
 export type JwtTokenResponse = { accessToken: string; refreshToken: string };

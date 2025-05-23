@@ -11,12 +11,12 @@ import {
 } from '@nestjs/common';
 import { LikesService } from './likes.service';
 import { LikeDto } from './dto/mutate-like.dto';
-import { SinglePayloadResponseDto } from 'src/common/dtos/single-payload-response.dto';
+import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
 import { QueryLikeDto } from './dto/query-like.dto';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/users/enums/role.enums';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
-import { RoleGuard } from 'src/auth/guards/role.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../users/enums/role.enums';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
+import { RoleGuard } from '../auth/guards/role.guard';
 import { Request } from 'express';
 import { SkipThrottle } from '@nestjs/throttler';
 @SkipThrottle({ short: true, medium: true, long: true })

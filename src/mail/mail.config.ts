@@ -20,7 +20,7 @@ export const MailConfig: MailerAsyncOptions['useFactory'] = async (
     from: `${config.get<string>('EMAIL_FROM')}`,
   },
   template: {
-    dir: process.cwd() + '/src/mail/templates',
+    dir: process.cwd() + '/../mail/templates',
     adapter: new HandlebarsAdapter(),
     options: {
       strict: true,

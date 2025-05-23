@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import slugify from 'src/common/slugify';
+import slugify from '../../common/slugify';
 import { z } from 'zod';
 
 const categoryInputSchema = z.object({

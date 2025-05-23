@@ -1,4 +1,4 @@
-// src/common/interceptors/logging.interceptor.ts
+// ../common/interceptors/logging.interceptor.ts
 import {
   CallHandler,
   ExecutionContext,
