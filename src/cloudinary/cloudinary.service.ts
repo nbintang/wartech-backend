@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CloudinaryResponse, CloudinaryUploadOptions } from './cloudinary.type';
 import { v2 as cloudinary } from 'cloudinary';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 import { Readable } from 'stream';
 
 @Injectable()

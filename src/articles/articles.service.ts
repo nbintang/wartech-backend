@@ -5,7 +5,7 @@ import { Prisma } from 'prisma/generated';
 import { QueryArticleDto } from './dtos/query-article.dto';
 import { ArticlesDto } from './dtos/response-article.dto';
 import { PaginatedPayloadResponseDto } from 'src/common/dtos/paginated-payload-response.dto';
-import * as sanitizeHtml from 'sanitize-html';
+import sanitizeHtml from 'sanitize-html';
 @Injectable()
 export class ArticlesService {
   constructor(private db: PrismaService) {}

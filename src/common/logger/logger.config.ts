@@ -1,6 +1,6 @@
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import { WinstonModuleOptions } from 'nest-winston';
-import * as winston from 'winston';
+import winston from 'winston';
 
 winston.addColors({
   error: 'red',

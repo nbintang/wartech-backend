@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from 'src/users/dtos/mutate-user.dto';
@@ -17,7 +17,7 @@ import { LocalSigninDto } from './dtos/auth.dto';
 import { ResetPasswordDto, VerifyEmailFromUrlDto } from './dtos/verify.dto';
 import { VerificationType } from 'src/verification-token/enums/verification.enum';
 import { Role } from 'src/users/enums/role.enums';
-import * as crypto from 'crypto';
+import crypto from 'crypto';
 
 export type JwtTokenResponse = { accessToken: string; refreshToken: string };
 @Injectable()
