@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { SinglePayloadResponseDto } from './common/dtos/single-payload-response.dto';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Hello World!';
+  getHello(): SinglePayloadResponseDto {
+    return {
+      message: 'Hello World',
+    };
   }
 }
