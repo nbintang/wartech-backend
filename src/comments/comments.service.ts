@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CommentDto } from './dtos/mutate-comment.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueryCommentDto } from './dtos/query-comment.dto';
-import { Prisma } from 'prisma/generated';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CommentsService {

@@ -5,7 +5,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Prisma, PrismaClient } from 'prisma/generated';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { Logger } from 'winston';
 
 @Injectable()

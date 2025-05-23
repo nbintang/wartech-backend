@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { LikeDto } from './dto/mutate-like.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueryLikeDto } from './dto/query-like.dto';
-import { Prisma } from 'prisma/generated';
+import { Prisma } from '@prisma/client';
 import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
 import { PaginatedPayloadResponseDto } from '../common/dtos/paginated-payload-response.dto';
 

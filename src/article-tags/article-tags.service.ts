@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueryArticleTagDto } from './dtos/query-article-tag.dto';
-import { Prisma } from 'prisma/generated';
+import { Prisma } from '@prisma/client';
 import { ArticleTagDto } from './dtos/mutate-article-tag.dto';
 import { PaginatedPayloadResponseDto } from '../common/dtos/paginated-payload-response.dto';
 import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';

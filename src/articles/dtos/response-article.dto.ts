@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { ArticleStatus } from 'prisma/generated';
+import { ArticleStatus } from '@prisma/client';
 import { z } from 'zod';
 
 const categorySchema = z.object({

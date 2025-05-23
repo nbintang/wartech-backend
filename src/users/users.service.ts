@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { QueryUserDto } from './dtos/query-user.dto';
-import { Prisma, User } from 'prisma/generated';
+import { Prisma, User } from '@prisma/client';
 import { Role } from './enums/role.enums';
 import { PaginatedPayloadResponseDto } from '../common/dtos/paginated-payload-response.dto';
 
