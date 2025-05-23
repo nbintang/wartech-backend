@@ -14,7 +14,7 @@ async function bootstrap() {
   app.useBodyParser('urlencoded', { extended: true });
   app.use(compression());
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: process.env.PROD_URL ?? 'http://localhost:3000',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
