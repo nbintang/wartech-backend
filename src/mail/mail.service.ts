@@ -65,6 +65,7 @@ export class MailService {
           ...template,
           name: userName,
           url,
+          subject,
         },
       });
       this.logger.log(`Email sent to ${userEmail} successfully.`);
