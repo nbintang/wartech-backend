@@ -34,7 +34,7 @@ export class MailService {
     token,
     subject = 'confirm your email',
   }: EmailContext): Promise<boolean> {
-    const url = `${this.frontendUrl}/auth/${routes}?token=${token}&userId=${userId}`;
+    const url = `${this.frontendUrl}/${routes}?token=${token}&userId=${userId}`;
     this.logger.log(
       `Sending verification email to ${userEmail} with URL: ${url}`,
     );
