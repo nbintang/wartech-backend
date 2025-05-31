@@ -29,6 +29,9 @@ export class AuthController {
   @Post('signup')
   async signup(@Body() body: CreateUserDto, @Req() request: Request) {
     try {
+      const existedTokenCookie = request.user;
+      if (existedTokenCookie)
+        throw new UnauthorizedException('You are already logged in!');
       await this.authService.signUp(body);
       return {
         message: 'Success!, Please check your email for the verification link',

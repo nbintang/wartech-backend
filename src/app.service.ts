@@ -8,4 +8,9 @@ export class AppService {
       message: 'Hello World',
     };
   }
+  postTest(): SinglePayloadResponseDto {
+    return {
+      message: 'Hello World',
+    };
+  }
 }

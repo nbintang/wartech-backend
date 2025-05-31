@@ -91,13 +91,12 @@ export class AuthService {
       }
     }
     const hashedPassword = await this.hashData(createUserDto.password);
-    const { image, role, name, email, acceptedTOS } = createUserDto;
+    const { name, email, acceptedTOS } = createUserDto;
     if (!name) throw new BadRequestException('Name is required');
     const newUser = await this.usersService.createUser({
       name,
       email,
       acceptedTOS,
-      image: image || null,
       role: Role.READER,
       password: hashedPassword,
     });
@@ -176,7 +175,7 @@ export class AuthService {
         user: { connect: { id: existedUser.id } },
         type,
         token: hashedToken,
-        expiresAt: new Date(Date.now() + 3 * 60 * 1000), // 3 min
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
       });
     if (!newVerificationToken)
       throw new BadRequestException('Failed to create token');

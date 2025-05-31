@@ -3,14 +3,20 @@ import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-type EmailContext = {
+interface EmailContext {
   userName: string;
   userId: string;
   userEmail: string;
   token: string;
   routes: string;
   subject: string;
-};
+}
+
+interface EmailTemplate {
+  title: string;
+  message: string;
+  description: string;
+}
 
 @Injectable()
 export class MailService {
@@ -22,7 +28,7 @@ export class MailService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
   ) {
-   // const PROD_URL = this.configService.get<string>('PROD_URL');
+    // const PROD_URL = this.configService.get<string>('PROD_URL');
     this.frontendUrl = 'http://localhost:3000';
   }
 
@@ -38,16 +44,27 @@ export class MailService {
     this.logger.log(
       `Sending verification email to ${userEmail} with URL: ${url}`,
     );
-
+    const isVerify = routes === 'verify';
+    const template: EmailTemplate = {
+      title: isVerify
+        ? `Selamat Datang, ${userName}! 🎉`
+        : 'Reset Kata Sandi 🔐',
+      message: isVerify
+        ? 'Terima kasih telah bergabung dengan Wartech - platform berita teknologi terkini dan terdepan untuk solusi inovatif Anda.'
+        : `Hai ${userName}, kami menerima permintaan untuk mereset kata sandi akun Wartech Anda.`,
+      description: isVerify
+        ? 'Untuk memulai perjalanan teknologi Anda bersama kami dan mengakses semua fitur eksklusif, silakan verifikasi alamat email Anda dengan menekan tombol di bawah ini.'
+        : 'Untuk keamanan akun Anda, klik tombol di bawah ini untuk mengatur ulang kata sandi dengan aman. Pastikan Anda membuat kata sandi yang kuat dan unik.',
+    };
     try {
       await this.mailerService.sendMail({
         to: userEmail,
         subject: `Hi ${userName} 👋, please ${subject}`,
         template: 'confirmation',
         context: {
+          ...template,
           name: userName,
           url,
-          token,
         },
       });
       this.logger.log(`Email sent to ${userEmail} successfully.`);
