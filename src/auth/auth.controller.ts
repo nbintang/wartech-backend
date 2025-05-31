@@ -29,9 +29,6 @@ export class AuthController {
   @Post('signup')
   async signup(@Body() body: CreateUserDto, @Req() request: Request) {
     try {
-      const doesHaveCookieRefreshToken = request.cookies['refreshToken'];
-      if (doesHaveCookieRefreshToken)
-        throw new UnauthorizedException('Please Logout First');
       await this.authService.signUp(body);
       return {
         message: 'Success!, Please check your email for the verification link',
@@ -140,11 +137,6 @@ export class AuthController {
     @Req() request: Request,
     @Body() body: SigninDto,
   ): Promise<SinglePayloadResponseDto> {
-    const existedTokenCookie = request.cookies['refreshToken'];
-    if (existedTokenCookie)
-      throw new UnauthorizedException(
-        `You are already logged in! Please logout first.`,
-      );
     const { accessToken, refreshToken } = await this.authService.signIn(body);
     if (accessToken && refreshToken)
       response.cookie('refreshToken', refreshToken, {
