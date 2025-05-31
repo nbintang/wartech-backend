@@ -98,7 +98,7 @@ export class AuthService {
       email,
       acceptedTOS,
       image: image || null,
-      role: role || Role.READER,
+      role: Role.READER,
       password: hashedPassword,
     });
     await this.createAndSendVerificationToken(
