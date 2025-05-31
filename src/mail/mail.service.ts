@@ -34,7 +34,7 @@ export class MailService {
     token,
     subject = 'confirm your email',
   }: EmailContext): Promise<boolean> {
-    const url = `${this.baseUrl}/auth/${routes}?token=${token}&userId=${userId}`;
+    const url = `${this.baseUrl}/api/auth/${routes}?token=${token}&userId=${userId}`;
     this.logger.log(
       `Sending verification email to ${userEmail} with URL: ${url}`,
     );
@@ -42,7 +42,7 @@ export class MailService {
     try {
       await this.mailerService.sendMail({
         to: userEmail,
-        subject: `Hi bintang 👋, please ${subject}`,
+        subject: `Hi ${userName} 👋, please ${subject}`,
         template: 'confirmation',
         context: {
           name: userName,
