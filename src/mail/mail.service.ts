@@ -1,6 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 type EmailContext = {
   userName: string;
@@ -14,9 +15,12 @@ type EmailContext = {
 @Injectable()
 export class MailService {
   private baseUrl: string;
+
   constructor(
     private mailerService: MailerService,
     private configService: ConfigService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
   ) {
     const PROD_URL = this.configService.get<string>('PROD_URL');
     this.baseUrl = PROD_URL ? PROD_URL : 'http://localhost:3000';
@@ -31,18 +35,26 @@ export class MailService {
     subject = 'Confirm your email',
   }: EmailContext): Promise<boolean> {
     const url = `${this.baseUrl}/auth/${routes}?token=${token}&userId=${userId}`;
-    console.log(url);
-    const res = await this.mailerService.sendMail({
-      to: userEmail,
-      subject,
-      template: 'confirmation',
-      context: {
-        name: userName,
-        url,
-        token,
-      },
-    });
-    if (!res) return false;
-    return true;
+    this.logger.log(
+      `Sending verification email to ${userEmail} with URL: ${url}`,
+    );
+
+    try {
+      await this.mailerService.sendMail({
+        to: userEmail,
+        subject,
+        template: 'confirmation',
+        context: {
+          name: userName,
+          url,
+          token,
+        },
+      });
+      this.logger.log(`Email sent to ${userEmail} successfully.`);
+      return true;
+    } catch (err) {
+      this.logger.error(`Failed to send email to ${userEmail}: ${err.message}`);
+      return false;
+    }
   }
 }

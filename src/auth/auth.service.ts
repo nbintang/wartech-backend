@@ -92,9 +92,7 @@ export class AuthService {
     }
     const hashedPassword = await this.hashData(createUserDto.password);
     const { image, role, name, email, acceptedTOS } = createUserDto;
-    if (!name) {
-      throw new BadRequestException('Name is required');
-    }
+    if (!name) throw new BadRequestException('Name is required');
     const newUser = await this.usersService.createUser({
       name,
       email,
@@ -121,14 +119,14 @@ export class AuthService {
         type: VerificationType.EMAIL_VERIFICATION,
       });
     if (!verificationToken || verificationToken.expiresAt < new Date()) {
-      this.verificationTokenService.deleteTokensByUserId(user.id);
+      await this.verificationTokenService.deleteTokensByUserId(user.id);
       throw new BadRequestException(
         'Token expired, please resend email for verification',
       );
     }
     const isTokenValid = await this.compareHash(token, verificationToken.token);
     if (user.emailVerifiedAt || !isTokenValid) {
-      this.verificationTokenService.deleteTokensByUserId(user.id);
+      await this.verificationTokenService.deleteTokensByUserId(user.id);
       throw new BadRequestException('Invalid token');
     }
     await this.usersService.updateUserById(
@@ -212,7 +210,6 @@ export class AuthService {
         type,
       });
     if (verificationToken && verificationToken.expiresAt > new Date()) {
-      // jika token ada dan sudah lebih dari 3 menit, maka hapus sisa token lama dan buat token baru
       await this.verificationTokenService.deleteTokensByUserAndType({
         userId: user.id,
         type,
