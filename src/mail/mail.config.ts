@@ -7,12 +7,13 @@ export const MailConfig: MailerAsyncOptions['useFactory'] = async (
   config: ConfigService,
 ) => ({
   transport: {
-    host: config.get<string>('EMAIL_HOST'),
-    port: config.get<number>('EMAIL_PORT'),
-    secure: false,
+    service: 'gmail',
     auth: {
+      type: 'OAuth2',
       user: config.get<string>('EMAIL_USER'),
-      pass: config.get<string>('EMAIL_PASS'),
+      clientId: config.get<string>('GOOGLE_CLIENT_ID'),
+      clientSecret: config.get<string>('GOOGLE_CLIENT_SECRET'),
+      refreshToken: config.get<string>('GOOGLE_REFRESH_TOKEN'),
     },
     debug: true,
     logger: true,
