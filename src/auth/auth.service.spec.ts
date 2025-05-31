@@ -456,7 +456,7 @@ describe('AuthService', () => {
         userId: mockUser.id,
         token: 'randomToken',
         routes: 'verify',
-        subject: 'Confirm your email',
+        subject: 'ronfirm your email',
       });
       expect(result).toEqual({
         message: 'Please check your email for the verification link',
@@ -481,7 +481,7 @@ describe('AuthService', () => {
         userId: mockUser.id,
         token: 'randomToken',
         routes: 'verify-reset-password',
-        subject: 'Reset your password',
+        subject: 'reset your password',
       });
     });
   });

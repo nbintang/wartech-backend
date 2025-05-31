@@ -20,6 +20,7 @@ export const MailConfig: MailerAsyncOptions['useFactory'] = async (
   },
   defaults: {
     from: `${config.get<string>('EMAIL_FROM')}`,
+    replyTo: `${config.get<string>('EMAIL_USER')}`,
   },
   template: {
     dir: join(__dirname, '..', 'mail', 'templates'),

@@ -32,7 +32,7 @@ export class MailService {
     userId,
     routes,
     token,
-    subject = 'Confirm your email',
+    subject = 'confirm your email',
   }: EmailContext): Promise<boolean> {
     const url = `${this.baseUrl}/auth/${routes}?token=${token}&userId=${userId}`;
     this.logger.log(
@@ -42,7 +42,7 @@ export class MailService {
     try {
       await this.mailerService.sendMail({
         to: userEmail,
-        subject,
+        subject: `Hi bintang 👋, please ${subject}`,
         template: 'confirmation',
         context: {
           name: userName,
