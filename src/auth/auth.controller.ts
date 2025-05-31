@@ -160,7 +160,11 @@ export class AuthController {
       throw new UnauthorizedException(
         'You are not logged in! Please login first.',
       );
-    response.clearCookie('refreshToken');
+    response.clearCookie('refreshToken', {
+      sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
+      secure: process.env.NODE_ENV !== 'development',
+      httpOnly: true,
+    });
     return await this.authService.signout();
   }
 
