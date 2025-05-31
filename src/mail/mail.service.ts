@@ -14,7 +14,7 @@ type EmailContext = {
 
 @Injectable()
 export class MailService {
-  private baseUrl: string;
+  private frontendUrl: string;
 
   constructor(
     private mailerService: MailerService,
@@ -22,8 +22,8 @@ export class MailService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
   ) {
-    const PROD_URL = this.configService.get<string>('PROD_URL');
-    this.baseUrl = PROD_URL ? PROD_URL : 'http://localhost:3000';
+   // const PROD_URL = this.configService.get<string>('PROD_URL');
+    this.frontendUrl = 'http://localhost:3000';
   }
 
   async sendEmailVerification({
@@ -34,7 +34,7 @@ export class MailService {
     token,
     subject = 'confirm your email',
   }: EmailContext): Promise<boolean> {
-    const url = `${this.baseUrl}/api/auth/${routes}?token=${token}&userId=${userId}`;
+    const url = `${this.frontendUrl}/auth/${routes}?token=${token}&userId=${userId}`;
     this.logger.log(
       `Sending verification email to ${userEmail} with URL: ${url}`,
     );
