@@ -123,12 +123,9 @@ export class AuthService {
     };
   }
 
-  async resendVerification(userId: string) {
-    const user = await this.usersService.getUserById(userId, {
-      email: true,
-      name: true,
-      id: true,
-    });
+  async resendVerification(email: string) {
+    const user = await this.usersService.getUserByEmail(email);
+    if (user.verified) throw new BadRequestException('Email already verified');
     if (!user) throw new NotFoundException('User not found');
     await this.mailService.sendEmailConfirmation({
       name: user.name,

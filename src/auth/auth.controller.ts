@@ -88,10 +88,9 @@ export class AuthController {
   @UseGuards(AccessTokenGuard, RoleGuard)
   @Throttle({ long: { ttl: minutes(1), limit: 5, blockDuration: minutes(5) } })
   async resendVerification(
-    @Req() request: Request,
+    @Body() body: { email: string },
   ): Promise<SinglePayloadResponseDto> {
-    const userId = (request as any).user.sub;
-    return await this.authService.resendVerification(userId);
+    return await this.authService.resendVerification(body.email);
   }
 
   @Post('reset-password')
