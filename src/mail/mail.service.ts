@@ -88,7 +88,7 @@ export class MailService {
       type: VerificationType.EMAIL_VERIFICATION,
     });
 
-    const url = `${this.frontendUrl}/verify?token=${token}`;
+    const url = `${this.frontendUrl}/auth/verify?token=${token}`;
     const subject = 'Confirm your email';
     const template = this.getEmailConfirmationTemplate(userInfo.name);
 
@@ -109,7 +109,7 @@ export class MailService {
       type: VerificationType.PASSWORD_RESET,
     });
 
-    const url = `${this.frontendUrl}/reset-password?token=${token}`;
+    const url = `${this.frontendUrl}/auth/reset-password?token=${token}`;
     const subject = 'Reset your password';
     const template = this.getPasswordResetTemplate(userInfo.name);
 
