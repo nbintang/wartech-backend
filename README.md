@@ -62,7 +62,27 @@ This project uses a modern, modular, and scalable stack for building a secure, f
 📁 PROJECT STRUCTURE
 --------------------
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   pgsqlCopyEditwartech-backend/  ├── prisma/             → Database schema and migrations  ├── src/                → Application source code  │   ├── modules/        → Feature-based modules (articles, users, etc.)  │   ├── common/         → Shared helpers, middlewares  │   └── main.ts         → Entry point  ├── test/               → Unit and integration tests  ├── .env.example        → Environment variable template  ├── package.json        → Project metadata and dependencies  ├── tsconfig.json       → TypeScript configuration  └── vercel.json         → Vercel deployment settings   `
+wartech-backend/
+
+├── prisma/             → Database schema and migrations
+
+├── src/                → Application source code
+
+│   ├── modules/        → Feature-based modules (articles, users, etc.)
+
+│   ├── common/         → Shared helpers, middlewares
+
+│   └── main.ts         → Entry point
+
+├── test/               → Unit and integration tests
+
+├── .env.example        → Environment variable template
+
+├── package.json        → Project metadata and dependencies
+
+├── tsconfig.json       → TypeScript configuration
+
+└── vercel.json         → Vercel deployment settings
 
 
 🔧 GETTING STARTED LOCALLY
