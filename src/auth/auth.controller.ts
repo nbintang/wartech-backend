@@ -2,9 +2,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   HttpException,
-  InternalServerErrorException,
   Post,
   Query,
   Req,
@@ -18,9 +16,11 @@ import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
 import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
-import { ResetPasswordDto } from './dtos/verify.dto';
-import { VerificationType } from '../verification-token/enums/verification.enum';
 import { minutes, SkipThrottle, Throttle } from '@nestjs/throttler';
+import { AccessTokenGuard } from './guards/access-token.guard';
+import { Roles } from './decorators/roles.decorator';
+import { Role } from '../users/enums/role.enums';
+import { RoleGuard } from './guards/role.guard';
 
 @Controller('auth')
 @SkipThrottle({ short: true, long: true })
@@ -44,88 +44,66 @@ export class AuthController {
     }
   }
 
-  @Get('verify')
+  @Post('verify')
+  @Throttle({ long: { ttl: minutes(1), limit: 5, blockDuration: minutes(5) } })
   async verifyEmailTokenThroughLink(
-    @Query('userId') userId: string,
     @Query('token') token: string,
     @Res({ passthrough: true }) response: Response,
   ): Promise<SinglePayloadResponseDto> {
-    if (!token) throw new UnauthorizedException('Please provide token');
-    const { accessToken, refreshToken } = await this.authService.verifyEmail({
-      userId,
-      token,
-    });
-    if (accessToken && refreshToken)
-      response.cookie('refreshToken', refreshToken, {
-        sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
-        secure: process.env.NODE_ENV !== 'development',
-        httpOnly: true,
-      });
-    return {
-      message: 'Email verified successfully',
-      data: { accessToken: accessToken },
-    };
+    try {
+      const { accessToken, refreshToken } =
+        await this.authService.verifyEmailToken({
+          token,
+        });
+      if (accessToken && refreshToken)
+        response.cookie('refreshToken', refreshToken, {
+          sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
+          secure: process.env.NODE_ENV !== 'development',
+          httpOnly: true,
+        });
+      return { message: 'Email verified successfully', data: { accessToken } };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Something Went Wrong',
+        error.status || 500,
+      );
+    }
   }
 
   @Post('forgot-password')
+  @Throttle({ long: { ttl: minutes(1), limit: 5, blockDuration: minutes(5) } })
   async forgotPassword(
     @Body() { email }: { email: string },
     @Req() request: Request,
   ): Promise<SinglePayloadResponseDto> {
-    const existedTokenCookie = request.cookies['refreshToken'];
-    if (existedTokenCookie)
+    const user = request.user;
+    if (user)
       throw new UnauthorizedException(
         `You are already logged in! Please logout first.`,
       );
-    const isTokenCreated =
-      await this.authService.createAndSendVerificationToken(
-        { email },
-        VerificationType.PASSWORD_RESET,
-      );
-    if (!isTokenCreated)
-      throw new InternalServerErrorException(
-        'Failed to send email, make the user is valid',
-      );
-    return {
-      message: 'Please check your email for the verification link',
-    };
+    return await this.authService.forgotPassword(email);
+  }
+  @Post('resend-verification')
+  @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
+  @UseGuards(AccessTokenGuard, RoleGuard)
+  @Throttle({ long: { ttl: minutes(1), limit: 5, blockDuration: minutes(5) } })
+  async resendVerification(
+    @Req() request: Request,
+  ): Promise<SinglePayloadResponseDto> {
+    const userId = (request as any).user.sub;
+    return await this.authService.resendVerification(userId);
   }
 
-  @Post('resend-verification')
-  async resendVerification(
-    @Body() { email }: { email: string },
-  ): Promise<SinglePayloadResponseDto> {
-    await this.authService.createAndSendVerificationToken(
-      { email },
-      VerificationType.EMAIL_VERIFICATION,
-    );
-    return {
-      message: 'Please check your email for the verification link',
-    };
-  }
-  @Get('verify-reset-password')
-  @Throttle({ long: { ttl: minutes(1), limit: 1, blockDuration: minutes(5) } })
+  @Post('reset-password')
   async resetPassword(
-    @Query('userId') userId: string,
+    @Body() body: { newPassword: string },
     @Query('token') token: string,
   ): Promise<SinglePayloadResponseDto> {
-    const isTokenValid = await this.authService.verifyResetPasswordToken({
-      userId,
-      token,
-    });
-    return {
-      message: `Token is ${isTokenValid ? 'valid' : 'invalid'}`,
-      data: { valid: isTokenValid, redirect: isTokenValid },
-    };
-  }
-
-  @Post('change-password')
-  async changePassword(@Body() body: ResetPasswordDto) {
     try {
-      await this.authService.changePassword(body);
-      return {
-        message: 'Password Changed Successfully',
-      };
+      return await this.authService.changePassword({
+        token,
+        newPassword: body.newPassword,
+      });
     } catch (error) {
       throw new HttpException(
         error.message || 'Something Went Wrong',
@@ -137,7 +115,6 @@ export class AuthController {
   @Post('signin')
   async signIn(
     @Res({ passthrough: true }) response: Response,
-    @Req() request: Request,
     @Body() body: SigninDto,
   ): Promise<SinglePayloadResponseDto> {
     const { accessToken, refreshToken } = await this.authService.signIn(body);
@@ -149,20 +126,14 @@ export class AuthController {
       });
     return {
       message: 'Successfully signed in',
-      data: { accessToken: accessToken },
+      data: { accessToken },
     };
   }
 
   @Delete('signout')
   async signout(
     @Res({ passthrough: true }) response: Response,
-    @Req() request: Request,
   ): Promise<SinglePayloadResponseDto> {
-    const existedTokenCookie = request.cookies['refreshToken'];
-    if (!existedTokenCookie)
-      throw new UnauthorizedException(
-        'You are not logged in! Please login first.',
-      );
     response.clearCookie('refreshToken', {
       sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
       secure: process.env.NODE_ENV !== 'development',

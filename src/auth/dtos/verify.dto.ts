@@ -2,7 +2,6 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 export const verifyEmailFromUrl = z.object({
-  userId: z.string().uuid({ message: 'Invalid id' }),
   token: z.string().min(10),
 });
 

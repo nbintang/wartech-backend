@@ -22,6 +22,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/enums/role.enums';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
 @Controller('/protected/articles')
 export class ArticlesController {
@@ -34,7 +35,7 @@ export class ArticlesController {
     return await this.articlesService.getArticeles(query);
   }
   @Roles(Role.ADMIN, Role.REPORTER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Post()
   @SkipThrottle({ short: true, long: true })
   async createArticle(@Body() createArticleDto: ArticleDto) {
@@ -68,7 +69,7 @@ export class ArticlesController {
     };
   }
   @Roles(Role.ADMIN, Role.REPORTER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Patch(':slug')
   @SkipThrottle({ short: true, long: true })
   async updateArticleBySlug(
@@ -88,7 +89,7 @@ export class ArticlesController {
     }
   }
   @Roles(Role.ADMIN, Role.REPORTER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Delete(':slug')
   async remove(@Param('slug') slug: string): Promise<SinglePayloadResponseDto> {
     return await this.articlesService.deleteArticleBySlug(slug);

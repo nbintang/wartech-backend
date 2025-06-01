@@ -22,6 +22,7 @@ import { Request, Response } from 'express';
 import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { UpdateUserDto } from './dtos/mutate-user.dto';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 @UseGuards(AccessTokenGuard)
 @Controller('/protected/users')
 export class UsersController {
@@ -64,7 +65,7 @@ export class UsersController {
   }
 
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
-  @UseGuards(RoleGuard)
+  @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Patch(':id')
   @Throttle({ medium: { ttl: minutes(1), limit: 10 } })
   async updateProfile(@Param('id') id: string, @Body() body: UpdateUserDto) {
@@ -82,7 +83,7 @@ export class UsersController {
     }
   }
   @Roles(Role.ADMIN)
-  @UseGuards(RoleGuard)
+  @UseGuards(RoleGuard, EmailVerifiedGuard)
   @SkipThrottle({ short: true, medium: true })
   @Delete(':id')
   async deleteUserById(@Param('id') id: string) {

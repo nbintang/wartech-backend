@@ -23,13 +23,14 @@ import { Role } from '../users/enums/role.enums';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { SkipThrottle } from '@nestjs/throttler';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
 @Controller('/protected/article-tags')
 export class ArticleTagsController {
   constructor(private readonly articleTagsService: ArticleTagsService) {}
 
   @Roles(Role.ADMIN, Role.REPORTER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Post()
   @SkipThrottle({ short: true })
   addArticleTag(
@@ -66,7 +67,7 @@ export class ArticleTagsController {
     };
   }
   @Roles(Role.ADMIN, Role.REPORTER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Patch(':id')
   @SkipThrottle({ short: true })
   async updateArticleTagById(
@@ -81,7 +82,7 @@ export class ArticleTagsController {
     );
   }
   @Roles(Role.ADMIN, Role.REPORTER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Delete(':id')
   @SkipThrottle({ short: true })
   async removeArticleTagById(@Param('id') id: string) {

@@ -5,7 +5,6 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { MailModule } from './mail/mail.module';
-import { VerificationTokenModule } from './verification-token/verification-token.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { ResponseModule } from './common/response/response.module';
 import { ValidatorModule } from './common/validator/zod-validator.module';
@@ -25,7 +24,6 @@ import { LikesModule } from './likes/likes.module';
     UsersModule,
     PrismaModule,
     MailModule,
-    VerificationTokenModule,
     LoggerModule,
     ResponseModule,
     ValidatorModule,

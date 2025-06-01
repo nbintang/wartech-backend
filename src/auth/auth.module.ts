@@ -3,7 +3,6 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { MailModule } from '../mail/mail.module';
-import { VerificationTokenModule } from '../verification-token/verification-token.module';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
@@ -17,7 +16,6 @@ import { AccessControlService } from './shared/access-control.service';
     ConfigModule,
     UsersModule,
     MailModule,
-    VerificationTokenModule,
   ],
   providers: [
     JwtService,

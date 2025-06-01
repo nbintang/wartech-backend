@@ -20,12 +20,13 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/enums/role.enums';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 @Controller('/protected/tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
   @Roles(Role.ADMIN)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @SkipThrottle({ short: true })
   @Post()
   async createTag(
@@ -58,7 +59,7 @@ export class TagsController {
     return { message: 'Tag fetched successfully', data: tag };
   }
   @Roles(Role.ADMIN)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Patch(':slug')
   @SkipThrottle({ short: true })
   async updateTagsBySlug(
@@ -76,7 +77,7 @@ export class TagsController {
     }
   }
   @Roles(Role.ADMIN)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Delete(':slug')
   @SkipThrottle({ short: true })
   async deleteTagBySlug(

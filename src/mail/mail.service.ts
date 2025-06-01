@@ -1,15 +1,20 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  LoggerService,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { UsersService } from '../users/users.service';
+import { VerificationType } from './enum/verification.enum';
 
-interface EmailContext {
-  userName: string;
-  userId: string;
-  userEmail: string;
-  token: string;
-  routes: string;
-  subject: string;
+interface UserInfo {
+  name: string;
+  id: string;
+  email: string;
 }
 
 interface EmailTemplate {
@@ -21,58 +26,141 @@ interface EmailTemplate {
 @Injectable()
 export class MailService {
   private frontendUrl: string;
-
   constructor(
     private mailerService: MailerService,
     private configService: ConfigService,
+    private jwtService: JwtService,
+    private usersService: UsersService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
   ) {
     // const PROD_URL = this.configService.get<string>('PROD_URL');
     this.frontendUrl = 'http://localhost:3000';
   }
+  private generateVerificationToken(payload: {
+    email: string;
+    type: VerificationType;
+  }): string {
+    return this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_VERIFICATION_TOKEN_SECRET'),
+      expiresIn: '15m',
+    });
+  }
 
-  async sendEmailVerification({
-    userName,
-    userEmail,
-    userId,
-    routes,
-    token,
-    subject = 'confirm your email',
-  }: EmailContext): Promise<boolean> {
-    const url = `${this.frontendUrl}/${routes}?token=${token}&userId=${userId}`;
-    this.logger.log(
-      `Sending verification email to ${userEmail} with URL: ${url}`,
-    );
-    const isVerify = routes === 'verify';
-    const template: EmailTemplate = {
-      title: isVerify
-        ? `Selamat Datang, ${userName}! 🎉`
-        : 'Reset Kata Sandi 🔐',
-      message: isVerify
-        ? 'Terima kasih telah bergabung dengan Wartech - platform berita teknologi terkini dan terdepan untuk solusi inovatif Anda.'
-        : `Hai ${userName}, kami menerima permintaan untuk mereset kata sandi akun Wartech Anda.`,
-      description: isVerify
-        ? 'Untuk memulai perjalanan teknologi Anda bersama kami dan mengakses semua fitur eksklusif, silakan verifikasi alamat email Anda dengan menekan tombol di bawah ini.'
-        : 'Untuk keamanan akun Anda, klik tombol di bawah ini untuk mengatur ulang kata sandi dengan aman. Pastikan Anda membuat kata sandi yang kuat dan unik.',
-    };
+  public async confirmUserEmail(email: string) {
+    const user = await this.usersService.getUserByEmail(email);
+    if (user.verified) throw new BadRequestException('Email already verified');
+    return await this.usersService.changeUserVerifiedStatus(user.id);
+  }
+
+  public async decodeConfirmationToken(token: string) {
     try {
-      await this.mailerService.sendMail({
-        to: userEmail,
-        subject: `Hi ${userName} 👋, please ${subject}`,
-        template: 'confirmation',
-        context: {
-          ...template,
-          name: userName,
-          url,
-          subject,
-        },
+      const payload = this.jwtService.verify(token, {
+        secret: this.configService.get<string>('JWT_VERIFICATION_TOKEN_SECRET'),
       });
-      this.logger.log(`Email sent to ${userEmail} successfully.`);
+      if (
+        typeof payload === 'object' &&
+        'email' in payload &&
+        'type' in payload
+      ) {
+        return {
+          email: payload.email,
+          type: payload.type,
+        } as {
+          email: string;
+          type: VerificationType;
+        };
+      }
+      throw new BadRequestException('Invalid token');
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new BadRequestException(
+          'Token expired, please resend email for verification',
+        );
+      }
+      throw new BadRequestException('Invalid token');
+    }
+  }
+
+  public async sendEmailConfirmation(userInfo: UserInfo): Promise<boolean> {
+    const token = this.generateVerificationToken({
+      email: userInfo.email,
+      type: VerificationType.EMAIL_VERIFICATION,
+    });
+
+    const url = `${this.frontendUrl}/verify?token=${token}`;
+    const subject = 'Confirm your email';
+    const template = this.getEmailConfirmationTemplate(userInfo.name);
+
+    return this.sendEmail({
+      to: userInfo.email,
+      subject: `Hi ${userInfo.name} 👋, please ${subject}`,
+      context: {
+        ...template,
+        name: userInfo.name,
+        url,
+        subject,
+      },
+    });
+  }
+  public async sendPasswordReset(userInfo: UserInfo): Promise<boolean> {
+    const token = this.generateVerificationToken({
+      email: userInfo.email,
+      type: VerificationType.PASSWORD_RESET,
+    });
+
+    const url = `${this.frontendUrl}/reset-password?token=${token}`;
+    const subject = 'Reset your password';
+    const template = this.getPasswordResetTemplate(userInfo.name);
+
+    return this.sendEmail({
+      to: userInfo.email,
+      subject: `Hi ${userInfo.name} 👋, please ${subject}`,
+      context: {
+        ...template,
+        name: userInfo.name,
+        url,
+        subject,
+      },
+    });
+  }
+  private async sendEmail(options: {
+    to: string;
+    subject: string;
+    context: Record<string, any>;
+  }): Promise<boolean> {
+    try {
+      console.log(options.context);
+      await this.mailerService.sendMail({
+        to: options.to,
+        subject: options.subject,
+        template: 'confirmation',
+        context: options.context,
+      });
+      this.logger.log(`Email sent to ${options.to} successfully.`);
       return true;
     } catch (err) {
-      this.logger.error(`Failed to send email to ${userEmail}: ${err.message}`);
+      this.logger.error(
+        `Failed to send email to ${options.to}: ${err.message}`,
+      );
       return false;
     }
+  }
+  private getEmailConfirmationTemplate(userName: string): EmailTemplate {
+    return {
+      title: `Selamat Datang, ${userName}! 🎉`,
+      message:
+        'Terima kasih telah bergabung dengan Wartech - platform berita teknologi terkini dan terdepan untuk solusi inovatif Anda.',
+      description:
+        'Untuk memulai perjalanan teknologi Anda bersama kami dan mengakses semua fitur eksklusif, silakan verifikasi alamat email Anda dengan menekan tombol di bawah ini.',
+    };
+  }
+  private getPasswordResetTemplate(userName: string): EmailTemplate {
+    return {
+      title: 'Reset Kata Sandi 🔐',
+      message: `Hai ${userName}, kami menerima permintaan untuk mereset kata sandi akun Wartech Anda.`,
+      description:
+        'Untuk keamanan akun Anda, klik tombol di bawah ini untuk mengatur ulang kata sandi dengan aman. Pastikan Anda membuat kata sandi yang kuat dan unik.',
+    };
   }
 }

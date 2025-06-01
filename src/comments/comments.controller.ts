@@ -21,12 +21,13 @@ import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { Request } from 'express';
 import { SkipThrottle } from '@nestjs/throttler';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
 @Controller('/protected/comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
   @Post()
   @SkipThrottle({ short: true, medium: true })
   async createComment(
@@ -69,8 +70,8 @@ export class CommentsController {
       data: comment,
     };
   }
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
   @Patch(':id')
   @SkipThrottle({ short: true, medium: true })
   async updateCommentById(
@@ -89,8 +90,8 @@ export class CommentsController {
       data: comment,
     };
   }
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
   @Delete(':id')
   @SkipThrottle({ short: true, medium: true })
   async removeCommentById(

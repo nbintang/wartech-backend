@@ -19,12 +19,13 @@ import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { Request } from 'express';
 import { SkipThrottle } from '@nestjs/throttler';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 @SkipThrottle({ short: true, medium: true, long: true })
 @Controller('/protected/likes')
 export class LikesController {
   constructor(private readonly likesService: LikesService) {}
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Post()
   async createLike(
     @Body() createLikeDto: LikeDto,
@@ -50,7 +51,7 @@ export class LikesController {
   }
 
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Delete(':id')
   async removeLikeById(@Param('id') id: string) {
     return await this.likesService.removeLikeById(id);

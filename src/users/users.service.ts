@@ -12,6 +12,7 @@ type UserPayload<T extends Prisma.UserDefaultArgs = object> =
 type SafeUser = UserPayload<{
   omit: { password: true; acceptedTOS: true; emailVerifiedAt: true };
 }>;
+
 @Injectable()
 export class UsersService {
   constructor(private db: PrismaService) {}
@@ -107,6 +108,14 @@ export class UsersService {
       omit: except,
     });
     return user;
+  }
+
+  async changeUserVerifiedStatus(id: string) {
+    return await this.db.user.update({
+      where: { id },
+      data: { verified: true, emailVerifiedAt: new Date() },
+      select: { id: true, email: true, name: true, role: true },
+    });
   }
 
   async deleteUserById(id: string) {

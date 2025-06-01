@@ -20,13 +20,14 @@ import { RoleGuard } from '../auth/guards/role.guard';
 import { CategoryDto } from './dtos/mutate-category.dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 @SkipThrottle({ short: true, medium: true, long: true })
 @Controller('/protected/categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Roles(Role.ADMIN)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @SkipThrottle({ short: false })
   @Post()
   async createArticleCategory(@Body() body: CategoryDto) {
@@ -81,7 +82,7 @@ export class CategoriesController {
     }
   }
   @Roles(Role.ADMIN)
-  @UseGuards(AccessTokenGuard, RoleGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @SkipThrottle({ short: true })
   @Delete(':slug')
   async deleteCategoryBySlug(@Param('slug') slug: string) {

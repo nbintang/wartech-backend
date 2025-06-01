@@ -2,7 +2,6 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -12,14 +11,15 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from '../users/dtos/mutate-user.dto';
 import { MailService } from '../mail/mail.service';
-import { VerificationTokenService } from '../verification-token/verification-token.service';
 import { LocalSigninDto } from './dtos/auth.dto';
 import { ResetPasswordDto, VerifyEmailFromUrlDto } from './dtos/verify.dto';
-import { VerificationType } from '../verification-token/enums/verification.enum';
 import { Role } from '../users/enums/role.enums';
-import crypto from 'crypto';
+import { VerificationType } from '../mail/enum/verification.enum';
 
-export type JwtTokenResponse = { accessToken: string; refreshToken: string };
+export interface JwtTokenResponse {
+  accessToken: string;
+  refreshToken: string;
+}
 @Injectable()
 export class AuthService {
   constructor(
@@ -27,7 +27,6 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private mailService: MailService,
-    private verificationTokenService: VerificationTokenService,
   ) {}
 
   hashData(data: string) {
@@ -36,10 +35,6 @@ export class AuthService {
 
   compareHash(plainText: string, hash: string) {
     return bcrypt.compare(plainText, hash.toString());
-  }
-  async generateToken(): Promise<string> {
-    const rawToken = crypto.randomBytes(32).toString('hex');
-    return rawToken;
   }
 
   async generateJwtTokens(
@@ -69,73 +64,36 @@ export class AuthService {
     };
   }
 
-  async signUp(
-    createUserDto: CreateUserDto,
-  ): Promise<{ message: string } | void> {
+  async signUp(createUserDto: CreateUserDto) {
     const existingUser = await this.usersService.getUserByEmail(
       createUserDto.email,
     );
-    if (existingUser) {
-      if (existingUser.verified) {
-        throw new BadRequestException(
-          'Your email is already registered and verified. Please sign in.',
-        );
-      } else {
-        await this.resendVerificationToken(
-          existingUser.email,
-          VerificationType.EMAIL_VERIFICATION,
-        );
-        return {
-          message: 'Please check your email for the verification link',
-        };
-      }
-    }
+    if (existingUser) throw new BadRequestException('Email already exists');
     const hashedPassword = await this.hashData(createUserDto.password);
-    const { name, email, acceptedTOS } = createUserDto;
-    if (!name) throw new BadRequestException('Name is required');
     const newUser = await this.usersService.createUser({
-      name,
-      email,
-      acceptedTOS,
+      name: createUserDto.name,
+      email: createUserDto.email,
+      acceptedTOS: createUserDto.acceptedTOS,
       role: Role.READER,
       password: hashedPassword,
     });
-    await this.createAndSendVerificationToken(
-      newUser,
-      VerificationType.EMAIL_VERIFICATION,
-    );
+    if (newUser)
+      await this.mailService.sendEmailConfirmation({
+        email: newUser.email,
+        name: newUser.name,
+        id: newUser.id,
+      });
   }
 
-  async verifyEmail({
-    userId,
+  async verifyEmailToken({
     token,
   }: VerifyEmailFromUrlDto): Promise<JwtTokenResponse> {
-    const user = await this.usersService.getUserById(userId);
-    if (!user) throw new NotFoundException('User not found');
-    const verificationToken =
-      await this.verificationTokenService.getVerificationTokenByUserIdAndType({
-        userId: user.id,
-        type: VerificationType.EMAIL_VERIFICATION,
-      });
-    if (!verificationToken || verificationToken.expiresAt < new Date()) {
-      await this.verificationTokenService.deleteTokensByUserId(user.id);
-      throw new BadRequestException(
-        'Token expired, please resend email for verification',
-      );
-    }
-    const isTokenValid = await this.compareHash(token, verificationToken.token);
-    if (user.emailVerifiedAt || !isTokenValid) {
-      await this.verificationTokenService.deleteTokensByUserId(user.id);
+    const { email, type } =
+      await this.mailService.decodeConfirmationToken(token);
+    if (type !== VerificationType.EMAIL_VERIFICATION)
       throw new BadRequestException('Invalid token');
-    }
-    await this.usersService.updateUserById(
-      { id: user.id },
-      {
-        emailVerifiedAt: new Date(),
-        verified: true,
-        verificationTokens: { delete: { id: verificationToken.id } },
-      },
-    );
+    const user = await this.mailService.confirmUserEmail(email);
+    if (!user) throw new NotFoundException('User not found');
     const { accessToken, refreshToken } = await this.generateJwtTokens(
       user.id,
       user.email,
@@ -146,8 +104,8 @@ export class AuthService {
 
   async signIn({ email, password }: LocalSigninDto): Promise<JwtTokenResponse> {
     const user = await this.usersService.getUserByEmail(email);
-    if (!user || !user.verified)
-      throw new UnauthorizedException('User is not verified');
+    if (!user)
+      throw new UnauthorizedException('User is not registered with us');
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid)
       throw new UnauthorizedException('Password is incorrect');
@@ -162,99 +120,47 @@ export class AuthService {
     };
   }
 
-  async createAndSendVerificationToken(
-    user: { email: string },
-    type: VerificationType,
-  ) {
-    const existedUser = await this.usersService.getUserByEmail(user.email);
-    if (!existedUser) throw new NotFoundException('User not found');
-    const rawToken = await this.generateToken();
-    const hashedToken = await this.hashData(rawToken);
-    const newVerificationToken =
-      await this.verificationTokenService.createVerificationToken({
-        user: { connect: { id: existedUser.id } },
-        type,
-        token: hashedToken,
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
-      });
-    if (!newVerificationToken)
-      throw new BadRequestException('Failed to create token');
-    const sendedMail = await this.mailService.sendEmailVerification({
-      userName: existedUser.name,
-      userEmail: existedUser.email,
-      userId: existedUser.id,
-      token: rawToken,
-      routes:
-        type === VerificationType.PASSWORD_RESET
-          ? 'verify-reset-password'
-          : 'verify',
-      subject:
-        type === VerificationType.PASSWORD_RESET
-          ? 'Reset your password'
-          : 'Confirm your email',
+  async resendVerification(userId: string) {
+    const user = await this.usersService.getUserById(userId);
+    if (!user) throw new NotFoundException('User not found');
+    await this.mailService.sendEmailConfirmation({
+      name: user.name,
+      email: user.email,
+      id: user.id,
     });
-    if (!sendedMail)
-      throw new InternalServerErrorException('Failed to send email');
     return {
-      message: 'Please check your email for the verification link',
+      message: 'Email sent successfully',
     };
   }
 
-  async resendVerificationToken(email: string, type: VerificationType) {
+  async forgotPassword(email: string) {
     const user = await this.usersService.getUserByEmail(email);
     if (!user) throw new NotFoundException('User not found');
-    const verificationToken =
-      await this.verificationTokenService.getVerificationTokenByUserIdAndType({
-        userId: user.id,
-        type,
-      });
-    if (verificationToken && verificationToken.expiresAt > new Date()) {
-      await this.verificationTokenService.deleteTokensByUserAndType({
-        userId: user.id,
-        type,
-      });
-    }
-    return this.createAndSendVerificationToken(user, type);
+    await this.mailService.sendPasswordReset({
+      name: user.name,
+      email: user.email,
+      id: user.id,
+    });
+    return {
+      message: 'Email sent successfully',
+    };
   }
 
-  async verifyResetPasswordToken({ userId, token }: VerifyEmailFromUrlDto) {
-    const user = await this.usersService.getUserById(userId);
+  async changePassword({ token, newPassword }: ResetPasswordDto) {
+    const { email, type } =
+      await this.mailService.decodeConfirmationToken(token);
+    if (type !== VerificationType.PASSWORD_RESET)
+      throw new BadRequestException('Invalid token');
+    const user = await this.usersService.getUserByEmail(email);
     if (!user) throw new NotFoundException('User not found');
-    const verificationToken =
-      await this.verificationTokenService.getVerificationTokenByUserIdAndType({
-        userId: user.id,
-        type: VerificationType.PASSWORD_RESET,
-      });
-    if (!verificationToken || verificationToken.expiresAt < new Date()) {
-      this.verificationTokenService.deleteTokensByUserId(user.id);
-      throw new BadRequestException(
-        'Token expired, please resend email for verification',
-      );
-    }
-    const isTokenValid = await this.compareHash(token, verificationToken.token);
-    if (!isTokenValid) throw new BadRequestException('Invalid token');
-    return true;
-  }
-
-  async changePassword({
-    userId,
-    token,
-    newPassword,
-  }: ResetPasswordDto): Promise<boolean> {
-    this.verifyResetPasswordToken({ userId, token });
     const hashedPassword = await this.hashData(newPassword);
     await this.usersService.updateUserById(
-      { id: userId },
+      { id: user.id },
       { password: hashedPassword },
     );
-    const deletedToken =
-      await this.verificationTokenService.deleteTokensByUserAndType({
-        userId,
-        type: VerificationType.PASSWORD_RESET,
-      });
-    if (!deletedToken)
-      throw new InternalServerErrorException('Something went wrong');
-    return true;
+    return {
+      message: 'Password Changed Successfully',
+    };
   }
 
   async refreshToken(userId: string): Promise<{ accessToken: string }> {
