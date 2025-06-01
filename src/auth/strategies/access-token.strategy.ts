@@ -6,6 +6,7 @@ export type JwtPayload = {
   sub: string;
   email: string;
   role: string;
+  verified: boolean,
 };
 
 export interface UserJwrPayload extends JwtPayload {
