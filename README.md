@@ -63,45 +63,45 @@ This project uses a modern, modular, and scalable stack for building a secure, f
 --------------------
 ```md
 .
-`-- wartech-backend/
-    |-- prisma/
-    |   |-- schema.prisma
-    |   `-- migrations/
-    |-- src/
-    |   |-- main.ts
-    |   |-- app.module.ts
-    |   |-- common/
-    |   |   |-- filters/
-    |   |   |-- guards/
-    |   |   |-- interceptors/
-    |   |   `-- decorators/
-    |   `-- modules/
-    |       |-- auth/
-    |       |   |-- auth.module.ts
-    |       |   |-- auth.controller.ts
-    |       |   |-- auth.service.ts
-    |       |   |-- strategies/
-    |       |   `-- dto/
-    |       |-- users/
-    |       |   |-- users.module.ts
-    |       |   |-- users.controller.ts
-    |       |   |-- users.service.ts
-    |       |   `-- dto/
-    |       |-- articles/
-    |       |   |-- articles.module.ts
-    |       |   |-- articles.controller.ts
-    |       |   |-- articles.service.ts
-    |       |   `-- dto/
-    |       `-- ...others
-    |-- test/
-    |   |-- auth.e2e-spec.ts
-    |   `-- users.e2e-spec.ts
-    |-- .env.example
-    |-- .gitignore
-    |-- package.json
-    |-- tsconfig.json
-    |-- vercel.json
-    `-- README.md
+└── wartech-backend/
+    ├── prisma/
+    │   ├── schema.prisma
+    │   └── migrations/
+    ├── src/
+    │   ├── main.ts
+    │   ├── app.module.ts
+    │   ├── common/
+    │   │   ├── filters/
+    │   │   ├── guards/
+    │   │   ├── decorators/
+    │   │   └── interceptors/
+    │   ├── auth/
+    │   │   ├── auth.module.ts
+    │   │   ├── auth.controller.ts
+    │   │   ├── auth.service.ts
+    │   │   ├── strategies/
+    │   │   ├── guards/
+    │   │   ├── decorators/
+    │   │   └── dto/
+    │   ├── users/
+    │   │   ├── users.module.ts
+    │   │   ├── users.controller.ts
+    │   │   ├── users.service.ts
+    │   │   └── dto/
+    │   ├── articles/
+    │   │   ├── articles.module.ts
+    │   │   ├── articles.controller.ts
+    │   │   ├── articles.service.ts
+    │   │   └── dto/
+    │   └── ...others
+    ├── test/
+    │   └── auth.e2e-spec.ts
+    ├── .env.example
+    ├── .gitignore
+    ├── package.json
+    ├── tsconfig.json
+    ├── vercel.json
+    └── README.md
 ```
 
 🔧 GETTING STARTED LOCALLY
