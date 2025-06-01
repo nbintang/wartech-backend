@@ -61,29 +61,48 @@ This project uses a modern, modular, and scalable stack for building a secure, f
     
 📁 PROJECT STRUCTURE
 --------------------
-
-wartech-backend/
-
-├── prisma/             → Database schema and migrations
-
-├── src/                → Application source code
-
-│   ├── modules/        → Feature-based modules (articles, users, etc.)
-
-│   ├── common/         → Shared helpers, middlewares
-
-│   └── main.ts         → Entry point
-
-├── test/               → Unit and integration tests
-
-├── .env.example        → Environment variable template
-
-├── package.json        → Project metadata and dependencies
-
-├── tsconfig.json       → TypeScript configuration
-
-└── vercel.json         → Vercel deployment settings
-
+```md
+.
+`-- wartech-backend/
+    |-- prisma/
+    |   |-- schema.prisma
+    |   `-- migrations/
+    |-- src/
+    |   |-- main.ts
+    |   |-- app.module.ts
+    |   |-- common/
+    |   |   |-- filters/
+    |   |   |-- guards/
+    |   |   |-- interceptors/
+    |   |   `-- decorators/
+    |   `-- modules/
+    |       |-- auth/
+    |       |   |-- auth.module.ts
+    |       |   |-- auth.controller.ts
+    |       |   |-- auth.service.ts
+    |       |   |-- strategies/
+    |       |   `-- dto/
+    |       |-- users/
+    |       |   |-- users.module.ts
+    |       |   |-- users.controller.ts
+    |       |   |-- users.service.ts
+    |       |   `-- dto/
+    |       |-- articles/
+    |       |   |-- articles.module.ts
+    |       |   |-- articles.controller.ts
+    |       |   |-- articles.service.ts
+    |       |   `-- dto/
+    |       `-- ...others
+    |-- test/
+    |   |-- auth.e2e-spec.ts
+    |   `-- users.e2e-spec.ts
+    |-- .env.example
+    |-- .gitignore
+    |-- package.json
+    |-- tsconfig.json
+    |-- vercel.json
+    `-- README.md
+```
 
 🔧 GETTING STARTED LOCALLY
 --------------------------
