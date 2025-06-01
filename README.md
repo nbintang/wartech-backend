@@ -108,9 +108,14 @@ This project uses a modern, modular, and scalable stack for building a secure, f
 --------------------------
 ```bash
 git clone https://github.com/nbintang/wartech-backend.git
+```
+```bash
 cd wartech-backend
+```
+```bash
 npm install
 ```
+
 🔧 ⚙️ Set up environment variables
 --------------------------
 Create a .env file based on .env.example and fill in the configuration values.
@@ -118,7 +123,6 @@ Create a .env file based on .env.example and fill in the configuration values.
 npx prisma migrate dev
 npm run start:dev
 ```
-    
 
 🌐 API ENDPOINT
 ---------------
