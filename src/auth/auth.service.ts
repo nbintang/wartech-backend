@@ -41,10 +41,11 @@ export class AuthService {
     userId: string,
     email: string,
     role: string,
+    verified: boolean,
   ): Promise<JwtTokenResponse> {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
-        { sub: userId, email, role },
+        { sub: userId, email, role, verified },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
           expiresIn: '30s',
@@ -98,6 +99,7 @@ export class AuthService {
       user.id,
       user.email,
       user.role,
+      user.verified,
     );
     return { accessToken, refreshToken };
   }
@@ -113,6 +115,7 @@ export class AuthService {
       user.id,
       user.email,
       user.role,
+      user.verified,
     );
     return {
       accessToken,
@@ -174,7 +177,12 @@ export class AuthService {
       role: true,
     });
     if (!user) throw new ForbiddenException('Access Denied');
-    const tokens = await this.generateJwtTokens(user.id, user.email, user.role);
+    const tokens = await this.generateJwtTokens(
+      user.id,
+      user.email,
+      user.role,
+      user.verified,
+    );
     return tokens;
   }
   async signout() {

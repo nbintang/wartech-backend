@@ -110,7 +110,7 @@ export class UsersService {
     return await this.db.user.update({
       where: { id },
       data: { verified: true, emailVerifiedAt: new Date() },
-      select: { id: true, email: true, name: true, role: true },
+      select: { id: true, email: true, name: true, role: true, verified:true },
     });
   }
 
