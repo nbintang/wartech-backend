@@ -59,11 +59,11 @@ This project uses a modern, modular, and scalable stack for building a secure, f
 
 *   **Winston** – A robust and customizable logging library used to handle structured logging, error tracking, and debugging across environments.
     
-
 📁 PROJECT STRUCTURE
 --------------------
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   wartech-backend/  ├── prisma/             → Database schema and migrations  ├── src/                → Application source code  │   ├── modules/        → Feature-based modules (articles, users, etc.)  │   ├── common/         → Shared helpers, middlewares  │   └── main.ts         → Entry point  ├── test/               → Unit and integration tests  ├── .env.example        → Environment variable template  ├── package.json        → Project metadata and dependencies  ├── tsconfig.json       → TypeScript configuration  └── vercel.json         → Vercel deployment settings   `
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   pgsqlCopyEditwartech-backend/  ├── prisma/             → Database schema and migrations  ├── src/                → Application source code  │   ├── modules/        → Feature-based modules (articles, users, etc.)  │   ├── common/         → Shared helpers, middlewares  │   └── main.ts         → Entry point  ├── test/               → Unit and integration tests  ├── .env.example        → Environment variable template  ├── package.json        → Project metadata and dependencies  ├── tsconfig.json       → TypeScript configuration  └── vercel.json         → Vercel deployment settings   `
+
 
 🔧 GETTING STARTED LOCALLY
 --------------------------
