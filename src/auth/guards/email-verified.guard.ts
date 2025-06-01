@@ -15,9 +15,8 @@ export class EmailVerifiedGuard implements CanActivate {
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    if (!user.verified) {
+    if (!user.verified)
       throw new ForbiddenException('Please Verify Your Email First');
-    }
     return true;
   }
 }

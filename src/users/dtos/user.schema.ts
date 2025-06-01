@@ -6,7 +6,9 @@ export const baseUserSchema = z.object({
   role: z.nativeEnum(Role).optional(),
   email: z.string().email({ message: 'Invalid email' }),
   image: z.string().url({ message: 'Invalid image url' }).optional(),
-  acceptedTOS: z.coerce.boolean().default(false),
+  acceptedTOS: z.boolean().refine((val) => val === true, {
+    message: 'You must accept the Terms of Service',
+  }),
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters' })
