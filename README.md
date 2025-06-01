@@ -87,16 +87,18 @@ wartech-backend/
 
 🔧 GETTING STARTED LOCALLY
 --------------------------
-
-1.  bashgit clone https://github.com/nbintang/wartech-backend.gitcd wartech-backend
-    
-2.  bashnpm install
-    
-3.  **⚙️ Set up environment variables**Create a .env file based on .env.example and fill in your config values.
-    
-4.  bashnpx prisma migrate dev
-    
-5.  bashnpm run start:dev
+```bash
+git clone https://github.com/nbintang/wartech-backend.git
+cd wartech-backend
+npm install
+```
+🔧 ⚙️ Set up environment variables
+--------------------------
+Create a .env file based on .env.example and fill in the configuration values.
+```bash
+npx prisma migrate dev
+npm run start:dev
+```
     
 
 🌐 API ENDPOINT
