@@ -17,7 +17,7 @@ This project uses a modern, modular, and scalable stack for building a secure, f
 
 ### 📦 Core Runtime & Language
 
-*   **Node.js** – JavaScript runtime built on Chrome’s V8 engine.
+*   **Node.js** – JavaScript runtime built on Chrome's V8 engine.
     
 *   **TypeScript** – A statically-typed superset of JavaScript, used across the entire backend to improve code safety, readability, and tooling support.
     
@@ -63,37 +63,26 @@ This project uses a modern, modular, and scalable stack for building a secure, f
 📁 PROJECT STRUCTURE
 --------------------
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   pgsqlCopyEditwartech-backend/  ├── prisma/             → Database schema and migrations  ├── src/                → Application source code  │   ├── modules/        → Feature-based modules (articles, users, etc.)  │   ├── common/         → Shared helpers, middlewares  │   └── main.ts         → Entry point  ├── test/               → Unit and integration tests  ├── .env.example        → Environment variable template  ├── package.json        → Project metadata and dependencies  ├── tsconfig.json       → TypeScript configuration  └── vercel.json         → Vercel deployment settings   `
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   wartech-backend/  ├── prisma/             → Database schema and migrations  ├── src/                → Application source code  │   ├── modules/        → Feature-based modules (articles, users, etc.)  │   ├── common/         → Shared helpers, middlewares  │   └── main.ts         → Entry point  ├── test/               → Unit and integration tests  ├── .env.example        → Environment variable template  ├── package.json        → Project metadata and dependencies  ├── tsconfig.json       → TypeScript configuration  └── vercel.json         → Vercel deployment settings   `
 
 🔧 GETTING STARTED LOCALLY
 --------------------------
 
-1.  📥 **Clone the repository**
+1.  bashgit clone https://github.com/nbintang/wartech-backend.gitcd wartech-backend
     
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   bashCopyEditgit clone https://github.com/nbintang/wartech-backend.git  cd wartech-backend   `
-
-1.  📦 **Install dependencies**
+2.  bashnpm install
     
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   nginxCopyEditnpm install   `
-
-1.  ⚙️ **Set up environment variables**Create a .env file based on .env.example and fill in your config values.
+3.  **⚙️ Set up environment variables**Create a .env file based on .env.example and fill in your config values.
     
-2.  🧬 **Run database migration**
+4.  bashnpx prisma migrate dev
     
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   nginxCopyEditnpx prisma migrate dev   `
-
-1.  🏃 **Start the development server**
+5.  bashnpm run start:dev
     
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   arduinoCopyEditnpm run start:dev   `
 
 🌐 API ENDPOINT
 ---------------
 
-Public API available at:🔗 https://wartech-backend.vercel.app/api
+Public API available at:🔗 [https://wartech-backend.vercel.app/api](https://wartech-backend.vercel.app/api)
 
 🤝 CONTRIBUTION
 ---------------
