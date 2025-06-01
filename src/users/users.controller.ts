@@ -42,10 +42,12 @@ export class UsersController {
     // @ts-ignore
     const userId = request.user.sub;
     const user = await this.usersService.getUserById(userId, {
-      role: true,
-      password: true,
-      acceptedTOS: true,
+      id: true,
+      email: true,
+      name: true,
+      verified: true,
       emailVerifiedAt: true,
+      image: true,
     });
     return {
       message: `${user.name} fetched successfully`,

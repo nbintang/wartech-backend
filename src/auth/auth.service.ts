@@ -121,7 +121,11 @@ export class AuthService {
   }
 
   async resendVerification(userId: string) {
-    const user = await this.usersService.getUserById(userId);
+    const user = await this.usersService.getUserById(userId, {
+      email: true,
+      name: true,
+      id: true,
+    });
     if (!user) throw new NotFoundException('User not found');
     await this.mailService.sendEmailConfirmation({
       name: user.name,
@@ -164,7 +168,11 @@ export class AuthService {
   }
 
   async refreshToken(userId: string): Promise<{ accessToken: string }> {
-    const user = await this.usersService.getUserById(userId);
+    const user = await this.usersService.getUserById(userId, {
+      id: true,
+      email: true,
+      role: true,
+    });
     if (!user) throw new ForbiddenException('Access Denied');
     const tokens = await this.generateJwtTokens(user.id, user.email, user.role);
     return tokens;

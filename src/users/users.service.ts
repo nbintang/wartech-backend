@@ -99,15 +99,11 @@ export class UsersService {
       },
     });
   }
-  async getUserById(
-    id: string,
-    except?: Prisma.UserOmit,
-  ): Promise<UserPayload<{ omit: Prisma.UserOmit }>> {
-    const user = await this.db.user.findUnique({
+  async getUserById(id: string, select?: Prisma.UserSelect) {
+    return await this.db.user.findUnique({
       where: { id },
-      omit: except,
+      select,
     });
-    return user;
   }
 
   async changeUserVerifiedStatus(id: string) {
