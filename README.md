@@ -69,7 +69,6 @@ This project uses a modern, modular, and scalable stack for building a secure, f
     │   └── migrations/
     ├── src/
     │   ├── main.ts
-    │   ├── app.module.ts
     │   ├── common/
     │   │   ├── filters/
     │   │   ├── guards/
