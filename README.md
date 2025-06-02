@@ -1,4 +1,4 @@
-  [![My Skills](https://skillicons.dev/icons?i=nest)](https://skillicons.dev) # WARTECH BACKEND
+  [![My Skills](https://skillicons.dev/icons?i=nest)](https://skillicons.dev)  WARTECH BACKEND
 ==================
 
 🔧 The official backend for **Warta Technologies** – a modern tech news portal bringing you the **latest** and **future** developments in technology.
