@@ -52,7 +52,7 @@ export class AuthService {
         },
       ),
       this.jwtService.signAsync(
-        { sub: userId, email, role },
+        { sub: userId, email, role, verified },
         {
           secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
           expiresIn: '1d',
@@ -172,6 +172,7 @@ export class AuthService {
       id: true,
       email: true,
       role: true,
+      verified: true,
     });
     if (!user) throw new ForbiddenException('Access Denied');
     const tokens = await this.generateJwtTokens(
