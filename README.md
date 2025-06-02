@@ -19,7 +19,7 @@ This project uses a modern, modular, and scalable stack for building a secure, f
 
 *   **Node.js** – JavaScript runtime built on Chrome's V8 engine.
     
-*   ** [![My Skills](https://skillicons.dev/icons?i=ts&perline=10)](https://skill-icons-builder.vercel.app/) TypeScript** – A statically-typed superset of JavaScript, used across the entire backend to improve code safety, readability, and tooling support.
+*   [![My Skills](https://skillicons.dev/icons?i=ts&perline=10)](https://skill-icons-builder.vercel.app/) **TypeScript** – A statically-typed superset of JavaScript, used across the entire backend to improve code safety, readability, and tooling support.
     
 
 ### 🧱 Framework & Structure
