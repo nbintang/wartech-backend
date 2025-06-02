@@ -121,6 +121,8 @@ npm install
 Create a .env file based on .env.example and fill in the configuration values.
 ```bash
 npx prisma migrate dev
+```
+```bash
 npm run start:dev
 ```
 
