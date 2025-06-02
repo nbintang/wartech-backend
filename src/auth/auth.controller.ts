@@ -139,7 +139,6 @@ export class AuthController {
       sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
       secure: process.env.NODE_ENV !== 'development',
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24, 
     });
     return await this.authService.signout();
   }
