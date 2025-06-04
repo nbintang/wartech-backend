@@ -17,9 +17,7 @@ import { ImageDto } from './dtos/mutate-file.dto';
 import { QueryFileDto } from './dtos/query-file.dto';
 import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
-import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
-
-@UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
+@UseGuards(AccessTokenGuard, RoleGuard)
 @UseInterceptors(FileInterceptor('file')) // kalau semua pakai
 @Controller('/protected/upload')
 @SkipThrottle({ short: true })

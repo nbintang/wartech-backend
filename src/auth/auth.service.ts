@@ -75,6 +75,7 @@ export class AuthService {
       name: createUserDto.name,
       email: createUserDto.email,
       acceptedTOS: createUserDto.acceptedTOS,
+      image: createUserDto.image || null,
       role: Role.READER,
       password: hashedPassword,
     });
