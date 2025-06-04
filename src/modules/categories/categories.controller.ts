@@ -19,7 +19,7 @@ import { Role } from '../users/enums/role.enums';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { CategoryDto } from './dtos/mutate-category.dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
-import { SinglePayloadResponseDto } from '../../common/dtos/single-payload-response.dto';
+import { SinglePayloadResponseDto } from '../../commons/dtos/single-payload-response.dto';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 @SkipThrottle({ short: true, medium: true, long: true })
 @Controller('/protected/categories')

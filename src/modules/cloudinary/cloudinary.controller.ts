@@ -15,7 +15,7 @@ import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { ImageDto } from './dtos/mutate-file.dto';
 import { QueryFileDto } from './dtos/query-file.dto';
-import { SinglePayloadResponseDto } from '../../common/dtos/single-payload-response.dto';
+import { SinglePayloadResponseDto } from '../../commons/dtos/single-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 @UseGuards(AccessTokenGuard, RoleGuard)
 @UseInterceptors(FileInterceptor('file')) // kalau semua pakai

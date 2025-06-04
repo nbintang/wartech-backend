@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CategoryDto } from './dtos/mutate-category.dto';
-import { PrismaService } from '../../common/prisma/prisma.service';
+import { PrismaService } from '../../commons/prisma/prisma.service';
 import { Category, Prisma } from '@prisma/client';
 import { QueryCategoriesDto } from './dtos/query-categories.dto';
-import { PaginatedPayloadResponseDto } from '../../common/dtos/paginated-payload-response.dto';
+import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
 import { ArticleStatus } from '../articles/enums/article-status.enum';
 
 @Injectable()

@@ -14,7 +14,7 @@ import { AuthService, JwtTokenResponse } from './auth.service';
 import { CreateUserDto } from '../users/dtos/mutate-user.dto';
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { SinglePayloadResponseDto } from '../../common/dtos/single-payload-response.dto';
+import { SinglePayloadResponseDto } from '../../commons/dtos/single-payload-response.dto';
 import { LocalSigninDto as SigninDto } from './dtos/auth.dto';
 import { minutes, SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AccessTokenGuard } from './guards/access-token.guard';

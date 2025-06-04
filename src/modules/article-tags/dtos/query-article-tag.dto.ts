@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { baseQueryRequestSchema } from '../../../common/dtos/base-query-request.schema';
+import { baseQueryRequestSchema } from '../../../commons/dtos/base-query-request.schema';
 import { z } from 'zod';
 
 const articleTagSchema = baseQueryRequestSchema.extend({

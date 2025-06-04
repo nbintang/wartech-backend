@@ -19,7 +19,7 @@ import { minutes, SkipThrottle, Throttle } from '@nestjs/throttler';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from './enums/role.enums';
 import { Request, Response } from 'express';
-import { SinglePayloadResponseDto } from '../../common/dtos/single-payload-response.dto';
+import { SinglePayloadResponseDto } from '../../commons/dtos/single-payload-response.dto';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { UpdateUserDto } from './dtos/mutate-user.dto';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';

@@ -15,7 +15,7 @@ import { TagsService } from './tags.service';
 import { TagDto } from './dtos/mutate-tag.dto';
 import { QueryTagDto } from './dtos/query-tag.dto';
 import { SkipThrottle } from '@nestjs/throttler';
-import { SinglePayloadResponseDto } from '../../common/dtos/single-payload-response.dto';
+import { SinglePayloadResponseDto } from '../../commons/dtos/single-payload-response.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/enums/role.enums';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';

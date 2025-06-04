@@ -16,8 +16,8 @@ import {
   QueryArticleTagDto,
   QueryArticleTagTypePostDto,
 } from './dtos/query-article-tag.dto';
-import { PaginatedPayloadResponseDto } from '../../common/dtos/paginated-payload-response.dto';
-import { SinglePayloadResponseDto } from '../../common/dtos/single-payload-response.dto';
+import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
+import { SinglePayloadResponseDto } from '../../commons/dtos/single-payload-response.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/enums/role.enums';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';

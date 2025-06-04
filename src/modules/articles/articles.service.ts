@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ArticleDto } from './dtos/mutate-article.dto';
-import { PrismaService } from '../../common/prisma/prisma.service';
+import { PrismaService } from '../../commons/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { QueryArticleDto } from './dtos/query-article.dto';
 import { ArticlesDto } from './dtos/response-article.dto';
-import { PaginatedPayloadResponseDto } from '../../common/dtos/paginated-payload-response.dto';
+import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
 import sanitizeHtml from 'sanitize-html';
 @Injectable()
 export class ArticlesService {

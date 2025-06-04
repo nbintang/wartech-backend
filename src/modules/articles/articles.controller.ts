@@ -13,10 +13,10 @@ import {
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { ArticleDto } from './dtos/mutate-article.dto';
-import { PaginatedPayloadResponseDto } from '../../common/dtos/paginated-payload-response.dto';
+import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
 import { ArticlesDto } from './dtos/response-article.dto';
 import { QueryArticleDto } from './dtos/query-article.dto';
-import { SinglePayloadResponseDto } from '../../common/dtos/single-payload-response.dto';
+import { SinglePayloadResponseDto } from '../../commons/dtos/single-payload-response.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/enums/role.enums';

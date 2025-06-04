@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { LikesService } from './likes.service';
 import { LikeDto } from './dto/mutate-like.dto';
-import { SinglePayloadResponseDto } from '../../common/dtos/single-payload-response.dto';
+import { SinglePayloadResponseDto } from '../../commons/dtos/single-payload-response.dto';
 import { QueryLikeDto } from './dto/query-like.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/enums/role.enums';

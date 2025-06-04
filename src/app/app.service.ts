@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SinglePayloadResponseDto } from '../common/dtos/single-payload-response.dto';
+import { SinglePayloadResponseDto } from '../commons/dtos/single-payload-response.dto';
 
 @Injectable()
 export class AppService {

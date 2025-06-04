@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import slugify from '../../../common/slugify';
+import slugify from '../../../commons/slugify';
 import { z } from 'zod';
 
 const articleTagInputSchema = z.object({

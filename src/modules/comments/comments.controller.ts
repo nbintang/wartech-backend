@@ -12,8 +12,8 @@ import {
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CommentDto } from './dtos/mutate-comment.dto';
-import { SinglePayloadResponseDto } from '../../common/dtos/single-payload-response.dto';
-import { PaginatedPayloadResponseDto } from '../../common/dtos/paginated-payload-response.dto';
+import { SinglePayloadResponseDto } from '../../commons/dtos/single-payload-response.dto';
+import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
 import { QueryCommentDto } from './dtos/query-comment.dto';
 import { Role } from '../users/enums/role.enums';
 import { Roles } from '../auth/decorators/roles.decorator';
