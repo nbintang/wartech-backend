@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from './modules/app.module';
 import cookieParser from 'cookie-parser';
 import { HttpExceptionFilter } from './common/http-exception/http-exception.filter';
 import { Logger } from '@nestjs/common';
