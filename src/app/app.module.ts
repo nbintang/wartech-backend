@@ -4,7 +4,7 @@ import { AppController } from './app.controller';
 import { AuthModule } from '../modules/auth/auth.module';
 import { UsersModule } from '../modules/users/users.module';
 import { PrismaModule } from '../commons/prisma/prisma.module';
-import { MailModule } from '../modules/mail/mail.module';
+import { MailModule } from '../commons/mail/mail.module';
 import { LoggerModule } from '../commons/logger/logger.module';
 import { ResponseModule } from '../commons/response/response.module';
 import { ValidatorModule } from '../commons/validator/zod-validator.module';

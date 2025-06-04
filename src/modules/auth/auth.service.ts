@@ -10,11 +10,11 @@ import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from '../users/dtos/mutate-user.dto';
-import { MailService } from '../mail/mail.service';
+import { MailService } from '../../commons/mail/mail.service';
 import { LocalSigninDto } from './dtos/auth.dto';
 import { ResetPasswordDto, VerifyEmailFromUrlDto } from './dtos/verify.dto';
 import { Role } from '../users/enums/role.enums';
-import { VerificationType } from '../mail/enum/verification.enum';
+import { VerificationType } from '../../commons/mail/enum/verification.enum';
 
 export interface JwtTokenResponse {
   accessToken: string;
@@ -33,11 +33,7 @@ export class AuthService {
     return bcrypt.hash(data, 10);
   }
 
-  compareHash(plainText: string, hash: string) {
-    return bcrypt.compare(plainText, hash.toString());
-  }
-
-  async generateJwtTokens(
+  private async generateJwtTokens(
     userId: string,
     email: string,
     role: string,
@@ -63,6 +59,15 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  private async confirmUserEmail(email: string) {
+    const user = await this.usersService.getUserByEmail(email);
+    if (user.verified) throw new BadRequestException('Email already verified');
+    return await this.usersService.changeUserVerifiedStatus(user.id);
+  }
+  compareHash(plainText: string, hash: string) {
+    return bcrypt.compare(plainText, hash.toString());
   }
 
   async signUp(createUserDto: CreateUserDto) {
@@ -94,7 +99,7 @@ export class AuthService {
       await this.mailService.decodeConfirmationToken(token);
     if (type !== VerificationType.EMAIL_VERIFICATION)
       throw new BadRequestException('Invalid token');
-    const user = await this.mailService.confirmUserEmail(email);
+    const user = await this.confirmUserEmail(email);
     if (!user) throw new NotFoundException('User not found');
     const { accessToken, refreshToken } = await this.generateJwtTokens(
       user.id,

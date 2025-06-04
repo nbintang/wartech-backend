@@ -8,7 +8,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { UsersService } from '../users/users.service';
 import { VerificationType } from './enum/verification.enum';
 
 interface UserInfo {
@@ -30,7 +29,6 @@ export class MailService {
     private mailerService: MailerService,
     private configService: ConfigService,
     private jwtService: JwtService,
-    private usersService: UsersService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
   ) {
@@ -45,12 +43,6 @@ export class MailService {
       secret: this.configService.get<string>('JWT_VERIFICATION_TOKEN_SECRET'),
       expiresIn: '15m',
     });
-  }
-
-  public async confirmUserEmail(email: string) {
-    const user = await this.usersService.getUserByEmail(email);
-    if (user.verified) throw new BadRequestException('Email already verified');
-    return await this.usersService.changeUserVerifiedStatus(user.id);
   }
 
   public async decodeConfirmationToken(token: string) {
