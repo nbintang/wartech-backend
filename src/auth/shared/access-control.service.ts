@@ -26,9 +26,8 @@ export class AccessControlService {
     for (const hierarchy of this.hierarchies) {
       const priority = hierarchy.get(currentRole);
       const requiredPriority = hierarchy.get(requiredRole);
-      if (priority && requiredPriority && priority >= requiredPriority) {
+      if (priority && requiredPriority && priority >= requiredPriority)
         return true;
-      }
     }
     return false;
   }

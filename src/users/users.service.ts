@@ -110,7 +110,7 @@ export class UsersService {
     return await this.db.user.update({
       where: { id },
       data: { verified: true, emailVerifiedAt: new Date() },
-      select: { id: true, email: true, name: true, role: true, verified:true },
+      select: { id: true, email: true, name: true, role: true, verified: true },
     });
   }
 
@@ -119,5 +119,14 @@ export class UsersService {
     return {
       message: `User deleted successfully`,
     };
+  }
+
+  async updateUserResendTime(id: string, resendEmailCooldown: Date) {
+    return await this.db.user.update({
+      where: { id },
+      data: {
+        resendEmailCooldown,
+      },
+    });
   }
 }

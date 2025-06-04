@@ -128,13 +128,30 @@ export class AuthService {
     const user = await this.usersService.getUserByEmail(email);
     if (user.verified) throw new BadRequestException('Email already verified');
     if (!user) throw new NotFoundException('User not found');
+    const now = new Date();
+    if (user.resendEmailCooldown && user.resendEmailCooldown > now) {
+      const secondsLeft = Math.ceil(
+        (user.resendEmailCooldown.getTime() - now.getTime()) / 1000,
+      );
+      throw new BadRequestException(
+        `Please wait for ${secondsLeft} seconds before resending the verification email.`,
+      );
+    }
+
     await this.mailService.sendEmailConfirmation({
       name: user.name,
       email: user.email,
       id: user.id,
     });
+
+    const cooldownMinutes = 1;
+    await this.usersService.updateUserResendTime(
+      user.id,
+      new Date(now.getTime() + cooldownMinutes * 60 * 1000),
+    );
     return {
       message: 'Email sent successfully',
+      expiresIn: cooldownMinutes * 60,
     };
   }
 
