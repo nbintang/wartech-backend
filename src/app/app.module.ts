@@ -1,21 +1,22 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { MailModule } from './mail/mail.module';
+
+import { AuthModule } from '../modules/auth/auth.module';
+import { UsersModule } from '../modules/users/users.module';
+import { PrismaModule } from '../common/prisma/prisma.module';
+import { MailModule } from '../modules/mail/mail.module';
 import { LoggerModule } from '../common/logger/logger.module';
 import { ResponseModule } from '../common/response/response.module';
 import { ValidatorModule } from '../common/validator/zod-validator.module';
-import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { CloudinaryModule } from '../modules/cloudinary/cloudinary.module';
 import { ThrottlerConfigModule } from '../common/throttler/throttler-config.module';
-import { ArticlesModule } from './articles/articles.module';
-import { CategoriesModule } from './categories/categories.module';
-import { TagsModule } from './tags/tags.module';
-import { ArticleTagsModule } from './article-tags/article-tags.module';
-import { CommentsModule } from './comments/comments.module';
-import { LikesModule } from './likes/likes.module';
+import { ArticlesModule } from '../modules/articles/articles.module';
+import { CategoriesModule } from '../modules/categories/categories.module';
+import { TagsModule } from '../modules/tags/tags.module';
+import { ArticleTagsModule } from '../modules/article-tags/article-tags.module';
+import { CommentsModule } from '../modules/comments/comments.module';
+import { LikesModule } from '../modules/likes/likes.module';
+import { AppService } from './app.service';
 
 @Module({
   imports: [

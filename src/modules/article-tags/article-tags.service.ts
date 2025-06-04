@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../common/prisma/prisma.service';
 import { QueryArticleTagDto } from './dtos/query-article-tag.dto';
 import { Prisma } from '@prisma/client';
 import { ArticleTagDto } from './dtos/mutate-article-tag.dto';

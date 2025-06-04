@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CommentDto } from './dtos/mutate-comment.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../common/prisma/prisma.service';
 import { QueryCommentDto } from './dtos/query-comment.dto';
 import { Prisma } from '@prisma/client';
 

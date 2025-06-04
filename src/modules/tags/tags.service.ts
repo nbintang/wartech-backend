@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { QueryTagDto } from './dtos/query-tag.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../common/prisma/prisma.service';
 import { TagDto } from './dtos/mutate-tag.dto';
 import { Tag } from '@prisma/client';
 import { PaginatedPayloadResponseDto } from '../../common/dtos/paginated-payload-response.dto';

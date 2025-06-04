@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { ArticlesController } from './articles.controller';
 import { AccessControlService } from '../auth/shared/access-control.service';
-import { PrismaModule } from '../prisma/prisma.module';
+import { PrismaModule } from '../../common/prisma/prisma.module';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
