@@ -1,99 +1,139 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+[![My Skills](https://skillicons.dev/icons?i=nest,ts)](https://skillicons.dev)  WARTECH BACKEND  
+==================
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+🔧 The official backend for **Warta Technologies** – a modern tech news portal bringing you the **latest** and **future** developments in technology.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+🧠 ABOUT THE PROJECT
+--------------------
 
-## Description
+**Warta Technologies** is a web-based news platform focused on delivering current and futuristic technology insights. It offers curated articles, trending news, and deep-dive analyses on innovation and the tech world.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This repository powers the backend of the platform, built for scalability and ease of integration with the frontend client.
 
-## Project setup
+🛠️ TECH STACK USES
+-------------------
 
-```bash
-$ npm install
+This project uses a modern, modular, and scalable stack for building a secure, fast, and maintainable backend:
+
+### 📦 Core Runtime & Language
+
+*   **Node.js** – JavaScript runtime built on Chrome's V8 engine.
+    
+*   **TypeScript** – A statically-typed superset of JavaScript, used across the entire backend to improve code safety, readability, and tooling support.
+    
+
+### 🧱 Framework & Structure
+
+*   **NestJS** – A progressive Node.js framework that promotes clean architecture, dependency injection, and modularization.
+    
+*   **Prisma ORM** – Provides type-safe and performant database access for MySQL, with full support for schema modeling and migrations.
+    
+
+### 🗄️ Database
+
+*   **MySQL** – A reliable and popular open-source relational database used to store user accounts, article content, and platform metadata.
+    
+
+### 🔐 Authentication & Authorization
+
+*   **Passport.js** – Middleware used with NestJS for handling authentication strategies. Includes:
+    
+    *   passport-local for login with email & password.
+        
+    *   passport-jwt for JWT-based session management.
+        
+
+### 🧾 Validation & Schema Definition
+
+*   **Zod** – A TypeScript-first schema validation library used for request body validation and form input verification.
+    
+
+### ☁️ File Uploads & Image Processing
+
+*   **Cloudinary** – Cloud-based image & video management used to store and optimize user-uploaded media (e.g., profile pictures, article images).
+    
+*   **Sharp** – High-performance image processing library used for resizing, compressing, and transforming images before upload.
+    
+
+### 🧪 Logging & Debugging
+
+*   **Winston** – A robust and customizable logging library used to handle structured logging, error tracking, and debugging across environments.
+    
+📁 PROJECT STRUCTURE
+--------------------
+```md
+.
+└── wartech-backend/
+    ├── prisma/
+    │   ├── schema.prisma
+    │   └── migrations/
+    ├── src/
+    │   ├── main.ts
+    │   ├── common/
+    │   │   ├── filters/
+    │   │   ├── guards/
+    │   │   ├── decorators/
+    │   │   └── interceptors/
+    │   ├── auth/
+    │   │   ├── auth.module.ts
+    │   │   ├── auth.controller.ts
+    │   │   ├── auth.service.ts
+    │   │   ├── strategies/
+    │   │   ├── guards/
+    │   │   ├── decorators/
+    │   │   └── dto/
+    │   ├── users/
+    │   │   ├── users.module.ts
+    │   │   ├── users.controller.ts
+    │   │   ├── users.service.ts
+    │   │   └── dto/
+    │   ├── articles/
+    │   │   ├── articles.module.ts
+    │   │   ├── articles.controller.ts
+    │   │   ├── articles.service.ts
+    │   │   └── dto/
+    │   └── ...others
+    ├── test/
+    │   └── auth.e2e-spec.ts
+    ├── .env.example
+    ├── .gitignore
+    ├── package.json
+    ├── tsconfig.json
+    ├── vercel.json
+    └── README.md
 ```
 
-## Compile and run the project
-
+🔧 GETTING STARTED LOCALLY
+--------------------------
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/nbintang/wartech-backend.git
+cd wartech-backend
+```
+```bash
+npm install
 ```
 
-## Run tests
-
+🔧 ⚙️ Set up environment variables
+--------------------------
+Create a .env file based on .env.example and fill in the configuration values.
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npx prisma migrate dev
+```
+```bash
+npm run start:dev
 ```
 
-## Deployment
+🌐 API ENDPOINT
+---------------
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Public API available at:🔗 [https://wartech-backend.vercel.app/api](https://wartech-backend.vercel.app/api)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+🤝 CONTRIBUTION
+---------------
 
-```bash
-$ npm install -g mau
-$ mau deploy
-```
+We welcome contributions from developers! Feel free to open an issue or create a pull request to help improve this project.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+📄 LICENSE
+----------
 
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Licensed under the **MIT License** – feel free to use and modify.
