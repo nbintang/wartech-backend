@@ -65,42 +65,55 @@ This project uses a modern, modular, and scalable stack for building a secure, f
 .
 └── wartech-backend/
     ├── prisma/
-    │   ├── schema.prisma
-    │   └── migrations/
+    │   ├── migrations
+    │   └── schema.prisma
     ├── src/
-    │   ├── main.ts
-    │   ├── common/
+    │   ├── app/
+    │   │   ├── app.modules.ts
+    │   │   ├── app.service.ts
+    │   │   └── app.controller.ts
+    │   ├── commons/
+    │   │   ├── dtos
     │   │   ├── filters/
     │   │   ├── guards/
     │   │   ├── decorators/
-    │   │   └── interceptors/
-    │   ├── auth/
-    │   │   ├── auth.module.ts
-    │   │   ├── auth.controller.ts
-    │   │   ├── auth.service.ts
-    │   │   ├── strategies/
-    │   │   ├── guards/
-    │   │   ├── decorators/
-    │   │   └── dto/
-    │   ├── users/
-    │   │   ├── users.module.ts
-    │   │   ├── users.controller.ts
-    │   │   ├── users.service.ts
-    │   │   └── dto/
-    │   ├── articles/
-    │   │   ├── articles.module.ts
-    │   │   ├── articles.controller.ts
-    │   │   ├── articles.service.ts
-    │   │   └── dto/
-    │   └── ...others
+    │   │   ├── interceptors/
+    │   │   ├── prisma/
+    │   │   └── ...others
+    │   ├── modules/
+    │   │   ├── auth/
+    │   │   │   ├── guards/
+    │   │   │   ├── decorators/
+    │   │   │   ├── strategies/
+    │   │   │   ├── dto/
+    │   │   │   ├── module.ts
+    │   │   │   ├── controller.ts
+    │   │   │   └── service.ts
+    │   │   ├── users/
+    │   │   │   ├── dto/
+    │   │   │   ├── module.ts
+    │   │   │   ├── controller.ts
+    │   │   │   └── service.ts
+    │   │   ├── articles/
+    │   │   │   ├── dto/
+    │   │   │   ├── module.ts
+    │   │   │   ├── controller.ts
+    │   │   │   └── service.ts
+    │   │   └── ...others
+    │   └── main.ts
     ├── test/
     │   └── auth.e2e-spec.ts
     ├── .env.example
+    ├── .eslintrc.js
     ├── .gitignore
+    ├── .prettierrc
+    ├── nest-cli.json
+    ├── package-lock.json
     ├── package.json
+    ├── README.md
+    ├── tsconfig.build.json
     ├── tsconfig.json
-    ├── vercel.json
-    └── README.md
+    └── vercel.json
 ```
 
 🔧 GETTING STARTED LOCALLY
