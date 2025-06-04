@@ -102,7 +102,7 @@ This project uses a modern, modular, and scalable stack for building a secure, f
     │   │   └── ...others
     │   └── main.ts
     ├── test/
-    │   └── auth.e2e-spec.ts
+    │   └── app.e2e-spec.ts
     ├── .env.example
     ├── .eslintrc.js
     ├── .gitignore
