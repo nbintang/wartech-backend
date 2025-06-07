@@ -86,6 +86,7 @@ export class UsersService {
         acceptedTOS: true,
         password: true,
         emailVerifiedAt: true,
+        resendEmailCooldown: true,
       },
     });
   }
@@ -97,6 +98,7 @@ export class UsersService {
         password: true,
         acceptedTOS: true,
         emailVerifiedAt: true,
+        resendEmailCooldown: true,
       },
     });
   }
