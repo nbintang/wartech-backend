@@ -156,7 +156,8 @@ export class AuthService {
     );
     return {
       message: 'Email sent successfully',
-      expiresIn: cooldownMinutes * 60,
+     data:{
+        expiresIn: cooldownMinutes * 60,
     };
   }
 
