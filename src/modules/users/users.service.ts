@@ -47,6 +47,7 @@ export class UsersService {
         password: true,
         acceptedTOS: true,
         emailVerifiedAt: true,
+        resendEmailCooldown: true,
       },
       skip,
       take,
