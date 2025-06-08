@@ -60,7 +60,7 @@ export class CommentsService {
         createdAt: true,
         updatedAt: true,
         isEdited: true,
-        user: { select: { id: true, name: true, image: true } },
+        user: { select: { id: true, name: true, image: true, email: true } },
         article: {
           select: { id: true, title: true, slug: true, publishedAt: true },
         },
