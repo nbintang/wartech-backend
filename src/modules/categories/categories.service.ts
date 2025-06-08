@@ -47,8 +47,10 @@ export class CategoriesService {
       }>
     >
   > {
-    const skip = (query.page - 1) * query.limit;
-    const take = query.limit;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const skip = (page - 1) * limit;
+    const take = limit;
     const dynamicSearch: Prisma.CategoryWhereInput = {
       ...(query.name && { name: { contains: query.name } }),
     };

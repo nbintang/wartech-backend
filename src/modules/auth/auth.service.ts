@@ -156,11 +156,11 @@ export class AuthService {
     );
     return {
       message: 'Email sent successfully',
-     data:{
+      data: {
         expiresIn: cooldownMinutes * 60,
-     }
-    }
-  };
+      },
+    };
+  }
 
   async forgotPassword(email: string) {
     const user = await this.usersService.getUserByEmail(email);
