@@ -55,6 +55,7 @@ export class UsersController {
     };
   }
   @Get(':id')
+  @SkipThrottle({ short: true, medium: true, long: true })
   async getUserById(
     @Param('id') id: string,
   ): Promise<SinglePayloadResponseDto> {
