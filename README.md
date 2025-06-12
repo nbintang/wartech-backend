@@ -140,13 +140,3 @@ npm run start:dev
 ---------------
 
 Public API available at:🔗 [https://wartech-backend.vercel.app/api](https://wartech-backend.vercel.app/api)
-
-🤝 CONTRIBUTION
----------------
-
-We welcome contributions from developers! Feel free to open an issue or create a pull request to help improve this project.
-
-📄 LICENSE
-----------
-
-Licensed under the **MIT License** – feel free to use and modify.
