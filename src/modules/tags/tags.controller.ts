@@ -44,13 +44,13 @@ export class TagsController {
   }
 
   @Get()
-  @SkipThrottle({ short: true, medium: true })
+  @SkipThrottle({ short: true, medium: true, long: true })
   async getAllTags(@Query() query: QueryTagDto) {
     return await this.tagsService.getAllTags(query);
   }
 
   @Get(':slug')
-  @SkipThrottle({ short: true, medium: true })
+  @SkipThrottle({ short: true, medium: true, long: true })
   async getTagsBySlug(
     @Param('slug') slug: string,
   ): Promise<SinglePayloadResponseDto> {
