@@ -20,33 +20,43 @@ export class TagsService {
     return tag;
   }
 
-  async getAllTags(
-    query: QueryTagDto,
-  ): Promise<PaginatedPayloadResponseDto<Tag>> {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
-    const skip = (page - 1) * limit;
-    const take = limit;
-    const tags = await this.db.tag.findMany({
-      skip,
-      take,
-    });
-    const tagsCount = await this.db.tag.count();
-    const itemCount = tags.length;
-    const totalPages = Math.ceil(tagsCount / limit);
-    return {
-      data: {
-        items: tags,
-        meta: {
-          totalItems: tagsCount,
-          currentPage: page,
-          itemPerPages: limit,
-          itemCount,
-          totalPages,
-        },
+async getAllTags(
+  query: QueryTagDto,
+): Promise<PaginatedPayloadResponseDto<Tag>> {
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 10;
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  // Build dynamic search criteria (just for name)
+  const dynamicSearch: Prisma.TagWhereInput = {
+    ...(query.name && { name: { contains: query.name } })
+  };
+
+  const tags = await this.db.tag.findMany({ 
+    where: dynamicSearch,
+    skip,
+    take,
+  });
+
+  const tagsCount = await this.db.tag.count({ where: dynamicSearch });
+
+  const itemCount = tags.length;
+  const totalPages = Math.ceil(tagsCount / limit);
+
+  return {
+    data: {
+      items: tags,
+      meta: {
+        totalItems: tagsCount,
+        currentPage: page,
+        itemPerPages: limit,
+        itemCount,
+        totalPages,
       },
-    };
-  }
+    },
+  };
+}
 
   async getTagBySlug(slug: string): Promise<Tag> {
     const tag = await this.db.tag.findUnique({ where: { slug } });
