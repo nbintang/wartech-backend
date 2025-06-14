@@ -75,7 +75,7 @@ export class ArticleTagsService {
     const existedArticleTags = await this.db.articleTag.findMany({
       where: {
         articleId: existedArticle.id,
-        tagId: { in: existedTags.map(({ id }) => id) },
+        tagId: { in: validTagIds },
       },
     });
     if (existedArticleTags.length > 0) {

@@ -78,15 +78,8 @@ export class ArticlesService {
         'Article title already exists',
         HttpStatus.BAD_REQUEST,
       );
-    const {
-      tagIds = [],
-      categoryId,
-      authorId,
-      title,
-      slug,
-      content,
-      image,
-    } = createArticleDto;
+    const { categoryId, authorId, title, slug, content, image } =
+      createArticleDto;
     const newArticle = await this.db.article.create({
       data: {
         title,
@@ -95,13 +88,6 @@ export class ArticlesService {
         image,
         author: { connect: { id: authorId } },
         category: { connect: { id: categoryId } },
-        articleTags: tagIds.length
-          ? {
-              create: tagIds.map((tagId) => ({
-                tag: { connect: { id: tagId } },
-              })),
-            }
-          : undefined,
       },
     });
     return newArticle;

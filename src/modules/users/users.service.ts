@@ -10,7 +10,12 @@ type UserPayload<T extends Prisma.UserDefaultArgs = object> =
   Prisma.UserGetPayload<T>;
 
 type SafeUser = UserPayload<{
-  omit: { password: true; acceptedTOS: true; emailVerifiedAt: true; resendEmailCooldown: true };
+  omit: {
+    password: true;
+    acceptedTOS: true;
+    emailVerifiedAt: true;
+    resendEmailCooldown: true;
+  };
 }>;
 
 @Injectable()

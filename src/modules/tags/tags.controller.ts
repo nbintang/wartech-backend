@@ -10,6 +10,7 @@ import {
   HttpException,
   HttpStatus,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { TagsService } from './tags.service';
 import { TagDto } from './dtos/mutate-tag.dto';
@@ -21,6 +22,7 @@ import { Role } from '../users/enums/role.enums';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
+import { Tag } from '@prisma/client';
 @Controller('/protected/tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
@@ -30,11 +32,21 @@ export class TagsController {
   @SkipThrottle({ short: true })
   @Post()
   async createTag(
-    @Body() createTagDto: TagDto,
-  ): Promise<SinglePayloadResponseDto> {
+    @Body() body: TagDto,
+    @Query() query: QueryTagDto,
+  ): Promise<SinglePayloadResponseDto<Tag | Tag[]>> {
     try {
-      const tag = await this.tagsService.createTag(createTagDto);
-      return { message: 'Tag created successfully', data: tag };
+      if (query.bulk) {
+        if (!body.names || body.names.length === 0)
+          throw new BadRequestException('names must be provided in bulk mode');
+        return await this.tagsService.createTags(body);
+      } else {
+        if (!body.name)
+          throw new BadRequestException(
+            'names must be provided in non-bulk mode',
+          );
+        return await this.tagsService.createTag(body);
+      }
     } catch (error) {
       throw new HttpException(
         error.message || 'Something went wrong',
