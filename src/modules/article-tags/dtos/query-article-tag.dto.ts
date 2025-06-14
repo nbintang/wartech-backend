@@ -11,7 +11,7 @@ const typePostArticleTagSchema = z.object({
   bulk: z.coerce.boolean().optional(),
 });
 
-export class QueryArticleTagTypePostDto extends createZodDto(
+export class QueryArticleTagWithBulk extends createZodDto(
   typePostArticleTagSchema,
 ) {}
 

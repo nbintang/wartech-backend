@@ -14,7 +14,7 @@ import { ArticleTagsService } from './article-tags.service';
 import { ArticleTagDto } from './dtos/mutate-article-tag.dto';
 import {
   QueryArticleTagDto,
-  QueryArticleTagTypePostDto,
+  QueryArticleTagWithBulk,
 } from './dtos/query-article-tag.dto';
 import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
 import { SinglePayloadResponseDto } from '../../commons/dtos/single-payload-response.dto';
@@ -35,7 +35,7 @@ export class ArticleTagsController {
   @SkipThrottle({ short: true })
   async addArticleTag(
     @Body() body: ArticleTagDto,
-    @Query() query: QueryArticleTagTypePostDto,
+    @Query() query: QueryArticleTagWithBulk,
   ) {
     if (query.bulk) {
       if (!body.tagIds || body.tagIds.length === 0)
@@ -86,7 +86,13 @@ export class ArticleTagsController {
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Delete(':slug')
   @SkipThrottle({ short: true })
-  async removeArticleTagById(@Param('slug') id: string) {
-    return await this.articleTagsService.removeArticleTagByArticleSlug(id);
+  async removeArticleTagById(
+    @Param('slug') slug: string,
+    @Query() query: QueryArticleTagWithBulk,
+  ) {
+    if (query.bulk) {
+      return await this.articleTagsService.removeArticleTagsByArticleSlug(slug);
+    }
+    return await this.articleTagsService.removeArticleTagByArticleSlug(slug);
   }
 }

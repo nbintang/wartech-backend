@@ -6,18 +6,21 @@ import { ArticleTagDto } from './dtos/mutate-article-tag.dto';
 import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
 import { SinglePayloadResponseDto } from '../../commons/dtos/single-payload-response.dto';
 
+// Define a consistent ArticleTagPayload type for reusability
+type ArticleTagPayload = Prisma.ArticleTagGetPayload<{
+  select: {
+    article: { select: { id: true; title: true; slug: true } };
+    tag: { select: { id: true; name: true; slug: true } };
+  };
+}>;
+
 @Injectable()
 export class ArticleTagsService {
   constructor(private db: PrismaService) {}
-  async addArticleTag(createArticleTagDto: ArticleTagDto): Promise<
-    Prisma.ArticleTagGetPayload<{
-      select: {
-        id: true;
-        articleId: true;
-        tag: { select: { id: true; name: true; slug: true } };
-      };
-    }>
-  > {
+
+  async addArticleTag(
+    createArticleTagDto: ArticleTagDto,
+  ): Promise<ArticleTagPayload> {
     const existedArticle = await this.db.article.findUnique({
       where: { slug: createArticleTagDto.articleSlug },
     });
@@ -48,8 +51,7 @@ export class ArticleTagsService {
         tag: { connect: { id: existedTag.id } },
       },
       select: {
-        id: true,
-        articleId: true,
+        article: { select: { id: true, title: true, slug: true } },
         tag: { select: { id: true, name: true, slug: true } },
       },
     });
@@ -58,7 +60,7 @@ export class ArticleTagsService {
 
   async addArticleTags({ tagIds, articleSlug }: ArticleTagDto): Promise<
     SinglePayloadResponseDto<{
-      articleId: string;
+      article: { id: string; title: string; slug: string };
       tags: { id: string; name: string; slug: string }[];
     }>
   > {
@@ -67,11 +69,13 @@ export class ArticleTagsService {
     });
     if (!existedArticle)
       throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+
     const existedTags = await this.db.tag.findMany({
       where: { id: { in: tagIds } },
-      select: { id: true },
+      select: { id: true, name: true, slug: true },
     });
     const validTagIds = existedTags.map(({ id }) => id);
+
     const existedArticleTags = await this.db.articleTag.findMany({
       where: {
         articleId: existedArticle.id,
@@ -80,80 +84,74 @@ export class ArticleTagsService {
     });
     if (existedArticleTags.length > 0) {
       throw new HttpException(
-        'Article tag already exists',
+        'Some article tags already exist for this article',
         HttpStatus.BAD_REQUEST,
       );
     }
+
     const data = validTagIds.map((tagId) => ({
       articleId: existedArticle.id,
       tagId,
     }));
-    const createdArticleTags = await this.db.articleTag.createMany({
+
+    await this.db.articleTag.createMany({
       data,
       skipDuplicates: true,
     });
-    if (createdArticleTags.count === 0)
-      throw new HttpException(
-        'Article tag already exists',
-        HttpStatus.BAD_REQUEST,
-      );
 
-    const articletags = await this.db.articleTag.findMany({
+    const newlyAddedArticleTags = await this.db.articleTag.findMany({
       where: {
         articleId: existedArticle.id,
         tagId: { in: validTagIds },
       },
       select: {
-        id: true,
         tag: { select: { id: true, name: true, slug: true } },
       },
     });
 
-    const mappedArticleTags = articletags.map((tag) => ({
-      id: tag.tag.id,
-      name: tag.tag.name,
-      slug: tag.tag.slug,
-    }));
+    const mappedTags = newlyAddedArticleTags.map((at) => at.tag);
 
     return {
-      message: 'Article tags created successfully',
+      message: 'Article tags added successfully',
       data: {
-        articleId: existedArticle.id,
-        tags: mappedArticleTags,
+        article: {
+          id: existedArticle.id,
+          title: existedArticle.title,
+          slug: existedArticle.slug,
+        },
+        tags: mappedTags,
       },
     };
   }
 
-  async getAllArticleTags(query: QueryArticleTagDto): Promise<
-    PaginatedPayloadResponseDto<
-      Prisma.ArticleTagGetPayload<{
-        select: {
-          article: { select: { id: true; title: true; slug: true } };
-          tag: { select: { id: true; name: true; slug: true } };
-        };
-      }>
-    >
-  > {
+  async getAllArticleTags(
+    query: QueryArticleTagDto,
+  ): Promise<PaginatedPayloadResponseDto<ArticleTagPayload>> {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
     const take = limit;
+
     const where: Prisma.ArticleTagWhereInput = {
       ...(query['article-slug'] && {
         article: { slug: query['article-slug'] },
       }),
       ...(query['tag-slug'] && { tag: { slug: query['tag-slug'] } }),
     };
-    const articleTags = await this.db.articleTag.findMany({
-      where,
-      skip,
-      take,
-      select: {
-        article: { select: { id: true, title: true, slug: true } },
-        tag: { select: { id: true, name: true, slug: true } },
-      },
-    });
-    const articleTagsCount = await this.db.articleTag.count({ where });
+
+    const [articleTags, articleTagsCount] = await this.db.$transaction([
+      this.db.articleTag.findMany({
+        where,
+        skip,
+        take,
+        select: {
+          article: { select: { id: true, title: true, slug: true } },
+          tag: { select: { id: true, name: true, slug: true } },
+        },
+      }),
+      this.db.articleTag.count({ where }),
+    ]);
+
     return {
       data: {
         items: articleTags,
@@ -168,10 +166,12 @@ export class ArticleTagsService {
     };
   }
 
-  async getArticleTagByArticleSlug(articleSlug: string) {
+  async getArticleTagByArticleSlug(
+    articleSlug: string,
+  ): Promise<ArticleTagPayload> {
     const article = await this.db.article.findUnique({
       where: { slug: articleSlug },
-      select: { id: true, title: true, slug: true },
+      select: { id: true }, // Only need ID to find the article tag
     });
     if (!article)
       throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
@@ -196,8 +196,7 @@ export class ArticleTagsService {
   ): Promise<
     Prisma.ArticleTagGetPayload<{
       select: {
-        id: true;
-        articleId: true;
+        article: { select: { id: true; title: true; slug: true } };
         tag: { select: { id: true; name: true; slug: true } };
       };
     }>
@@ -221,21 +220,56 @@ export class ArticleTagsService {
         tag: { connect: { id: updateArticleTagDto.tagId } },
       },
       select: {
-        id: true,
-        articleId: true,
+        article: { select: { id: true, title: true, slug: true } },
         tag: { select: { id: true, name: true, slug: true } },
       },
     });
     return articleTag;
   }
 
-  async removeArticleTagByArticleSlug(articleSlug: string) {
-    const articleTag = await this.db.articleTag.findFirst({
-      where: { article: { slug: articleSlug } },
+  async removeArticleTagByArticleSlug(
+    articleSlug: string,
+  ): Promise<{ message: string }> {
+    const article = await this.db.article.findUnique({
+      where: { slug: articleSlug },
+      select: { id: true },
     });
+    if (!article)
+      throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+
+    const articleTag = await this.db.articleTag.findFirst({
+      where: { articleId: article.id },
+      select: { id: true }, // Only need the ID to delete
+    });
+
+    if (!articleTag) {
+      throw new HttpException(
+        'Article tag not found for this article',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
     await this.db.articleTag.delete({ where: { id: articleTag.id } });
     return {
       message: 'Article tag deleted successfully',
     };
+  }
+  async removeArticleTagsByArticleSlug(
+    articleSlug: string,
+  ): Promise<{ message: string }> {
+    const existedArticle = await this.db.article.findUnique({
+      where: { slug: articleSlug },
+    });
+
+    if (!existedArticle) {
+      throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+    }
+
+    // 2️⃣ Hapus tags yang ada dahulu
+    await this.db.articleTag.deleteMany({
+      where: { articleId: existedArticle.id },
+    });
+
+    return { message: 'Article tags deleted successfully' };
   }
 }
