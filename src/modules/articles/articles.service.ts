@@ -118,6 +118,10 @@ export class ArticlesService {
         };
         _count: { select: { comments: true; articleTags: true; likes: true } };
       };
+      omit: {
+        authorId: true;
+        categoryId: true;
+      };
     }>
   > {
     const article = await this.db.article.findUnique({
@@ -160,6 +164,10 @@ export class ArticlesService {
             likes: true,
           },
         },
+      },
+      omit: {
+        authorId: true,
+        categoryId: true,
       },
     });
     return article;

@@ -176,6 +176,8 @@ export class ArticleTagsService {
         tag: { select: { id: true, name: true, slug: true } },
       },
     });
+    if (!articleTag)
+      throw new HttpException('Article tag not found', HttpStatus.NOT_FOUND);
     return articleTag;
   }
 
@@ -192,8 +194,6 @@ export class ArticleTagsService {
     }>
   > {
     const existedArticleTag = await this.getArticleTagById(id);
-    if (!existedArticleTag)
-      throw new HttpException('Article tag not found', HttpStatus.NOT_FOUND);
     const articleTag = await this.db.articleTag.update({
       where: { id },
       data: {
@@ -211,9 +211,7 @@ export class ArticleTagsService {
 
   async removeArticleTagById(id: string) {
     const articleTag = await this.getArticleTagById(id);
-    if (!articleTag)
-      throw new HttpException('Article tag not found', HttpStatus.NOT_FOUND);
-    await this.db.articleTag.delete({ where: { id } });
+    await this.db.articleTag.delete({ where: { id: articleTag.id } });
     return {
       message: 'Article tag deleted successfully',
     };

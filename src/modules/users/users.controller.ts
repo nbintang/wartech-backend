@@ -38,8 +38,6 @@ export class UsersController {
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
   ): Promise<SinglePayloadResponseDto> {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     const userId = request.user.sub;
     const user = await this.usersService.getUserById(userId, {
       id: true,
@@ -71,9 +69,10 @@ export class UsersController {
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Patch(':id')
   @Throttle({ medium: { ttl: minutes(1), limit: 10 } })
-  async updateProfile(@Param('id') id: string, @Body() body: UpdateUserDto) {
+  async updateProfile(@Body() body: UpdateUserDto, @Req() request: Request) {
     try {
-      const user = await this.usersService.updateUserById({ id }, body);
+      const userId = request.user.sub;
+      const user = await this.usersService.updateUserById({ id: userId }, body);
       return {
         message: `${user.name} updated successfully`,
         data: user,

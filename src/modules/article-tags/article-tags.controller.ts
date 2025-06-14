@@ -37,7 +37,7 @@ export class ArticleTagsController {
     @Body() body: ArticleTagDto,
     @Query() query: QueryArticleTagTypePostDto,
   ) {
-    if (query?.bulk || body.tagIds?.length > 1) {
+    if (query.bulk) {
       if (!body.tagIds || body.tagIds.length === 0)
         throw new BadRequestException('tagIds must be provided in bulk mode');
       return this.articleTagsService.addArticleTags(body);
