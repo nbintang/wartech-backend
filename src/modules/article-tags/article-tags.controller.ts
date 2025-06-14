@@ -33,18 +33,18 @@ export class ArticleTagsController {
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Post()
   @SkipThrottle({ short: true })
-  addArticleTag(
+  async addArticleTag(
     @Body() body: ArticleTagDto,
     @Query() query: QueryArticleTagTypePostDto,
   ) {
     if (query.bulk) {
       if (!body.tagIds || body.tagIds.length === 0)
         throw new BadRequestException('tagIds must be provided in bulk mode');
-      return this.articleTagsService.addArticleTags(body);
+      return await this.articleTagsService.addArticleTags(body);
     }
     if (!body.tagId)
       throw new BadRequestException('tagId must be provided in non-bulk mode');
-    return this.articleTagsService.addArticleTag(body);
+    return await this.articleTagsService.addArticleTag(body);
   }
 
   @Get()
