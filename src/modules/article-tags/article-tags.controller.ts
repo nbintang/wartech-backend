@@ -55,12 +55,13 @@ export class ArticleTagsController {
     return await this.articleTagsService.getAllArticleTags(query);
   }
 
-  @Get(':id')
+  @Get(':slug')
   @SkipThrottle({ short: true, medium: true })
   async getArticleTagById(
-    @Param('id') id: string,
+    @Param('slug') slug: string,
   ): Promise<SinglePayloadResponseDto> {
-    const articleTag = await this.articleTagsService.getArticleTagById(id);
+    const articleTag =
+      await this.articleTagsService.getArticleTagByArticleSlug(slug);
     return {
       message: 'Article Tag fetched successfully',
       data: articleTag,
@@ -68,24 +69,24 @@ export class ArticleTagsController {
   }
   @Roles(Role.ADMIN, Role.REPORTER)
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
-  @Patch(':id')
+  @Patch(':slug')
   @SkipThrottle({ short: true })
   async updateArticleTagById(
-    @Param('id') id: string,
+    @Param('slug') slug: string,
     @Body() updateArticleTagDto: ArticleTagDto,
   ) {
     if (!updateArticleTagDto)
       throw new BadRequestException('please provide a body');
-    return await this.articleTagsService.updateArticleTagById(
-      id,
+    return await this.articleTagsService.updateArticleTagByArticleSlug(
+      slug,
       updateArticleTagDto,
     );
   }
   @Roles(Role.ADMIN, Role.REPORTER)
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
-  @Delete(':id')
+  @Delete(':slug')
   @SkipThrottle({ short: true })
-  async removeArticleTagById(@Param('id') id: string) {
-    return await this.articleTagsService.removeArticleTagById(id);
+  async removeArticleTagById(@Param('slug') id: string) {
+    return await this.articleTagsService.removeArticleTagByArticleSlug(id);
   }
 }

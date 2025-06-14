@@ -128,7 +128,6 @@ export class ArticleTagsService {
     PaginatedPayloadResponseDto<
       Prisma.ArticleTagGetPayload<{
         select: {
-          id: true;
           article: { select: { id: true; title: true; slug: true } };
           tag: { select: { id: true; name: true; slug: true } };
         };
@@ -140,14 +139,16 @@ export class ArticleTagsService {
     const skip = (page - 1) * limit;
     const take = limit;
     const where: Prisma.ArticleTagWhereInput = {
-      article: { slug: query['article-slug'] },
+      ...(query['article-slug'] && {
+        article: { slug: query['article-slug'] },
+      }),
+      ...(query['tag-slug'] && { tag: { slug: query['tag-slug'] } }),
     };
     const articleTags = await this.db.articleTag.findMany({
       where,
       skip,
       take,
       select: {
-        id: true,
         article: { select: { id: true, title: true, slug: true } },
         tag: { select: { id: true, name: true, slug: true } },
       },
@@ -167,11 +168,19 @@ export class ArticleTagsService {
     };
   }
 
-  async getArticleTagById(id: string) {
-    const articleTag = await this.db.articleTag.findUnique({
-      where: { id },
+  async getArticleTagByArticleSlug(articleSlug: string) {
+    const article = await this.db.article.findUnique({
+      where: { slug: articleSlug },
+      select: { id: true, title: true, slug: true },
+    });
+    if (!article)
+      throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+
+    const articleTag = await this.db.articleTag.findFirst({
+      where: {
+        articleId: article.id,
+      },
       select: {
-        id: true,
         article: { select: { id: true, title: true, slug: true } },
         tag: { select: { id: true, name: true, slug: true } },
       },
@@ -181,8 +190,8 @@ export class ArticleTagsService {
     return articleTag;
   }
 
-  async updateArticleTagById(
-    id: string,
+  async updateArticleTagByArticleSlug(
+    articleSlug: string,
     updateArticleTagDto: ArticleTagDto,
   ): Promise<
     Prisma.ArticleTagGetPayload<{
@@ -193,11 +202,22 @@ export class ArticleTagsService {
       };
     }>
   > {
-    const existedArticleTag = await this.getArticleTagById(id);
+    const article = await this.db.article.findUnique({
+      where: { slug: articleSlug },
+      select: { id: true, title: true, slug: true },
+    });
+    if (!article)
+      throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+    const existedArticleTag = await this.db.articleTag.findFirst({
+      where: { articleId: article.id },
+    });
+    if (!existedArticleTag)
+      throw new HttpException('Article tag not found', HttpStatus.NOT_FOUND);
+
     const articleTag = await this.db.articleTag.update({
-      where: { id },
+      where: { id: existedArticleTag.id },
       data: {
-        article: { connect: { id: existedArticleTag.article.id } },
+        article: { connect: { id: article.id } },
         tag: { connect: { id: updateArticleTagDto.tagId } },
       },
       select: {
@@ -209,8 +229,10 @@ export class ArticleTagsService {
     return articleTag;
   }
 
-  async removeArticleTagById(id: string) {
-    const articleTag = await this.getArticleTagById(id);
+  async removeArticleTagByArticleSlug(articleSlug: string) {
+    const articleTag = await this.db.articleTag.findFirst({
+      where: { article: { slug: articleSlug } },
+    });
     await this.db.articleTag.delete({ where: { id: articleTag.id } });
     return {
       message: 'Article tag deleted successfully',

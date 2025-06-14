@@ -27,9 +27,7 @@ export class TagsService {
     return { message: 'Tag created successfully', data: tag };
   }
 
-  async createTags(
-    data: TagDto,
-  ): Promise<SinglePayloadResponseDto<Tag[]>> {
+  async createTags(data: TagDto): Promise<SinglePayloadResponseDto<Tag[]>> {
     const slugs = data.slugs;
 
     const existedTags = await this.db.tag.findMany({
