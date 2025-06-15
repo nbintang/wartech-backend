@@ -18,7 +18,7 @@ type ArticleTagPayload = Prisma.ArticleTagGetPayload<{
 export class ArticleTagsService {
   constructor(private db: PrismaService) {}
 
-  async addArticleTag(
+  async addArticleTagByArticleSlug(
     createArticleTagDto: ArticleTagDto,
   ): Promise<ArticleTagPayload> {
     const existedArticle = await this.db.article.findUnique({
@@ -58,7 +58,10 @@ export class ArticleTagsService {
     return articleTag;
   }
 
-  async addArticleTags({ tagIds, articleSlug }: ArticleTagDto): Promise<
+  async addArticleTagsByArticleSlug({
+    tagIds,
+    articleSlug,
+  }: ArticleTagDto): Promise<
     SinglePayloadResponseDto<{
       article: { id: string; title: string; slug: string };
       tags: { id: string; name: string; slug: string }[];
@@ -264,8 +267,6 @@ export class ArticleTagsService {
     if (!existedArticle) {
       throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
     }
-
-    // 2️⃣ Hapus tags yang ada dahulu
     await this.db.articleTag.deleteMany({
       where: { articleId: existedArticle.id },
     });

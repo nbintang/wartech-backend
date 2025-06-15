@@ -116,7 +116,11 @@ export class AuthController {
   async signIn(
     @Res({ passthrough: true }) response: Response,
     @Body() body: SigninDto,
+    @Req() request: Request,
   ): Promise<SinglePayloadResponseDto> {
+    const existedTokenCookie = request.user;
+    if (existedTokenCookie)
+      throw new UnauthorizedException('You are already logged in!');
     const { accessToken, refreshToken } = await this.authService.signIn(body);
     if (accessToken && refreshToken)
       response.cookie('refreshToken', refreshToken, {

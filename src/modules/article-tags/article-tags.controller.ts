@@ -40,11 +40,11 @@ export class ArticleTagsController {
     if (query.bulk) {
       if (!body.tagIds || body.tagIds.length === 0)
         throw new BadRequestException('tagIds must be provided in bulk mode');
-      return await this.articleTagsService.addArticleTags(body);
+      return await this.articleTagsService.addArticleTagsByArticleSlug(body);
     }
     if (!body.tagId)
       throw new BadRequestException('tagId must be provided in non-bulk mode');
-    return await this.articleTagsService.addArticleTag(body);
+    return await this.articleTagsService.addArticleTagByArticleSlug(body);
   }
 
   @Get()

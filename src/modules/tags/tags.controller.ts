@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Query,
@@ -69,24 +68,6 @@ export class TagsController {
     const tag = await this.tagsService.getTagBySlug(slug);
     if (!tag) throw new HttpException('Tag not found', HttpStatus.NOT_FOUND);
     return { message: 'Tag fetched successfully', data: tag };
-  }
-  @Roles(Role.ADMIN)
-  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
-  @Patch(':slug')
-  @SkipThrottle({ short: true })
-  async updateTagsBySlug(
-    @Param('slug') slug: string,
-    @Body() updateTagDto: TagDto,
-  ): Promise<SinglePayloadResponseDto> {
-    try {
-      const tag = await this.tagsService.updateTagsBySlug(slug, updateTagDto);
-      return { message: 'Tag updated successfully', data: tag };
-    } catch (error) {
-      throw new HttpException(
-        error.message || 'Something went wrong',
-        HttpStatus.BAD_REQUEST || 500,
-      );
-    }
   }
   @Roles(Role.ADMIN)
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)

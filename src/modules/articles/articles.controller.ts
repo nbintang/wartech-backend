@@ -91,7 +91,14 @@ export class ArticlesController {
   @Roles(Role.ADMIN, Role.REPORTER)
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Delete(':slug')
-  async remove(@Param('slug') slug: string): Promise<SinglePayloadResponseDto> {
+  async removeArticles(
+    @Param('slug') slug: string,
+    @Query() query: { bulk: boolean; slug: string[] },
+  ): Promise<SinglePayloadResponseDto> {
+    if (query.bulk && query.slug.length > 0) {
+      // jika query.slug ada isinya
+      return await this.articlesService.deleteArticlesBySlug(query.slug);
+    }
     return await this.articlesService.deleteArticleBySlug(slug);
   }
 }

@@ -198,4 +198,13 @@ export class ArticlesService {
       message: 'Article deleted successfully',
     };
   }
+  async deleteArticlesBySlug(slugs: string[]) {
+    const deletedArticles = await this.db.article.deleteMany({
+      where: { slug: { in: slugs } },
+    });
+    if (!deletedArticles) throw new HttpException('Failed to delete', 500);
+    return {
+      message: 'Articles deleted successfully',
+    };
+  }
 }
