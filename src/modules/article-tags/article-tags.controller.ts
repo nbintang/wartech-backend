@@ -74,13 +74,17 @@ export class ArticleTagsController {
   async updateArticleTagById(
     @Param('slug') slug: string,
     @Body() updateArticleTagDto: ArticleTagDto,
-  ) {
+  ): Promise<SinglePayloadResponseDto> {
     if (!updateArticleTagDto)
       throw new BadRequestException('please provide a body');
-    return await this.articleTagsService.updateArticleTagByArticleSlug(
+    const data = await this.articleTagsService.updateArticleTagByArticleSlug(
       slug,
       updateArticleTagDto,
     );
+    return {
+      message: 'Article Tag updated successfully',
+      data,
+    };
   }
   @Roles(Role.ADMIN, Role.REPORTER)
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)

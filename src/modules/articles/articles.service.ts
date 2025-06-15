@@ -190,7 +190,9 @@ export class ArticlesService {
         category: { connect: { id: updateArticleDto.categoryId } },
       },
     });
-    return updatedArticle;
+    return {
+      data: updatedArticle,
+    };
   }
 
   async deleteArticleBySlug(slug: string) {
