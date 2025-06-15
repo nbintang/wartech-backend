@@ -90,7 +90,9 @@ export class ArticlesService {
         category: { connect: { id: categoryId } },
       },
     });
-    return newArticle;
+    return {
+      data: newArticle,
+    };
   }
 
   async getArticleBySlug(slug: string): Promise<
