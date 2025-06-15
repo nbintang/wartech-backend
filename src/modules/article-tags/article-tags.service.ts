@@ -21,6 +21,13 @@ export class ArticleTagsService {
   async addArticleTagByArticleSlug(
     createArticleTagDto: ArticleTagDto,
   ): Promise<ArticleTagPayload> {
+    if (!createArticleTagDto.articleSlug) {
+      // Add this check
+      throw new HttpException(
+        'Article slug is required',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const existedArticle = await this.db.article.findUnique({
       where: { slug: createArticleTagDto.articleSlug },
     });
@@ -67,6 +74,13 @@ export class ArticleTagsService {
       tags: { id: string; name: string; slug: string }[];
     }>
   > {
+    if (!articleSlug) {
+      // Add this check
+      throw new HttpException(
+        'Article slug is required',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const existedArticle = await this.db.article.findUnique({
       where: { slug: articleSlug },
     });
