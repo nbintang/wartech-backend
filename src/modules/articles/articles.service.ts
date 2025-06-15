@@ -70,28 +70,27 @@ export class ArticlesService {
     };
   }
   async createArticle(createArticleDto: ArticleDto) {
-    const article = await this.db.$transaction(async (prisma) => {
-      const existed = await prisma.article.findUnique({
-        where: { slug: createArticleDto.slug },
-      });
-      if (existed) {
-        throw new HttpException('Article already exists', HttpStatus.CONFLICT);
-      }
-      const { categoryId, authorId, title, slug, content, image } =
-        createArticleDto;
-      const newArticle = await prisma.article.create({
-        data: {
-          title,
-          slug,
-          content: sanitizeHtml(content),
-          image,
-          author: { connect: { id: authorId } },
-          category: { connect: { id: categoryId } },
-        },
-      });
-      return newArticle;
+    const existedArticleTitle = await this.getArticleBySlug(
+      createArticleDto.slug,
+    );
+    if (existedArticleTitle)
+      throw new HttpException(
+        'Article title already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    const { categoryId, authorId, title, slug, content, image } =
+      createArticleDto;
+    const newArticle = await this.db.article.create({
+      data: {
+        title,
+        slug,
+        content: sanitizeHtml(content),
+        image,
+        author: { connect: { id: authorId } },
+        category: { connect: { id: categoryId } },
+      },
     });
-    return { data: article };
+    return newArticle;
   }
 
   async getArticleBySlug(slug: string): Promise<
@@ -175,41 +174,21 @@ export class ArticlesService {
   }
 
   async updateArticleBySlug(slug: string, updateArticleDto: ArticleDto) {
-    return this.db.$transaction(async (prisma) => {
-      const existed = await prisma.article.findUnique({ where: { slug } });
-      if (!existed) {
-        throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
-      }
-      if (updateArticleDto.slug && updateArticleDto.slug !== slug) {
-        const conflict = await prisma.article.findUnique({
-          where: { slug: updateArticleDto.slug },
-        });
-        if (conflict) {
-          throw new HttpException('Slug already in use', HttpStatus.CONFLICT);
-        }
-      }
-      const {
-        categoryId,
-        authorId,
-        title,
-        slug: newSlug,
-        content,
-        image,
-      } = updateArticleDto;
-      const updated = await prisma.article.update({
-        where: { slug },
-        data: {
-          title,
-          slug: newSlug,
-          content: sanitizeHtml(content),
-          image,
-          author: { connect: { id: authorId } },
-          category: { connect: { id: categoryId } },
-        },
-      });
-
-      return { data: updated };
+    const currentArticle = await this.getArticleBySlug(slug);
+    if (!currentArticle)
+      throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+    const updatedArticle = await this.db.article.update({
+      where: { id: currentArticle.id },
+      data: {
+        title: updateArticleDto.title,
+        slug: updateArticleDto.slug,
+        content: sanitizeHtml(updateArticleDto.content),
+        image: updateArticleDto.image,
+        author: { connect: { id: updateArticleDto.authorId } },
+        category: { connect: { id: updateArticleDto.categoryId } },
+      },
     });
+    return updatedArticle;
   }
 
   async deleteArticleBySlug(slug: string) {

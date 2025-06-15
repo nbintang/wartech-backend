@@ -77,7 +77,7 @@ export class ArticlesController {
   async updateArticleBySlug(
     @Param('slug') slug: string,
     @Body() updateArticleDto: ArticleDto,
-  ): Promise<SinglePayloadResponseDto> {
+  ) {
     try {
       return await this.articlesService.updateArticleBySlug(
         slug,
