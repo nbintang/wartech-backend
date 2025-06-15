@@ -38,9 +38,7 @@ export class ArticlesController {
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Post()
   @SkipThrottle({ short: true, long: true })
-  async createArticle(
-    @Body() createArticleDto: ArticleDto,
-  ): Promise<SinglePayloadResponseDto> {
+  async createArticle(@Body() createArticleDto: ArticleDto) {
     try {
       return await this.articlesService.createArticle(createArticleDto);
     } catch (error) {
