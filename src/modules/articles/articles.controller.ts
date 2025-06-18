@@ -88,16 +88,22 @@ export class ArticlesController {
       );
     }
   }
+  
+  @Delete()
   @Roles(Role.ADMIN, Role.REPORTER)
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
-  @Delete(':id')
   async removeArticles(
-    @Param('id') id: string,
-    @Query() query: { bulk: boolean; ids: string[] },
+    @Body() body: { ids: string[] },
   ): Promise<SinglePayloadResponseDto> {
-    if (query.bulk && query.ids.length > 0) {
-      return await this.articlesService.deleteArticlesById(query.ids);
-    }
+    return await this.articlesService.deleteArticlesById(body.ids);
+  }
+  
+  @Delete(':id')
+  @Roles(Role.ADMIN, Role.REPORTER)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
+  async removeArticle(
+    @Param('id') id: string,
+  ): Promise<SinglePayloadResponseDto> {
     return await this.articlesService.deleteArticleById(id);
   }
 
