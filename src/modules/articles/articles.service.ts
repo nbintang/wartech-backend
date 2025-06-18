@@ -191,18 +191,19 @@ export class ArticlesService {
     return updatedArticle;
   }
 
-  async deleteArticleBySlug(slug: string) {
-    const deletedArticle = await this.db.article.delete({ where: { slug } });
+  async deleteArticleById(id: string) {
+    const deletedArticle = await this.db.article.delete({ where: { id } });
     if (!deletedArticle) throw new HttpException('Failed to delete', 500);
     return {
       message: 'Article deleted successfully',
     };
   }
-  async deleteArticlesBySlug(slugs: string[]) {
+
+  async deleteArticlesById(ids: string[]) {
     const deletedArticles = await this.db.article.deleteMany({
-      where: { slug: { in: slugs } },
+      where: { id: { in: ids } },
     });
-    if (!deletedArticles) throw new HttpException('Failed to delete', 500);
+    if (!deletedArticles.count) throw new HttpException('Failed to delete', 500);
     return {
       message: 'Articles deleted successfully',
     };
