@@ -3,14 +3,14 @@ import { CommentDto } from './dtos/mutate-comment.dto';
 import { PrismaService } from '../../commons/prisma/prisma.service';
 import { QueryCommentDto } from './dtos/query-comment.dto';
 import { Prisma } from '@prisma/client';
-
+import sanitizeHtml from 'sanitize-html';
 @Injectable()
 export class CommentsService {
   constructor(private db: PrismaService) {}
   async createComment(createCommentDto: CommentDto) {
     const comment = await this.db.comment.create({
       data: {
-        content: createCommentDto.content,
+        content: sanitizeHtml(createCommentDto.content),
         userId: createCommentDto.userId!,
         articleId: createCommentDto.articleId,
         parentId: createCommentDto.parentId,
@@ -128,7 +128,7 @@ export class CommentsService {
       where: { id },
       data: {
         isEdited: true,
-        content: updateCommentDto.content,
+        content: sanitizeHtml(updateCommentDto.content),
         userId: updateCommentDto.userId!,
         articleId: updateCommentDto.articleId,
         parentId: updateCommentDto.parentId,
