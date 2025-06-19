@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import slugify from '../../../commons/slugify';
 import { z } from 'zod';
-
+import { ArticleStatus } from '@prisma/client';
 const articleInputSchema = z.object({
   title: z.string().min(1).max(100).trim(),
   content: z.string().min(1),
@@ -15,5 +15,12 @@ const articleSchema = articleInputSchema.transform((data) => ({
   ...data,
   slug: slugify(data.title),
 }));
+const updateArticleSchema = articleInputSchema.extend({
+  status: z.nativeEnum(ArticleStatus).optional(),
+}).transform((data) => ({
+  ...data,
+  slug: slugify(data.title),
+}));
 
 export class ArticleDto extends createZodDto(articleSchema) {}
+export class UpdateArticleDto extends createZodDto(updateArticleSchema) {}

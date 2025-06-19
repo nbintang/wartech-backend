@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ArticleDto } from './dtos/mutate-article.dto';
+import { ArticleDto, UpdateArticleDto } from './dtos/mutate-article.dto';
 import { PrismaService } from '../../commons/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { QueryArticleDto } from './dtos/query-article.dto';
@@ -173,7 +173,7 @@ export class ArticlesService {
     return article;
   }
 
-  async updateArticleBySlug(slug: string, updateArticleDto: ArticleDto) {
+  async updateArticleBySlug(slug: string, updateArticleDto: UpdateArticleDto) {
     const currentArticle = await this.getArticleBySlug(slug);
     if (!currentArticle)
       throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
@@ -182,6 +182,7 @@ export class ArticlesService {
       data: {
         title: updateArticleDto.title,
         slug: updateArticleDto.slug,
+        status: updateArticleDto.status,
         content: sanitizeHtml(updateArticleDto.content),
         image: updateArticleDto.image,
         author: { connect: { id: updateArticleDto.authorId } },

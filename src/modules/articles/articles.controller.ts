@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
-import { ArticleDto } from './dtos/mutate-article.dto';
+import { ArticleDto, UpdateArticleDto } from './dtos/mutate-article.dto';
 import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
 import { ArticlesDto } from './dtos/response-article.dto';
 import { QueryArticleDto } from './dtos/query-article.dto';
@@ -74,10 +74,10 @@ export class ArticlesController {
   @SkipThrottle({ short: true, long: true })
   async updateArticleBySlug(
     @Param('slug') slug: string,
-    @Body() updateArticleDto: ArticleDto,
+    @Body() updateArticleDto: UpdateArticleDto,
   ) {
     try {
-      return await this.articlesService.updateArticleBySlug(
+      return await this.articlesService.updateArticleByS  lug(
         slug,
         updateArticleDto,
       );
