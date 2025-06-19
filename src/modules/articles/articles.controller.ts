@@ -77,7 +77,7 @@ export class ArticlesController {
     @Body() updateArticleDto: UpdateArticleDto,
   ) {
     try {
-      return await this.articlesService.updateArticleByS  lug(
+      return await this.articlesService.updateArticleBySlug(
         slug,
         updateArticleDto,
       );
