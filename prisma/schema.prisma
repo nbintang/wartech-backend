@@ -68,7 +68,7 @@ model Category {
 
 model Comment {
   id        String    @id @default(uuid())
-  content   String    @db.VarChar(1200)
+  content   String    @db.Text
   userId    String
   articleId String
   parentId  String?
