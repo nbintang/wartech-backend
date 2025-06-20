@@ -22,6 +22,7 @@ import { RoleGuard } from '../auth/guards/role.guard';
 import { Request } from 'express';
 import { SkipThrottle } from '@nestjs/throttler';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
+import { IsOwner } from '../auth/decorators/is-owner.decorator';
 
 @Controller('/protected/comments')
 export class CommentsController {
@@ -34,8 +35,6 @@ export class CommentsController {
     @Body() createCommentDto: CommentDto,
     @Req() request: Request,
   ): Promise<SinglePayloadResponseDto> {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     const userId = request.user.sub;
     const newComment = await this.commentsService.createComment({
       ...createCommentDto,
@@ -51,7 +50,8 @@ export class CommentsController {
   async getAllComments(
     @Query() query: QueryCommentDto,
   ): Promise<PaginatedPayloadResponseDto> {
-    const { comments, meta } = await this.commentsService.getAllComments(query);
+    const { comments, meta } =
+      await this.commentsService.getAllCommentsByArticleSlug(query);
     return {
       data: {
         items: comments,
@@ -59,7 +59,6 @@ export class CommentsController {
       },
     };
   }
-
   @Get(':id')
   @SkipThrottle({ short: true, medium: true })
   async getCommentById(
@@ -70,6 +69,27 @@ export class CommentsController {
       data: comment,
     };
   }
+
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
+  @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
+  @Get(':parentId/replies')
+  @SkipThrottle({ short: true, medium: true })
+  async getCommentsByParentId(
+    @Param('parentId') parentId: string,
+    @Query() query: QueryCommentDto,
+  ): Promise<PaginatedPayloadResponseDto> {
+    const { comments, meta } = await this.commentsService.getCommentsByParentId(
+      parentId,
+      query,
+    );
+    return {
+      data: {
+        items: comments,
+        meta: meta,
+      },
+    };
+  }
+
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
   @Patch(':id')
@@ -79,8 +99,6 @@ export class CommentsController {
     @Body() updateCommentDto: CommentDto,
     @Req() request: Request,
   ): Promise<SinglePayloadResponseDto> {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     const userId = request.user.sub;
     const comment = await this.commentsService.updateCommentById(id, {
       ...updateCommentDto,
@@ -92,11 +110,12 @@ export class CommentsController {
   }
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
+  @IsOwner('comment')
   @Delete(':id')
   @SkipThrottle({ short: true, medium: true })
   async removeCommentById(
     @Param('id') id: string,
   ): Promise<SinglePayloadResponseDto> {
-    return this.commentsService.removeCommentById(id);
+    return this.commentsService.removeCommentByIdAndUser(id);
   }
 }

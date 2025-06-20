@@ -20,6 +20,7 @@ import { RoleGuard } from '../auth/guards/role.guard';
 import { Request } from 'express';
 import { SkipThrottle } from '@nestjs/throttler';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
+import { IsOwner } from '../auth/decorators/is-owner.decorator';
 @SkipThrottle({ short: true, medium: true, long: true })
 @Controller('/protected/likes')
 export class LikesController {
@@ -31,8 +32,6 @@ export class LikesController {
     @Body() createLikeDto: LikeDto,
     @Req() request: Request,
   ): Promise<SinglePayloadResponseDto> {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     const userId = request.user.sub;
     return await this.likesService.createLike({
       ...createLikeDto,
@@ -52,6 +51,7 @@ export class LikesController {
 
   @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
+  @IsOwner('comment')
   @Delete(':id')
   async removeLikeById(@Param('id') id: string) {
     return await this.likesService.removeLikeById(id);
