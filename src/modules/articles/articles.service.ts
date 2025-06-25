@@ -36,7 +36,7 @@ export class ArticlesService {
         articleTags: {
           select: { tag: { select: { id: true, name: true, slug: true } } },
         },
-        _count: { select: { comments: true, articleTags: true, likes: true } },
+        _count: { select: { comments: true, articleTags: true } },
       },
       orderBy: [
         { updatedAt: 'desc' },
@@ -52,7 +52,6 @@ export class ArticlesService {
         ...article,
         commentsCount: _count.comments,
         tagsCount: _count.articleTags,
-        likesCount: _count.likes,
         tags: articleTags.map(({ tag }) => tag),
       }),
     );
@@ -116,7 +115,7 @@ export class ArticlesService {
         articleTags: {
           select: { tag: { select: { id: true; name: true; slug: true } } };
         };
-        _count: { select: { comments: true; articleTags: true; likes: true } };
+        _count: { select: { comments: true; articleTags: true } };
       };
       omit: {
         authorId: true;
@@ -161,7 +160,6 @@ export class ArticlesService {
           select: {
             comments: true,
             articleTags: true,
-            likes: true,
           },
         },
       },
@@ -204,7 +202,8 @@ export class ArticlesService {
     const deletedArticles = await this.db.article.deleteMany({
       where: { id: { in: ids } },
     });
-    if (!deletedArticles.count) throw new HttpException('Failed to delete', 500);
+    if (!deletedArticles.count)
+      throw new HttpException('Failed to delete', 500);
     return {
       message: 'Articles deleted successfully',
     };

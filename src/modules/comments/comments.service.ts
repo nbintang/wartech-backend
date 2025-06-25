@@ -40,13 +40,12 @@ export class CommentsService {
       textFilter: (text) => text.replace(/\n/g, '<br>'),
     });
   }
-  async createComment(createCommentDto: CommentDto) {
+  async createComment({ articleId, userId, content }: CommentDto) {
     const comment = await this.db.comment.create({
       data: {
-        content: this.sanitizeCommentContent(createCommentDto.content),
-        userId: createCommentDto.userId!,
-        articleId: createCommentDto.articleId,
-        parentId: createCommentDto.parentId,
+        content: this.sanitizeCommentContent(content),
+        userId,
+        articleId,
       },
       select: {
         id: true,
@@ -63,6 +62,27 @@ export class CommentsService {
     return comment;
   }
 
+  async repliesComment(commentId: string, createCommentDto: CommentDto) {
+    return await this.db.comment.create({
+      data: {
+        content: this.sanitizeCommentContent(createCommentDto.content),
+        userId: createCommentDto.userId,
+        articleId: createCommentDto.articleId,
+        parentId: commentId,
+      },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        isEdited: true,
+        user: { select: { id: true, name: true, image: true } },
+        article: {
+          select: { id: true, title: true, slug: true, publishedAt: true },
+        },
+      },
+    });
+  }
   async getAllCommentsByArticleSlug(query: QueryCommentDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
@@ -87,6 +107,10 @@ export class CommentsService {
         article: {
           select: { id: true, title: true, slug: true, publishedAt: true },
         },
+        likes: {
+          select: { id: true },
+        },
+
         children: {
           select: {
             id: true,
@@ -94,12 +118,16 @@ export class CommentsService {
             createdAt: true,
             updatedAt: true,
             isEdited: true,
+            likes: {
+              select: { id: true },
+            },
             user: {
               select: { id: true, name: true, image: true, email: true },
             },
             article: {
               select: { id: true, title: true, slug: true, publishedAt: true },
             },
+            children: true,
           },
         },
       },
@@ -109,8 +137,16 @@ export class CommentsService {
     if (comments.length === 0) {
       throw new HttpException('No comments found', HttpStatus.NOT_FOUND);
     }
+    const formattedComments = comments.map((comment) => ({
+      ...comment,
+      likes: comment.likes.length,
+      children: comment.children.map((child) => ({
+        ...child,
+        likes: child.likes.length,
+      })),
+    }));
     return {
-      comments,
+      formattedComments,
       meta: {
         totalItems: commentsCount,
         currentPage: page,
@@ -130,6 +166,7 @@ export class CommentsService {
         createdAt: true,
         updatedAt: true,
         isEdited: true,
+        likes: true,
         user: { select: { id: true, name: true, image: true } },
         article: {
           select: { id: true, title: true, slug: true, publishedAt: true },
@@ -140,6 +177,7 @@ export class CommentsService {
             content: true,
             createdAt: true,
             updatedAt: true,
+            likes: true,
             isEdited: true,
             user: { select: { id: true, name: true, image: true } },
             article: {
@@ -226,7 +264,7 @@ export class CommentsService {
   }
 
   async removeCommentByIdAndUser(commentId: string) {
-    await this.db.comment.findUnique({ where: { id: commentId } });
+    await this.db.comment.delete({ where: { id: commentId } });
     return { message: 'Comment deleted successfully' };
   }
 }

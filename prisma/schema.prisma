@@ -23,7 +23,7 @@ model Article {
   category    Category      @relation(fields: [categoryId], references: [id], map: "Article_categoryId_fkey", onDelete: Cascade)
   articleTags ArticleTag[] // pluralized here
   comments    Comment[] // pluralized here
-  likes       Like[] // pluralized here
+
 
   @@index([authorId], map: "Article_authorId_fkey")
   @@index([categoryId], map: "Article_categoryId_fkey")
@@ -79,7 +79,7 @@ model Comment {
   parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id], map: "Comment_parentId_fkey", onDelete: Cascade)
   children  Comment[] @relation("CommentToComment")
   user      User      @relation(fields: [userId], references: [id], map: "Comment_userId_fkey", onDelete: Cascade)
-
+  likes     Like[]   
   @@index([articleId], map: "Comment_articleId_fkey")
   @@index([parentId], map: "Comment_parentId_fkey")
   @@index([userId], map: "Comment_userId_fkey")
@@ -89,15 +89,17 @@ model Comment {
 model Like {
   id        String   @id @default(uuid())
   userId    String
-  articleId String
+  commentId String
   createdAt DateTime @default(now())
-  article   Article  @relation(fields: [articleId], references: [id], map: "Like_articleId_fkey", onDelete: Cascade)
+  
+  comment   Comment  @relation(fields: [commentId], references: [id], map: "Like_commentId_fkey", onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], map: "Like_userId_fkey", onDelete: Cascade)
 
-  @@unique([userId, articleId], map: "Like_userId_articleId_key")
-  @@index([articleId], map: "Like_articleId_fkey")
+  @@unique([userId, commentId], map: "Like_userId_commentId_key")
+  @@index([commentId], map: "Like_commentId_fkey")
   @@map("likes")
 }
+
 
 model User {
   id                  String    @id @default(uuid())

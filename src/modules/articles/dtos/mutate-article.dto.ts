@@ -15,12 +15,14 @@ const articleSchema = articleInputSchema.transform((data) => ({
   ...data,
   slug: slugify(data.title),
 }));
-const updateArticleSchema = articleInputSchema.extend({
-  status: z.nativeEnum(ArticleStatus).optional(),
-}).transform((data) => ({
-  ...data,
-  slug: slugify(data.title),
-}));
+const updateArticleSchema = articleInputSchema
+  .extend({
+    status: z.nativeEnum(ArticleStatus).optional(),
+  })
+  .transform((data) => ({
+    ...data,
+    slug: slugify(data.title),
+  }));
 
 export class ArticleDto extends createZodDto(articleSchema) {}
 export class UpdateArticleDto extends createZodDto(updateArticleSchema) {}

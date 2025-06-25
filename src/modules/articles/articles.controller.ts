@@ -61,7 +61,6 @@ export class ArticlesController {
       tags: articleTags.map(({ tag }) => tag),
       commentsCount: _count.comments,
       tagsCount: _count.articleTags,
-      likesCount: _count.likes,
     };
     return {
       message: 'Article fetched successfully',
@@ -88,7 +87,7 @@ export class ArticlesController {
       );
     }
   }
-  
+
   @Delete()
   @Roles(Role.ADMIN, Role.REPORTER)
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
@@ -97,7 +96,7 @@ export class ArticlesController {
   ): Promise<SinglePayloadResponseDto> {
     return await this.articlesService.deleteArticlesById(body.ids);
   }
-  
+
   @Delete(':id')
   @Roles(Role.ADMIN, Role.REPORTER)
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
@@ -106,5 +105,4 @@ export class ArticlesController {
   ): Promise<SinglePayloadResponseDto> {
     return await this.articlesService.deleteArticleById(id);
   }
-
 }

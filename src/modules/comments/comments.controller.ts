@@ -23,12 +23,16 @@ import { Request } from 'express';
 import { SkipThrottle } from '@nestjs/throttler';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 import { IsOwner } from '../auth/decorators/is-owner.decorator';
+import { RequiredAuth } from '../auth/decorators/required-auth.decorator';
+import { CommentLikesService } from './comment-likes.service';
 
 @Controller('/protected/comments')
 export class CommentsController {
-  constructor(private readonly commentsService: CommentsService) {}
-  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
-  @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
+  constructor(
+    private readonly commentsService: CommentsService,
+    private readonly commentLikeService: CommentLikesService,
+  ) {}
+  @RequiredAuth(Role.ADMIN, Role.REPORTER, Role.READER)
   @Post()
   @SkipThrottle({ short: true, medium: true })
   async createComment(
@@ -44,17 +48,32 @@ export class CommentsController {
       data: newComment,
     };
   }
+  @RequiredAuth(Role.ADMIN, Role.REPORTER, Role.READER)
+  @Post(':id/replies')
+  @SkipThrottle({ short: true, medium: true })
+  async repliesCommentById(
+    @Param('id') id: string,
+    @Body() body: CommentDto,
+    @Req() request: Request,
+  ): Promise<SinglePayloadResponseDto> {
+    const userId = request.user.sub;
+    const comment = await this.commentsService.repliesComment(id, {
+      userId,
+      ...body,
+    });
+    return { data: comment };
+  }
 
   @Get()
   @SkipThrottle({ short: true, medium: true })
   async getAllComments(
     @Query() query: QueryCommentDto,
   ): Promise<PaginatedPayloadResponseDto> {
-    const { comments, meta } =
+    const { formattedComments, meta } =
       await this.commentsService.getAllCommentsByArticleSlug(query);
     return {
       data: {
-        items: comments,
+        items: formattedComments,
         meta,
       },
     };
@@ -70,12 +89,11 @@ export class CommentsController {
     };
   }
 
-  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
-  @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
-  @Get(':parentId/replies')
+  @RequiredAuth(Role.ADMIN, Role.REPORTER, Role.READER)
+  @Get(':id/replies')
   @SkipThrottle({ short: true, medium: true })
   async getCommentsByParentId(
-    @Param('parentId') parentId: string,
+    @Param('id') parentId: string,
     @Query() query: QueryCommentDto,
   ): Promise<PaginatedPayloadResponseDto> {
     const { comments, meta } = await this.commentsService.getCommentsByParentId(
@@ -90,8 +108,7 @@ export class CommentsController {
     };
   }
 
-  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
-  @Roles(Role.ADMIN, Role.REPORTER, Role.READER)
+  @RequiredAuth(Role.ADMIN, Role.REPORTER, Role.READER)
   @Patch(':id')
   @SkipThrottle({ short: true, medium: true })
   async updateCommentById(
@@ -117,5 +134,47 @@ export class CommentsController {
     @Param('id') id: string,
   ): Promise<SinglePayloadResponseDto> {
     return this.commentsService.removeCommentByIdAndUser(id);
+  }
+  @RequiredAuth(Role.ADMIN, Role.REPORTER, Role.READER)
+  @Post(':id/like')
+  @SkipThrottle({ short: true, medium: true })
+  async likeComment(
+    @Param('id') id: string,
+    @Req() request: Request,
+  ): Promise<SinglePayloadResponseDto> {
+    const userId = request.user.sub;
+    return this.commentLikeService.likeCommentByUserIdAndCommentId(id, userId);
+  }
+
+  @RequiredAuth(Role.ADMIN, Role.REPORTER, Role.READER)
+  @Delete(':id/like')
+  @SkipThrottle({ short: true, medium: true })
+  async removeLikeComment(
+    @Param('id') id: string,
+    @Req() request: Request,
+  ): Promise<SinglePayloadResponseDto> {
+    const userId = request.user.sub;
+    return this.commentLikeService.removeLikeByUserIdAndCommentId(id, userId);
+  }
+
+  @Get(':id/like')
+  @SkipThrottle({ short: true, medium: true })
+  async getLikeComment(@Param('id') id: string) {
+    const likes = await this.commentLikeService.getLikesByCommentId(id);
+    return { data: { likes } };
+  }
+
+  @RequiredAuth(Role.ADMIN, Role.REPORTER, Role.READER)
+  @Get(':id/like/current-user')
+  @SkipThrottle({ short: true, medium: true })
+  async getCurrentUserLikeComment(
+    @Param('id') id: string,
+    @Req() request: Request,
+  ) {
+    const userId = request.user.sub;
+    return await this.commentLikeService.getCurrentUserLikeByUserIdAndCommentId(
+      id,
+      userId,
+    );
   }
 }
