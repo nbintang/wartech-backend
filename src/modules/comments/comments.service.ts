@@ -4,6 +4,7 @@ import { PrismaService } from '../../commons/prisma/prisma.service';
 import { QueryCommentDto } from './dtos/query-comment.dto';
 import { Prisma } from '@prisma/client';
 import sanitizeHtml from 'sanitize-html';
+import { formatComments, getCommentSelect } from './helpers/comment';
 
 @Injectable()
 export class CommentsService {
@@ -87,66 +88,30 @@ export class CommentsService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
-    const take = limit;
+
     const where: Prisma.CommentWhereInput = {
       ...(query['article-slug'] && {
         article: { slug: query['article-slug'] },
       }),
+      parentId: null,
     };
+
     const comments = await this.db.comment.findMany({
       where,
       skip,
-      take,
-      select: {
-        id: true,
-        content: true,
-        createdAt: true,
-        updatedAt: true,
-        isEdited: true,
-        user: { select: { id: true, name: true, image: true, email: true } },
-        article: {
-          select: { id: true, title: true, slug: true, publishedAt: true },
-        },
-        likes: {
-          select: { id: true },
-        },
-
-        children: {
-          select: {
-            id: true,
-            content: true,
-            createdAt: true,
-            updatedAt: true,
-            isEdited: true,
-            likes: {
-              select: { id: true },
-            },
-            user: {
-              select: { id: true, name: true, image: true, email: true },
-            },
-            article: {
-              select: { id: true, title: true, slug: true, publishedAt: true },
-            },
-            children: true,
-          },
-        },
-      },
+      take: limit,
       orderBy: { createdAt: 'desc' },
+      select: getCommentSelect(),
     });
+
     const commentsCount = await this.db.comment.count({ where });
-    if (comments.length === 0) {
+
+    if (comments.length === 0 && commentsCount === 0) {
       throw new HttpException('No comments found', HttpStatus.NOT_FOUND);
     }
-    const formattedComments = comments.map((comment) => ({
-      ...comment,
-      likes: comment.likes.length,
-      children: comment.children.map((child) => ({
-        ...child,
-        likes: child.likes.length,
-      })),
-    }));
+
     return {
-      formattedComments,
+      formattedComments: formatComments(comments),
       meta: {
         totalItems: commentsCount,
         currentPage: page,
@@ -160,33 +125,10 @@ export class CommentsService {
   async getCommentById(id: string) {
     const comment = await this.db.comment.findUnique({
       where: { id },
-      select: {
-        id: true,
-        content: true,
-        createdAt: true,
-        updatedAt: true,
-        isEdited: true,
-        likes: true,
-        user: { select: { id: true, name: true, image: true } },
-        article: {
-          select: { id: true, title: true, slug: true, publishedAt: true },
-        },
-        children: {
-          select: {
-            id: true,
-            content: true,
-            createdAt: true,
-            updatedAt: true,
-            likes: true,
-            isEdited: true,
-            user: { select: { id: true, name: true, image: true } },
-            article: {
-              select: { id: true, title: true, slug: true, publishedAt: true },
-            },
-          },
-        },
-      },
+      select: getCommentSelect(),
     });
+    if (!comment)
+      throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
     return comment;
   }
 
@@ -194,37 +136,30 @@ export class CommentsService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
-    const take = limit;
+
     const where: Prisma.CommentWhereInput = {
       ...(query['article-slug'] && {
         article: { slug: query['article-slug'] },
       }),
+      parentId,
     };
+
     const comments = await this.db.comment.findMany({
-      where: { parentId, ...where },
-      take,
+      where,
       skip,
-      select: {
-        id: true,
-        content: true,
-        createdAt: true,
-        updatedAt: true,
-        isEdited: true,
-        user: { select: { id: true, name: true, image: true } },
-        article: {
-          select: { id: true, title: true, slug: true, publishedAt: true },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
+      take: limit,
+      orderBy: { createdAt: 'asc' },
+      select: getCommentSelect(),
     });
-    const commentsCount = await this.db.comment.count({
-      where: { parentId, ...where },
-    });
+
+    const commentsCount = await this.db.comment.count({ where });
+
     if (comments.length === 0) {
-      throw new HttpException('No comments found', HttpStatus.NOT_FOUND);
+      throw new HttpException('No replies found', HttpStatus.NOT_FOUND);
     }
+
     return {
-      comments,
+      comments: formatComments(comments),
       meta: {
         totalItems: commentsCount,
         currentPage: page,
