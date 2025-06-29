@@ -39,5 +39,6 @@ export const formatComments = (comments: any[]): any[] => {
     ...comment,
     likes: comment.likes.length,
     childrenCount: comment._count?.children ?? 0,
+     children: [], 
   }));
 };
