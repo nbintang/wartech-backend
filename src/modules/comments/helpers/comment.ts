@@ -38,7 +38,6 @@ export const formatComments = (comments: any[]): any[] => {
   return comments.map((comment) => ({
     ...comment,
     likes: comment.likes.length,
-    childrenCount: comment._count?.children ?? 0,
-     children: [], 
+    childrenCount: comment._count?.children ?? 0
   }));
 };
