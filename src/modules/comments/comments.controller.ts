@@ -165,7 +165,7 @@ export class CommentsController {
   }
 
   @RequiredAuth(Role.ADMIN, Role.REPORTER, Role.READER)
-  @Get(':id/like/current-user')
+  @Get(':id/like/me')
   @SkipThrottle({ short: true, medium: true })
   async getCurrentUserLikeComment(
     @Param('id') id: string,
