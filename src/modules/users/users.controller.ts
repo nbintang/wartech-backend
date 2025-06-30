@@ -32,7 +32,7 @@ export class UsersController {
   async getAllUsers(@Query() query: QueryUserDto) {
     return await this.usersService.getAllusers(query);
   }
-  @Get('/profile')
+  @Get('/me')
   @SkipThrottle({ short: true, medium: true, long: true })
   async getMe(
     @Res({ passthrough: true }) response: Response,
