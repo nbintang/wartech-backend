@@ -161,7 +161,7 @@ export class CommentsController {
   @SkipThrottle({ short: true, medium: true })
   async getLikeComment(@Param('id') id: string) {
     const likes = await this.commentLikeService.getLikesByCommentId(id);
-    return { data: { likes } };
+    return { data: { ...likes } };
   }
 
   @RequiredAuth(Role.ADMIN, Role.REPORTER, Role.READER)
