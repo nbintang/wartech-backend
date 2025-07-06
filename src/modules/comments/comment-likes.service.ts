@@ -63,12 +63,7 @@ export class CommentLikesService {
     userId: string,
   ) {
     const like = await this.db.like.findUnique({
-      where: {
-        userId_commentId: {
-          userId,
-          commentId,
-        },
-      },
+      where: { userId_commentId: { userId, commentId } },
       select: {
         id: true,
         commentId: true,
@@ -80,7 +75,6 @@ export class CommentLikesService {
         },
       },
     });
-
     return like;
   }
 }

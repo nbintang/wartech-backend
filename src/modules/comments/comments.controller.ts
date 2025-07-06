@@ -170,11 +170,17 @@ export class CommentsController {
   async getCurrentUserLikeComment(
     @Param('id') id: string,
     @Req() request: Request,
-  ) {
+  ): Promise<SinglePayloadResponseDto> {
     const userId = request.user.sub;
-    return await this.commentLikeService.getCurrentUserLikeByUserIdAndCommentId(
-      id,
-      userId,
-    );
+    const like =
+      await this.commentLikeService.getCurrentUserLikeByUserIdAndCommentId(
+        id,
+        userId,
+      );
+    return {
+      data: {
+        ...like,
+      },
+    };
   }
 }
