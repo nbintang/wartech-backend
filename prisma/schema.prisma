@@ -91,14 +91,13 @@ model Like {
   userId    String
   commentId String
   createdAt DateTime @default(now())
-  
-  comment   Comment  @relation(fields: [commentId], references: [id], map: "Like_commentId_fkey", onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], map: "Like_userId_fkey", onDelete: Cascade)
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, commentId], map: "Like_userId_commentId_key")
-  @@index([commentId], map: "Like_commentId_fkey")
+  @@unique([userId, commentId], name: "userId_commentId", map: "Like_userId_commentId_key")
   @@map("likes")
 }
+
 
 
 model User {
