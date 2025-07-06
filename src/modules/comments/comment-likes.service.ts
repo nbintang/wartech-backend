@@ -58,10 +58,8 @@ export class CommentLikesService {
     return { likes, totalLikes };
   }
 
-  async getCurrentUserLikeByUserIdAndCommentId(
-    commentId: string,
-    userId: string,
-  ) {
+
+  async getCurrentUserLikeByUserIdAndCommentId(commentId: string, userId: string) {
     const like = await this.db.like.findUnique({
       where: {
         userId_commentId: {
@@ -71,10 +69,16 @@ export class CommentLikesService {
       },
       select: {
         id: true,
-        user: { select: { id: true, name: true } },
         commentId: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
+
     return like;
   }
 }
