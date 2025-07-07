@@ -6,6 +6,7 @@ import { QueryArticleDto } from './dtos/query-article.dto';
 import { ArticlesDto } from './dtos/response-article.dto';
 import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
 import sanitizeHtml from 'sanitize-html';
+import slugify from 'src/commons/slugify';
 @Injectable()
 export class ArticlesService {
   constructor(private db: PrismaService) {}
@@ -173,20 +174,31 @@ export class ArticlesService {
 
   async updateArticleBySlug(slug: string, updateArticleDto: UpdateArticleDto) {
     const currentArticle = await this.getArticleBySlug(slug);
-    if (!currentArticle)
+    if (!currentArticle) {
       throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+    }
+
+    const { title, status, content, image, authorId, categoryId } =
+      updateArticleDto;
+
+    const updateData: any = {};
+
+    if (title) {
+      updateData.title = title;
+      updateData.slug = slugify(title); // generate slug baru dari title
+    }
+
+    if (status) updateData.status = status;
+    if (content) updateData.content = sanitizeHtml(content);
+    if (image) updateData.image = image;
+    if (authorId) updateData.author = { connect: { id: authorId } };
+    if (categoryId) updateData.category = { connect: { id: categoryId } };
+
     const updatedArticle = await this.db.article.update({
       where: { id: currentArticle.id },
-      data: {
-        title: updateArticleDto.title,
-        slug: updateArticleDto.slug,
-        status: updateArticleDto.status,
-        content: sanitizeHtml(updateArticleDto.content),
-        image: updateArticleDto.image,
-        author: { connect: { id: updateArticleDto.authorId } },
-        category: { connect: { id: updateArticleDto.categoryId } },
-      },
+      data: updateData,
     });
+
     return updatedArticle;
   }
 
