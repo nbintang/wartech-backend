@@ -20,10 +20,12 @@ const updateArticleSchema = articleInputSchema
     status: z.nativeEnum(ArticleStatus),
   })
   .partial()
-  .transform((data) => ({
-    ...data,
-    slug: slugify(data.title),
-  }));
+  .transform((data) => {
+    return {
+      ...data,
+      slug: data.title ? slugify(data.title) : undefined,
+    };
+  });
 
 export class ArticleDto extends createZodDto(articleSchema) {}
 export class UpdateArticleDto extends createZodDto(updateArticleSchema) {}

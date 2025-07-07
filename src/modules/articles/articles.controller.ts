@@ -74,12 +74,16 @@ export class ArticlesController {
   async updateArticleBySlug(
     @Param('slug') slug: string,
     @Body() updateArticleDto: UpdateArticleDto,
-  ) {
+  ): Promise<SinglePayloadResponseDto> {
     try {
-      return await this.articlesService.updateArticleBySlug(
+      const article = await this.articlesService.updateArticleBySlug(
         slug,
         updateArticleDto,
       );
+      return {
+        message: 'Article updated successfully',
+        data: article,
+      };
     } catch (error) {
       throw new HttpException(
         error.message || 'Something went wrong',
