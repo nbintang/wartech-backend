@@ -17,8 +17,9 @@ const articleSchema = articleInputSchema.transform((data) => ({
 }));
 const updateArticleSchema = articleInputSchema
   .extend({
-    status: z.nativeEnum(ArticleStatus).optional(),
+    status: z.nativeEnum(ArticleStatus),
   })
+  .partial()
   .transform((data) => ({
     ...data,
     slug: slugify(data.title),
