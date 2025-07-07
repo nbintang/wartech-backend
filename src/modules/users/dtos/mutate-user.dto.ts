@@ -3,7 +3,7 @@ import { baseUserSchema } from './user.schema';
 
 export const createUserSchema = baseUserSchema;
 export const updateUserSchema = baseUserSchema
-  .omit({ acceptedTOS: true, password: true })
+  .omit({ acceptedTOS: true, password: true, role: true })
   .extend({
     name: baseUserSchema.shape.name.optional(),
     email: baseUserSchema.shape.email.optional(),
