@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CategoryDto } from './dtos/mutate-category.dto';
 import { PrismaService } from '../../commons/prisma/prisma.service';
-import { Category, Prisma,$Enums  } from '@prisma/client';
+import { Category, Prisma } from '@prisma/client';
 import { QueryCategoriesDto } from './dtos/query-categories.dto';
 import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
 import { ArticleStatus } from '../articles/enums/article-status.enum';
@@ -80,7 +80,7 @@ async getAllCategories(
             status: true,
             publishedAt: true,
           },
-          where: { status: $Enums.ArticleStatus },
+          where: { status: ArticleStatus.PUBLISHED },
           orderBy: { publishedAt: Prisma.SortOrder.desc },
           ...(query['articles-per-category']
             ? { take: query['articles-per-category'] }
@@ -96,25 +96,32 @@ async getAllCategories(
     ...(include && { include }),
   });
 
-  const mappedCategories: CategoryResponse[] = categories.map((category: CategoryResult) => {
-    const base: CategoryResponse = {
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      description: category.description || '',
-      createdAt: category.createdAt,
-      updatedAt: category.updatedAt,
+ const mappedCategories: CategoryResponse[] = categories.map((category: CategoryResult) => {
+  const base: CategoryResponse = {
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    description: category.description || '',
+    createdAt: category.createdAt,
+    updatedAt: category.updatedAt,
+  };
+
+  if ('articles' in category) {
+    return {
+      ...base,
+      articles: category.articles.map((article) => ({
+        id: article.id,
+        title: article.title,
+        slug: article.slug,
+        image: article.image,
+        status: article.status as ArticleStatus, // 🔥 Type-cast ke enum lokal kamu
+        publishedAt: article.publishedAt,
+      })),
     };
+  }
 
-    if ('articles' in category) {
-      return {
-        ...base,
-        articles: category.articles,
-      };
-    }
-
-    return base;
-  });
+  return base;
+});
 
   const categoriesCount = await this.db.category.count({
     where: dynamicSearch,
