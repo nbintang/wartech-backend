@@ -17,7 +17,7 @@ async function bootstrap() {
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, Postman, etc.)
       if (!origin) return callback(null, true);
-
+      
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -34,6 +34,10 @@ async function bootstrap() {
       'Authorization',
       'Cache-Control',
       'X-HTTP-Method-Override',
+      'Access-Control-Allow-Origin',
+      'Access-Control-Allow-Headers',
+      'Access-Control-Allow-Methods',
+      'Access-Control-Allow-Credentials',
     ],
     exposedHeaders: ['Set-Cookie'],
     preflightContinue: false,
