@@ -5,7 +5,25 @@ import { Category, Prisma } from '@prisma/client';
 import { QueryCategoriesDto } from './dtos/query-categories.dto';
 import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
 import { ArticleStatus } from '../articles/enums/article-status.enum';
+export interface ArticleResponse {
+  id: string;
+  title: string;
+  slug: string;
+  image: string;
+  status: ArticleStatus;
+  publishedAt: Date | null;
+}
 
+export interface CategoryResponse {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  createdAt: Date;
+  updatedAt: Date;
+  // articles jadi optional
+  articles?: ArticleResponse[];
+}
 @Injectable()
 export class CategoriesService {
   constructor(private db: PrismaService) {}
@@ -24,28 +42,7 @@ export class CategoriesService {
   }
 
   async getAllCategories(query: QueryCategoriesDto): Promise<
-    PaginatedPayloadResponseDto<
-      Prisma.CategoryGetPayload<{
-      include: {
-          articles: {
-            select: {
-              id: true;
-              title: true;
-              slug: true;
-              image: true;
-              status: true;
-              publishedAt: true;
-            };
-            where: {
-              status: ArticleStatus.PUBLISHED;
-            };
-            orderBy: {
-              publishedAt: Prisma.SortOrder;
-            };
-          };
-        };
-      }>
-    >
+    PaginatedPayloadResponseDto<CategoryResponse[]>
   > {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
