@@ -21,8 +21,24 @@ export interface CategoryResponse {
   description: string;
   createdAt: Date;
   updatedAt: Date;
-  articles?: ArticleResponse[]; // articles is optional
+  articles?: ArticleResponse[]; // Optional: hanya ada jika query pakai with-articles=true
 }
+type CategoryWithArticles = Prisma.CategoryGetPayload<{
+  include: {
+    articles: {
+      select: {
+        id: true;
+        title: true;
+        slug: true;
+        image: true;
+        status: true;
+        publishedAt: true;
+      };
+    };
+  };
+}>;
+
+type CategoryResult = CategoryWithArticles | Prisma.Category;
 @Injectable()
 export class CategoriesService {
   constructor(private db: PrismaService) {}
@@ -44,7 +60,6 @@ export class CategoriesService {
 
 async getAllCategories(
   query: QueryCategoriesDto,
-// 👇 FIX #1: The return type must be CategoryResponse, not CategoryResponse[][]
 ): Promise<PaginatedPayloadResponseDto<CategoryResponse>> {
   const page = query.page ?? 1;
   const limit = query.limit ?? 10;
@@ -65,7 +80,7 @@ async getAllCategories(
             status: true,
             publishedAt: true,
           },
-          where: { status: ArticleStatus.PUBLISHED }, // Using the string literal is safer here
+          where: { status: ArticleStatus.PUBLISHED },
           orderBy: { publishedAt: Prisma.SortOrder.desc },
           ...(query['articles-per-category']
             ? { take: query['articles-per-category'] }
@@ -78,29 +93,27 @@ async getAllCategories(
     where: dynamicSearch,
     skip,
     take: limit,
-    // When `include` is undefined, Prisma does NOT return the `articles` key at all.
     ...(include && { include }),
   });
 
-  /*
-  👇 FIX #2: This mapping is now type-safe.
-  We can't just spread `...category` because when `include` is undefined,
-  the `articles` property doesn't exist, causing the TS2339 error.
-  This logic explicitly handles that case.
-  */
-  const mappedCategories: CategoryResponse[] = categories.map((category) => {
-    const { articles, ...restOfCategory } = category as any;
-    
-    const result: CategoryResponse = {
-      ...restOfCategory,
-      description: restOfCategory.description || '',
+  const mappedCategories: CategoryResponse[] = categories.map((category: CategoryResult) => {
+    const base: CategoryResponse = {
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      description: category.description || '',
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt,
     };
 
-    if (articles) {
-      result.articles = articles;
+    if ('articles' in category) {
+      return {
+        ...base,
+        articles: category.articles,
+      };
     }
 
-    return result;
+    return base;
   });
 
   const categoriesCount = await this.db.category.count({

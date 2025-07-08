@@ -7,7 +7,10 @@ const queryCategorisSchema = baseQueryRequestSchema.extend({
   name: z.string().optional(),
   slug: z.string().optional(),
   'articles-per-category': z.coerce.number().optional(),
-  'with-articles': z.coerce.boolean().optional(),
+'with-articles': z
+  .string()
+  .optional()
+  .transform((val) => val === 'true'), // Hanya true jika string-nya === 'true'
 });
 
 export class QueryCategoriesDto extends createZodDto(queryCategorisSchema) {}
