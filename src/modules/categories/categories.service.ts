@@ -81,7 +81,7 @@ export class CategoriesService {
       where: dynamicSearch,
       skip,
       take,
-      include,
+     ...(include ? { include } : {}),
     });
     const categoriesCount = await this.db.category.count({
       where: dynamicSearch,
