@@ -52,7 +52,6 @@ export class CategoriesService {
       ...(query.name && { name: { contains: query.name } }),
     };
 
-    // Bangun include hanya jika with-articles === true
     const include = query['with-articles']
       ? {
           articles: {
@@ -73,13 +72,26 @@ export class CategoriesService {
         }
       : undefined;
 
-    // Kondisional spread: hanya kirim include kalau tidak undefined
     const categories = await this.db.category.findMany({
       where: dynamicSearch,
       skip,
       take,
       ...(include ? { include } : {}),
     });
+
+    // Map the Prisma results to CategoryResponse[]
+    const mappedCategories: CategoryResponse[] = categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      description: category.description || '', // Ensure description is string
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt,
+      // Conditionally add articles if they were included by Prisma
+      ...(query['with-articles'] && category.articles
+        ? { articles: category.articles as ArticleResponse[] }
+        : {}),
+    }));
 
     const categoriesCount = await this.db.category.count({
       where: dynamicSearch,
@@ -88,7 +100,7 @@ export class CategoriesService {
     const totalPages = Math.ceil(categoriesCount / query.limit);
     return {
       data: {
-        items: categories,
+        items: mappedCategories, // Use the mapped categories here
         meta: {
           currentPage: query.page,
           itemPerPages: query.limit,
@@ -99,6 +111,7 @@ export class CategoriesService {
       },
     };
   }
+
 
   async getCategoryBySlug(slug: string): Promise<Category> {
     return await this.db.category.findUnique({ where: { slug } });
