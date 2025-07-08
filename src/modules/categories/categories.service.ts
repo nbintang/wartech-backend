@@ -41,76 +41,69 @@ export class CategoriesService {
   }
 
 
-  async getAllCategories(
-    query: QueryCategoriesDto,
-  ): Promise<PaginatedPayloadResponseDto<CategoryResponse>> { // <-- FIX 1: Corrected the generic type
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
-    const skip = (page - 1) * limit;
+async getAllCategories(
+  query: QueryCategoriesDto,
+): Promise<PaginatedPayloadResponseDto<CategoryResponse>> {
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 10;
+  const skip = (page - 1) * limit;
 
-    const dynamicSearch: Prisma.CategoryWhereInput = {
-      ...(query.name && { name: { contains: query.name } }),
-    };
+  const dynamicSearch: Prisma.CategoryWhereInput = {
+    ...(query.name && { name: { contains: query.name } }),
+  };
 
-    const include = query['with-articles']
-      ? {
-          articles: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              image: true,
-              status: true,
-              publishedAt: true,
-            },
-            where: { status: ArticleStatus.PUBLISHED },
-            orderBy: { publishedAt: Prisma.SortOrder.desc },
-            ...(query['articles-per-category']
-              ? { take: query['articles-per-category'] }
-              : {}),
+  // ✅ This logic is now correct. `include` will be `undefined` if `with-articles` is false or not present.
+  const include = query['with-articles']
+    ? {
+        articles: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            image: true,
+            status: true,
+            publishedAt: true,
           },
-        }
-      : undefined;
-
-    const categories = await this.db.category.findMany({
-      where: dynamicSearch,
-      skip,
-      take: limit,
-      ...(include && { include }), // Use the constructed include object
-    });
-
-    // FIX 2: The mapping logic is now correct and type-safe
-    const mappedCategories: CategoryResponse[] = categories.map((category) => {
-      const { articles, ...restOfCategory } = category;
-      const result: CategoryResponse = {
-        ...restOfCategory,
-        description: category.description || '',
-      };
-      if (query['with-articles'] && articles) {
-        result.articles = articles as ArticleResponse[];
-      }
-      return result;
-    });
-
-    const categoriesCount = await this.db.category.count({
-      where: dynamicSearch,
-    });
-
-    const totalPages = Math.ceil(categoriesCount / limit);
-
-    return {
-      data: {
-        items: mappedCategories,
-        meta: {
-          currentPage: page,
-          itemPerPages: limit,
-          itemCount: categories.length,
-          totalItems: categoriesCount,
-          totalPages,
+          where: { status: ArticleStatus.PUBLISHED },
+          orderBy: { publishedAt: Prisma.SortOrder.desc },
+          ...(query['articles-per-category']
+            ? { take: query['articles-per-category'] }
+            : {}),
         },
+      }
+    : undefined;
+
+  const categories = await this.db.category.findMany({
+    where: dynamicSearch,
+    skip,
+    take: limit,
+    ...(include && { include }),
+  });
+
+  const mappedCategories: CategoryResponse[] = categories.map((category) => ({
+      ...category,
+      description: category.description || '',
+  }));
+
+  const categoriesCount = await this.db.category.count({
+    where: dynamicSearch,
+  });
+
+  const totalPages = Math.ceil(categoriesCount / limit);
+
+  return {
+    data: {
+      items: mappedCategories,
+      meta: {
+        currentPage: page,
+        itemPerPages: limit,
+        itemCount: categories.length,
+        totalItems: categoriesCount,
+        totalPages,
       },
-    };
-  }
+    },
+  };
+}
 
 
   async getCategoryBySlug(slug: string): Promise<Category> {
