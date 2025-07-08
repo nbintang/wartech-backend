@@ -14,7 +14,7 @@ async function bootstrap() {
   app.useBodyParser('urlencoded', { extended: true });
   app.use(compression());
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3000', 'https://wartech-frontend.vercel.app'],
     credentials: true,
   });
   await app.listen(process.env.PORT ?? 3000);
