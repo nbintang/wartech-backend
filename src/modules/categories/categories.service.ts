@@ -54,13 +54,26 @@ export class CategoriesService {
     const dynamicSearch: Prisma.CategoryWhereInput = {
       ...(query.name && { name: { contains: query.name } }),
     };
-   const include = query['with-articles']
+   const include: Prisma.CategoryInclude | undefined = query['with-articles']
   ? {
       articles: {
-        select: { id: true, title: true, slug: true, image: true, status: true, publishedAt: true },
-        where: { status: ArticleStatus.PUBLISHED },
-        orderBy: { publishedAt: 'desc' },
-        ...(query['articles-per-category'] && { take: query['articles-per-category'] }),
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          image: true,
+          status: true,
+          publishedAt: true,
+        },
+        where: {
+          status: ArticleStatus.PUBLISHED,
+        },
+        orderBy: {
+          publishedAt: Prisma.SortOrder.desc, // ⬅️ fix disini
+        },
+        ...(query['articles-per-category'] && {
+          take: query['articles-per-category'],
+        }),
       },
     }
   : undefined;
