@@ -144,8 +144,32 @@ async getAllCategories(
 }
 
 
-  async getCategoryBySlug(slug: string): Promise<Category> {
-    return await this.db.category.findUnique({ where: { slug } });
+  async getCategoryBySlug(slug: string) {
+    const category = await this.db.category.findUnique({
+      where: { slug },
+      include: {
+        articles: {
+          where: {
+            status:ArticleStatus.PUBLISHED, // langsung pakai string enum Prisma (auto-inferred)
+          },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            image: true,
+            status: true,
+            publishedAt: true,
+          },
+          orderBy: { publishedAt: Prisma.SortOrder.desc },
+        },
+      },
+    });
+
+    if (!category) {
+      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+    }
+
+    return category;
   }
 
   async updateCategoryBySlug(
