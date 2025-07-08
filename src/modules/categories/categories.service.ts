@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CategoryDto } from './dtos/mutate-category.dto';
 import { PrismaService } from '../../commons/prisma/prisma.service';
-import { Category, Prisma } from '@prisma/client';
+import { Category, Prisma,$Enums  } from '@prisma/client';
 import { QueryCategoriesDto } from './dtos/query-categories.dto';
 import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
 import { ArticleStatus } from '../articles/enums/article-status.enum';
@@ -80,7 +80,7 @@ async getAllCategories(
             status: true,
             publishedAt: true,
           },
-          where: { status: ArticleStatus.PUBLISHED },
+          where: { status: $Enums.ArticleStatus },
           orderBy: { publishedAt: Prisma.SortOrder.desc },
           ...(query['articles-per-category']
             ? { take: query['articles-per-category'] }
