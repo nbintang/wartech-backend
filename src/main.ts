@@ -9,6 +9,10 @@ import { ConfigService } from '@nestjs/config';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get(ConfigService);
+  const FE_URL =
+    process.env.NODE_ENV === 'development'
+      ? 'http://localhost:3000'
+      : config.get<string>('FRONTEND_URL');
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter(new Logger()));
   app.setGlobalPrefix('api');
@@ -16,7 +20,7 @@ async function bootstrap() {
   app.useBodyParser('urlencoded', { extended: true });
   app.use(compression());
   app.enableCors({
-    origin: ['http://localhost:3000', config.get<string>('FRONTEND_URL')],
+    origin: [FE_URL],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
