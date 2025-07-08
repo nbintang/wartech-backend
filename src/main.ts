@@ -9,10 +9,13 @@ import { ConfigService } from '@nestjs/config';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get(ConfigService);
-  const FE_URL =
-    process.env.NODE_ENV === 'development'
-      ? 'http://localhost:3000'
-      : config.get<string>('FRONTEND_URL');
+  const deployedFeUrl = config.get<string>('FRONTEND_URL');
+
+  const allowedOrigins = [deployedFeUrl];
+
+  if (process.env.NODE_ENV === 'development') {
+    allowedOrigins.push('http://localhost:3000');
+  }
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter(new Logger()));
   app.setGlobalPrefix('api');
@@ -20,18 +23,15 @@ async function bootstrap() {
   app.useBodyParser('urlencoded', { extended: true });
   app.use(compression());
   app.enableCors({
-    origin: [FE_URL],
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'X-Requested-With',
-      'Accept',
-      'Origin',
-    ],
-    exposedHeaders: ['Set-Cookie'],
-    maxAge: 86400, // 24 hours
   });
   await app.listen(process.env.PORT ?? 3000);
 }
