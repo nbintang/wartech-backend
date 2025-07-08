@@ -45,7 +45,10 @@ export class CategoriesService {
   async createArticleCategory(data: CategoryDto): Promise<Category> {
     const existed = await this.findCategoryBySlug(data.slug);
     if (existed) {
-      throw new HttpException('Category already exists', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Category already exists',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     return this.db.category.create({
       data: {
@@ -60,94 +63,94 @@ export class CategoriesService {
     return this.db.category.findUnique({ where: { slug } });
   }
 
+  async getAllCategories(
+    query: QueryCategoriesDto,
+  ): Promise<PaginatedPayloadResponseDto<CategoryResponse>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const skip = (page - 1) * limit;
 
-async getAllCategories(
-  query: QueryCategoriesDto,
-): Promise<PaginatedPayloadResponseDto<CategoryResponse>> {
-  const page = query.page ?? 1;
-  const limit = query.limit ?? 10;
-  const skip = (page - 1) * limit;
+    const dynamicSearch: Prisma.CategoryWhereInput = {
+      ...(query.name && { name: { contains: query.name } }),
+    };
 
-  const dynamicSearch: Prisma.CategoryWhereInput = {
-    ...(query.name && { name: { contains: query.name } }),
-  };
-
-  const include = query['with-articles']
-    ? {
-        articles: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            image: true,
-            status: true,
-            publishedAt: true,
+    const include = query['with-articles']
+      ? {
+          articles: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              image: true,
+              status: true,
+              publishedAt: true,
+            },
+            where: { status: ArticleStatus.PUBLISHED },
+            orderBy: { publishedAt: Prisma.SortOrder.desc },
+            ...(query['articles-per-category']
+              ? { take: query['articles-per-category'] }
+              : {}),
           },
-          where: { status: ArticleStatus.PUBLISHED },
-          orderBy: { publishedAt: Prisma.SortOrder.desc },
-          ...(query['articles-per-category']
-            ? { take: query['articles-per-category'] }
-            : {}),
-        },
-      }
-    : undefined;
+        }
+      : undefined;
 
-  const categories = await this.db.category.findMany({
-    where: dynamicSearch,
-    skip,
-    take: limit,
-    ...(include && { include }),
-  });
+    const categories = await this.db.category.findMany({
+      where: dynamicSearch,
+      skip,
+      take: limit,
+      ...(include && { include }),
+    });
 
- const mappedCategories: CategoryResponse[] = categories.map((category: CategoryResult) => {
-  const base: CategoryResponse = {
-    id: category.id,
-    name: category.name,
-    slug: category.slug,
-    description: category.description || '',
-    createdAt: category.createdAt,
-    updatedAt: category.updatedAt,
-  };
+    const mappedCategories: CategoryResponse[] = categories.map(
+      (category: CategoryResult) => {
+        const base: CategoryResponse = {
+          id: category.id,
+          name: category.name,
+          slug: category.slug,
+          description: category.description || '',
+          createdAt: category.createdAt,
+          updatedAt: category.updatedAt,
+        };
 
-  if ('articles' in category) {
+        if ('articles' in category) {
+          return {
+            ...base,
+            articles: category.articles.map((article) => ({
+              id: article.id,
+              title: article.title,
+              slug: article.slug,
+              image: article.image,
+              status: article.status as ArticleStatus, // 🔥 Type-cast ke enum lokal kamu
+              publishedAt: article.publishedAt,
+            })),
+          };
+        }
+
+        return base;
+      },
+    );
+
+    const categoriesCount = await this.db.category.count({
+      where: dynamicSearch,
+    });
+
+    const totalPages = Math.ceil(categoriesCount / limit);
+
     return {
-      ...base,
-      articles: category.articles.map((article) => ({
-        id: article.id,
-        title: article.title,
-        slug: article.slug,
-        image: article.image,
-        status: article.status as ArticleStatus, // 🔥 Type-cast ke enum lokal kamu
-        publishedAt: article.publishedAt,
-      })),
+      data: {
+        items: mappedCategories,
+        meta: {
+          currentPage: page,
+          itemPerPages: limit,
+          itemCount: categories.length,
+          totalItems: categoriesCount,
+          totalPages,
+        },
+      },
     };
   }
 
-  return base;
-});
-
-  const categoriesCount = await this.db.category.count({
-    where: dynamicSearch,
-  });
-
-  const totalPages = Math.ceil(categoriesCount / limit);
-
-  return {
-    data: {
-      items: mappedCategories,
-      meta: {
-        currentPage: page,
-        itemPerPages: limit,
-        itemCount: categories.length,
-        totalItems: categoriesCount,
-        totalPages,
-      },
-    },
-  };
-}
-
-
-async getCategoryBySlug(slug: string) {
+  async getCategoryBySlug(slug: string) {
     const category = await this.db.category.findUnique({
       where: { slug },
       include: {

@@ -5,8 +5,10 @@ import { HttpExceptionFilter } from './commons/http-exception/http-exception.fil
 import { Logger } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import compression from 'compression';
+import { ConfigService } from '@nestjs/config';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const config = app.get(ConfigService);
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter(new Logger()));
   app.setGlobalPrefix('api');
@@ -14,8 +16,18 @@ async function bootstrap() {
   app.useBodyParser('urlencoded', { extended: true });
   app.use(compression());
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://wartech-frontend.vercel.app'],
+    origin: ['http://localhost:3000', config.get<string>('FRONTEND_URL')],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+    ],
+    exposedHeaders: ['Set-Cookie'],
+    maxAge: 86400, // 24 hours
   });
   await app.listen(process.env.PORT ?? 3000);
 }
