@@ -41,8 +41,10 @@ export class CategoriesService {
   }
 
 
+
 async getAllCategories(
   query: QueryCategoriesDto,
+// 👇 FIX #1: The return type must be CategoryResponse, not CategoryResponse[][]
 ): Promise<PaginatedPayloadResponseDto<CategoryResponse>> {
   const page = query.page ?? 1;
   const limit = query.limit ?? 10;
@@ -52,7 +54,6 @@ async getAllCategories(
     ...(query.name && { name: { contains: query.name } }),
   };
 
-  // ✅ This logic is now correct. `include` will be `undefined` if `with-articles` is false or not present.
   const include = query['with-articles']
     ? {
         articles: {
@@ -64,7 +65,7 @@ async getAllCategories(
             status: true,
             publishedAt: true,
           },
-          where: { status: ArticleStatus.PUBLISHED },
+          where: { status: 'PUBLISHED' }, // Using the string literal is safer here
           orderBy: { publishedAt: Prisma.SortOrder.desc },
           ...(query['articles-per-category']
             ? { take: query['articles-per-category'] }
@@ -77,13 +78,30 @@ async getAllCategories(
     where: dynamicSearch,
     skip,
     take: limit,
+    // When `include` is undefined, Prisma does NOT return the `articles` key at all.
     ...(include && { include }),
   });
 
-  const mappedCategories: CategoryResponse[] = categories.map((category) => ({
-      ...category,
-      description: category.description || '',
-  }));
+  /*
+  👇 FIX #2: This mapping is now type-safe.
+  We can't just spread `...category` because when `include` is undefined,
+  the `articles` property doesn't exist, causing the TS2339 error.
+  This logic explicitly handles that case.
+  */
+  const mappedCategories: CategoryResponse[] = categories.map((category) => {
+    const { articles, ...restOfCategory } = category as any;
+    
+    const result: CategoryResponse = {
+      ...restOfCategory,
+      description: restOfCategory.description || '',
+    };
+
+    if (articles) {
+      result.articles = articles;
+    }
+
+    return result;
+  });
 
   const categoriesCount = await this.db.category.count({
     where: dynamicSearch,
