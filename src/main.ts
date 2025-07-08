@@ -5,23 +5,13 @@ import { HttpExceptionFilter } from './commons/http-exception/http-exception.fil
 import { Logger } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import compression from 'compression';
-import { ConfigService } from '@nestjs/config';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const config = app.get(ConfigService);
-  const deployedFeUrl = config.get<string>('FRONTEND_URL');
 
-  const allowedOrigins = [deployedFeUrl];
-
-  if (process.env.NODE_ENV === 'development') {
-    allowedOrigins.push('http://localhost:3000');
-  }
-  app.use(cookieParser());
-  app.useGlobalFilters(new HttpExceptionFilter(new Logger()));
-  app.setGlobalPrefix('api');
-  app.useBodyParser('json', { limit: '50mb' });
-  app.useBodyParser('urlencoded', { extended: true });
-  app.use(compression());
+  const allowedOrigins = [
+    'https://wartech-frontend.vercel.app',
+    'http://localhost:3000',
+  ];
   app.enableCors({
     origin: (origin, callback) => {
       if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -33,6 +23,13 @@ async function bootstrap() {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   });
+  app.use(cookieParser());
+  app.useGlobalFilters(new HttpExceptionFilter(new Logger()));
+  app.setGlobalPrefix('api');
+  app.useBodyParser('json', { limit: '50mb' });
+  app.useBodyParser('urlencoded', { extended: true });
+  app.use(compression());
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
