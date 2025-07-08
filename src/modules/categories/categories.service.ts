@@ -38,7 +38,7 @@ type CategoryWithArticles = Prisma.CategoryGetPayload<{
   };
 }>;
 
-type CategoryResult = CategoryWithArticles | Prisma.Category;
+type CategoryResult = CategoryWithArticles | Category;
 @Injectable()
 export class CategoriesService {
   constructor(private db: PrismaService) {}
