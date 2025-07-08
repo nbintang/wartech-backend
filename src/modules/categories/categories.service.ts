@@ -43,19 +43,22 @@ type CategoryResult = CategoryWithArticles | Category;
 export class CategoriesService {
   constructor(private db: PrismaService) {}
   async createArticleCategory(data: CategoryDto): Promise<Category> {
-    const existedCategory = await this.getCategoryBySlug(data.slug);
-    if (existedCategory)
-      throw new HttpException('Category already exists', 400);
-    const newCategory = await this.db.category.create({
+    const existed = await this.findCategoryBySlug(data.slug);
+    if (existed) {
+      throw new HttpException('Category already exists', HttpStatus.BAD_REQUEST);
+    }
+    return this.db.category.create({
       data: {
         name: data.name,
         description: data.description,
         slug: data.slug,
       },
     });
-    return newCategory;
   }
 
+  private async findCategoryBySlug(slug: string): Promise<Category | null> {
+    return this.db.category.findUnique({ where: { slug } });
+  }
 
 
 async getAllCategories(
