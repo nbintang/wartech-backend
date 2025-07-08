@@ -54,31 +54,21 @@ export class CategoriesService {
     const dynamicSearch: Prisma.CategoryWhereInput = {
       ...(query.name && { name: { contains: query.name } }),
     };
+   const include = query['with-articles']
+  ? {
+      articles: {
+        select: { id: true, title: true, slug: true, image: true, status: true, publishedAt: true },
+        where: { status: ArticleStatus.PUBLISHED },
+        orderBy: { publishedAt: 'desc' },
+        ...(query['articles-per-category'] && { take: query['articles-per-category'] }),
+      },
+    }
+  : undefined;
     const categories = await this.db.category.findMany({
       where: dynamicSearch,
       skip,
       take,
-      include: {
-        articles: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            image: true,
-            status: true,
-            publishedAt: true,
-          },
-          where: {
-            status: ArticleStatus.PUBLISHED,
-          },
-          orderBy: {
-            publishedAt: 'desc',
-          },
-          ...(query['articles-per-category'] && {
-            take: query['articles-per-category'],
-          }),
-        },
-      },
+      include,
     });
     const categoriesCount = await this.db.category.count({
       where: dynamicSearch,
