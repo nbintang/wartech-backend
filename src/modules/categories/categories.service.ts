@@ -26,7 +26,7 @@ export class CategoriesService {
   async getAllCategories(query: QueryCategoriesDto): Promise<
     PaginatedPayloadResponseDto<
       Prisma.CategoryGetPayload<{
-        include: {
+      include: {
           articles: {
             select: {
               id: true;
@@ -40,7 +40,7 @@ export class CategoriesService {
               status: ArticleStatus.PUBLISHED;
             };
             orderBy: {
-              publishedAt: 'desc';
+              publishedAt: Prisma.SortOrder;
             };
           };
         };
