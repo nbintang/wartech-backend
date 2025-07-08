@@ -33,7 +33,10 @@ export class MailService {
     private readonly logger: LoggerService,
   ) {
     // const PROD_URL = this.configService.get<string>('PROD_URL');
-    this.frontendUrl = 'http://localhost:3000';
+    this.frontendUrl =
+      process.env.NODE_ENV === 'development'
+        ? 'http://localhost:3000'
+        : this.configService.get<string>('FRONTEND_URL');
   }
   private generateVerificationToken(payload: {
     email: string;
