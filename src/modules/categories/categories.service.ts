@@ -21,8 +21,7 @@ export interface CategoryResponse {
   description: string;
   createdAt: Date;
   updatedAt: Date;
-  // articles jadi optional
-  articles?: ArticleResponse[];
+  articles?: ArticleResponse[]; // articles is optional
 }
 @Injectable()
 export class CategoriesService {
@@ -41,13 +40,14 @@ export class CategoriesService {
     return newCategory;
   }
 
-  async getAllCategories(query: QueryCategoriesDto): Promise<
-    PaginatedPayloadResponseDto<CategoryResponse[]>
-  > {
+
+  async getAllCategories(
+    query: QueryCategoriesDto,
+  ): Promise<PaginatedPayloadResponseDto<CategoryResponse>> { // <-- FIX 1: Corrected the generic type
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
-    const take = limit;
+
     const dynamicSearch: Prisma.CategoryWhereInput = {
       ...(query.name && { name: { contains: query.name } }),
     };
@@ -75,36 +75,36 @@ export class CategoriesService {
     const categories = await this.db.category.findMany({
       where: dynamicSearch,
       skip,
-      take,
-      ...(include ? { include } : {}),
+      take: limit,
+      ...(include && { include }), // Use the constructed include object
     });
 
-    // Map the Prisma results to CategoryResponse[]
-    const mappedCategories: CategoryResponse[] = categories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      description: category.description || '', // Ensure description is string
-      createdAt: category.createdAt,
-      updatedAt: category.updatedAt,
-      // Conditionally add articles if they were included by Prisma
-      ...(query['with-articles'] && category.articles
-        ? { articles: category.articles as ArticleResponse[] }
-        : {}),
-    }));
+    // FIX 2: The mapping logic is now correct and type-safe
+    const mappedCategories: CategoryResponse[] = categories.map((category) => {
+      const { articles, ...restOfCategory } = category;
+      const result: CategoryResponse = {
+        ...restOfCategory,
+        description: category.description || '',
+      };
+      if (query['with-articles'] && articles) {
+        result.articles = articles as ArticleResponse[];
+      }
+      return result;
+    });
 
     const categoriesCount = await this.db.category.count({
       where: dynamicSearch,
     });
-    const itemCount = categories.length;
-    const totalPages = Math.ceil(categoriesCount / query.limit);
+
+    const totalPages = Math.ceil(categoriesCount / limit);
+
     return {
       data: {
-        items: mappedCategories, // Use the mapped categories here
+        items: mappedCategories,
         meta: {
-          currentPage: query.page,
-          itemPerPages: query.limit,
-          itemCount,
+          currentPage: page,
+          itemPerPages: limit,
+          itemCount: categories.length,
           totalItems: categoriesCount,
           totalPages,
         },
