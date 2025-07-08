@@ -65,7 +65,7 @@ async getAllCategories(
             status: true,
             publishedAt: true,
           },
-          where: { status: 'PUBLISHED' }, // Using the string literal is safer here
+          where: { status: ArticleStatus.PUBLISHED }, // Using the string literal is safer here
           orderBy: { publishedAt: Prisma.SortOrder.desc },
           ...(query['articles-per-category']
             ? { take: query['articles-per-category'] }
