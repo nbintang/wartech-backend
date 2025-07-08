@@ -144,13 +144,16 @@ async getAllCategories(
 }
 
 
-  async getCategoryBySlug(slug: string) {
+async getCategoryBySlug(slug: string) {
     const category = await this.db.category.findUnique({
       where: { slug },
       include: {
         articles: {
           where: {
-            status:ArticleStatus.PUBLISHED, // langsung pakai string enum Prisma (auto-inferred)
+            status: 'PUBLISHED',
+          },
+          orderBy: {
+            publishedAt: 'desc',
           },
           select: {
             id: true,
@@ -159,8 +162,35 @@ async getAllCategories(
             image: true,
             status: true,
             publishedAt: true,
+            createdAt: true,
+            updatedAt: true,
+
+            author: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+
+            articleTags: {
+              select: {
+                tag: {
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                  },
+                },
+              },
+            },
+
+            _count: {
+              select: {
+                articleTags: true,
+              },
+            },
           },
-          orderBy: { publishedAt: Prisma.SortOrder.desc },
         },
       },
     });
@@ -169,7 +199,20 @@ async getAllCategories(
       throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
     }
 
-    return category;
+    // 🔁 Mutasi articles untuk merapikan articleTags jadi tags dan tambahkan tagsCount
+    const transformed = {
+      ...category,
+      articles: category.articles.map((article) => ({
+        ...article,
+        tags: article.articleTags.map(({ tag }) => tag),
+        tagsCount: article._count.articleTags,
+        // Hapus yang tidak perlu dari response
+        articleTags: undefined,
+        _count: undefined,
+      })),
+    };
+
+    return transformed;
   }
 
   async updateCategoryBySlug(
