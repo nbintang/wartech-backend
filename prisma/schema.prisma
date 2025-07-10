@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output = "./generated"
+  output   = "./generated"
 }
 
 datasource db {
@@ -13,6 +13,7 @@ model Article {
   title       String        @db.VarChar(100)
   slug        String        @unique(map: "Article_slug_key")
   content     String        @db.Text
+  description String?       
   image       String
   authorId    String
   categoryId  String
@@ -24,7 +25,6 @@ model Article {
   category    Category      @relation(fields: [categoryId], references: [id], map: "Article_categoryId_fkey", onDelete: Cascade)
   articleTags ArticleTag[] // pluralized here
   comments    Comment[] // pluralized here
-
 
   @@index([authorId], map: "Article_authorId_fkey")
   @@index([categoryId], map: "Article_categoryId_fkey")
@@ -80,7 +80,8 @@ model Comment {
   parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id], map: "Comment_parentId_fkey", onDelete: Cascade)
   children  Comment[] @relation("CommentToComment")
   user      User      @relation(fields: [userId], references: [id], map: "Comment_userId_fkey", onDelete: Cascade)
-  likes     Like[]   
+  likes     Like[]
+
   @@index([articleId], map: "Comment_articleId_fkey")
   @@index([parentId], map: "Comment_parentId_fkey")
   @@index([userId], map: "Comment_userId_fkey")
@@ -98,8 +99,6 @@ model Like {
   @@unique([userId, commentId], name: "userId_commentId", map: "Like_userId_commentId_key")
   @@map("likes")
 }
-
-
 
 model User {
   id                  String    @id @default(uuid())

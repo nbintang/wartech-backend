@@ -13,8 +13,6 @@ async function bootstrap() {
     'https://wartech-frontend.vercel.app',
     'http://localhost:3000',
     'http://localhost:3001',
-    'https://localhost:3000',
-    'https://localhost:3001',
   ];
 
   // Add logging to debug CORS
