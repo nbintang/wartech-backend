@@ -27,6 +27,7 @@ export const articlesSchema = z.object({
   status: z.nativeEnum(ArticleStatus),
   tags: z.array(tagSchema),
   publishedAt: z.date(),
+  description: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
   category: categorySchema,

@@ -7,6 +7,7 @@ const articleInputSchema = z.object({
   content: z.string().min(1),
   image: z.string().url(),
   authorId: z.string().uuid(),
+  description: z.string().max(255).trim().optional().nullable(),
   categoryId: z.string().uuid(),
   tagIds: z.array(z.string().uuid()).optional(),
 });

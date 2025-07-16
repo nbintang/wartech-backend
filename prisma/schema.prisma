@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./generated"
 }
 
 datasource db {
@@ -13,7 +12,6 @@ model Article {
   title       String        @db.VarChar(100)
   slug        String        @unique(map: "Article_slug_key")
   content     String        @db.Text
-  description String?       
   image       String
   authorId    String
   categoryId  String
@@ -21,10 +19,11 @@ model Article {
   publishedAt DateTime?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @default(now())
-  author      User          @relation(fields: [authorId], references: [id], map: "Article_authorId_fkey", onDelete: Cascade)
-  category    Category      @relation(fields: [categoryId], references: [id], map: "Article_categoryId_fkey", onDelete: Cascade)
-  articleTags ArticleTag[] // pluralized here
-  comments    Comment[] // pluralized here
+  description String?
+  articleTags ArticleTag[]
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade, map: "Article_authorId_fkey")
+  category    Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade, map: "Article_categoryId_fkey")
+  comments    Comment[]
 
   @@index([authorId], map: "Article_authorId_fkey")
   @@index([categoryId], map: "Article_categoryId_fkey")
@@ -35,8 +34,8 @@ model ArticleTag {
   id        String  @id @default(uuid())
   articleId String
   tagId     String
-  article   Article @relation(fields: [articleId], references: [id], map: "ArticleTag_articleId_fkey", onDelete: Cascade)
-  tag       Tag     @relation(fields: [tagId], references: [id], map: "ArticleTag_tagId_fkey", onDelete: Cascade)
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade, map: "ArticleTag_articleId_fkey")
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade, map: "ArticleTag_tagId_fkey")
 
   @@index([articleId], map: "ArticleTag_articleId_fkey")
   @@index([tagId], map: "ArticleTag_tagId_fkey")
@@ -46,23 +45,22 @@ model ArticleTag {
 model Tag {
   id          String       @id @default(uuid())
   name        String       @unique(map: "Tag_name_key") @db.VarChar(50)
-  slug        String       @unique
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @default(now())
+  slug        String       @unique
   articleTags ArticleTag[]
 
   @@map("tags")
 }
 
 model Category {
-  id          String   @id @default(uuid())
-  slug        String   @unique
-  name        String   @unique(map: "Category_name_key") @db.VarChar(50)
-  description String?  @db.VarChar(255)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-
-  articles Article[]
+  id          String    @id @default(uuid())
+  name        String    @unique(map: "Category_name_key") @db.VarChar(50)
+  description String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+  slug        String    @unique
+  articles    Article[]
 
   @@map("categories")
 }
@@ -74,12 +72,12 @@ model Comment {
   articleId String
   parentId  String?
   createdAt DateTime  @default(now())
-  isEdited  Boolean   @default(false)
   updatedAt DateTime  @default(now())
-  article   Article   @relation(fields: [articleId], references: [id], map: "Comment_articleId_fkey", onDelete: Cascade)
-  parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id], map: "Comment_parentId_fkey", onDelete: Cascade)
+  isEdited  Boolean   @default(false)
+  article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade, map: "Comment_articleId_fkey")
+  parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Cascade, map: "Comment_parentId_fkey")
   children  Comment[] @relation("CommentToComment")
-  user      User      @relation(fields: [userId], references: [id], map: "Comment_userId_fkey", onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Comment_userId_fkey")
   likes     Like[]
 
   @@index([articleId], map: "Comment_articleId_fkey")
@@ -91,12 +89,13 @@ model Comment {
 model Like {
   id        String   @id @default(uuid())
   userId    String
-  commentId String
   createdAt DateTime @default(now())
+  commentId String
   comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, commentId], name: "userId_commentId", map: "Like_userId_commentId_key")
+  @@index([commentId], map: "Like_commentId_fkey")
   @@map("likes")
 }
 
@@ -112,10 +111,10 @@ model User {
   role                UserRole  @default(READER)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @default(now())
+  resendEmailCooldown DateTime?
   articles            Article[]
   comments            Comment[]
   likes               Like[]
-  resendEmailCooldown DateTime?
 
   @@map("users")
 }

@@ -2,27 +2,11 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CategoryDto } from './dtos/mutate-category.dto';
 import { PrismaService } from '../../commons/prisma/prisma.service';
 import { Category, Prisma } from '@prisma/client';
-import { QueryCategoriesDto } from './dtos/query-categories.dto';
+import { QueryCategoriesDto } from './dtos/query-category.dto';
 import { PaginatedPayloadResponseDto } from '../../commons/dtos/paginated-payload-response.dto';
 import { ArticleStatus } from '../articles/enums/article-status.enum';
-export interface ArticleResponse {
-  id: string;
-  title: string;
-  slug: string;
-  image: string;
-  status: ArticleStatus;
-  publishedAt: Date | null;
-}
+import { CategoryResponseDto } from './dtos/response-category.dto';
 
-export interface CategoryResponse {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  createdAt: Date;
-  updatedAt: Date;
-  articles?: ArticleResponse[]; // Optional: hanya ada jika query pakai with-articles=true
-}
 type CategoryWithArticles = Prisma.CategoryGetPayload<{
   include: {
     articles: {
@@ -32,6 +16,7 @@ type CategoryWithArticles = Prisma.CategoryGetPayload<{
         slug: true;
         image: true;
         status: true;
+        description: true;
         publishedAt: true;
       };
     };
@@ -65,7 +50,7 @@ export class CategoriesService {
 
   async getAllCategories(
     query: QueryCategoriesDto,
-  ): Promise<PaginatedPayloadResponseDto<CategoryResponse>> {
+  ): Promise<PaginatedPayloadResponseDto<CategoryResponseDto>> {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
@@ -101,9 +86,9 @@ export class CategoriesService {
       ...(include && { include }),
     });
 
-    const mappedCategories: CategoryResponse[] = categories.map(
+    const mappedCategories: CategoryResponseDto[] = categories.map(
       (category: CategoryResult) => {
-        const base: CategoryResponse = {
+        const base: CategoryResponseDto = {
           id: category.id,
           name: category.name,
           slug: category.slug,
@@ -120,6 +105,7 @@ export class CategoriesService {
               title: article.title,
               slug: article.slug,
               image: article.image,
+              description: article.description,
               status: article.status as ArticleStatus, // 🔥 Type-cast ke enum lokal kamu
               publishedAt: article.publishedAt,
             })),
@@ -170,7 +156,7 @@ export class CategoriesService {
             publishedAt: true,
             createdAt: true,
             updatedAt: true,
-
+            description: true,
             author: {
               select: {
                 id: true,

@@ -77,7 +77,7 @@ export class ArticlesService {
         'Article title already exists',
         HttpStatus.BAD_REQUEST,
       );
-    const { categoryId, authorId, title, slug, content, image } =
+    const { categoryId, authorId, title, slug, content, image, description } =
       createArticleDto;
     const newArticle = await this.db.article.create({
       data: {
@@ -85,6 +85,7 @@ export class ArticlesService {
         slug,
         content: sanitizeHtml(content),
         image,
+        description,
         author: { connect: { id: authorId } },
         category: { connect: { id: categoryId } },
       },
@@ -179,6 +180,7 @@ export class ArticlesService {
       content,
       image,
       authorId,
+      description,
       categoryId,
     } = updateArticleDto;
 
@@ -193,6 +195,7 @@ export class ArticlesService {
         title,
         slug: newSlug,
         status,
+        description,
         content: content ? sanitizeHtml(content) : undefined,
         image,
         ...(authorId && { author: { connect: { id: authorId } } }),

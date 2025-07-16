@@ -12,7 +12,7 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { QueryCategoriesDto } from './dtos/query-categories.dto';
+import { QueryCategoriesDto } from './dtos/query-category.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/enums/role.enums';
