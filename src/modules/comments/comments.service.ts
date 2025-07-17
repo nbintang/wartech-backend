@@ -106,10 +106,6 @@ export class CommentsService {
 
     const commentsCount = await this.db.comment.count({ where });
 
-    if (comments.length === 0 && commentsCount === 0) {
-      throw new HttpException('No comments found', HttpStatus.NOT_FOUND);
-    }
-
     return {
       formattedComments: formatComments(comments),
       meta: {
